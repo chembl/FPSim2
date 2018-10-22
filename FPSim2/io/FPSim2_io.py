@@ -6,7 +6,6 @@ from .thread_safe_tables import tables
 import numpy as np
 import textwrap
 import json
-import csv
 import re
 
 
@@ -139,9 +138,9 @@ def get_fp_length(fp_func, fp_func_params):
 
 def smi_mol_supplier(in_fname, gen_ids, **kwargs):
     with open(in_fname, 'r') as f:
-        csv_reader = csv.reader(f, delimiter=kwargs['smi_delim'])
-        for new_mol_id, mol in enumerate(csv_reader, 1):
+        for new_mol_id, mol in enumerate(f, 1):
             # if .smi with single smiles column just add the id
+            mol = mol.split()
             if len(mol) == 1:
                 smiles = mol[0]
                 mol_id = new_mol_id
@@ -149,14 +148,13 @@ def smi_mol_supplier(in_fname, gen_ids, **kwargs):
                 if gen_ids:
                     mol_id = new_mol_id
                 else:
-                    mol_id = mol[0]
-                    smiles = mol[1]
-            try:
-                int(mol_id)
-            except Exception as e:
-                raise Exception('FPSim only supports integer ids for molecules, '
-                                'cosinder setting gen_ids=True when running '
-                                'create_fp_file to autogenerate them.')
+                    try:
+                        mol_id = int(mol[1])
+                    except Exception as e:
+                        raise Exception('FPSim only supports integer ids for molecules, '
+                                        'cosinder setting gen_ids=True when running '
+                                        'create_fp_file to autogenerate them.')
+                    smiles = mol[0].strip()
             rdmol = Chem.MolFromSmiles(smiles)
             if rdmol:
                 yield mol_id, rdmol
