@@ -1,6 +1,7 @@
 # FPSim2: Simple package for fast molecular similarity searches
 
 This is not even a alpha version. Everything is changing and anything that can crash... will eventually do it.
+FPSim2 is designed to run fast compound similarity searches and to be easily integrated with any Python web framework in order to expose similarity services.
 
 ## Installation 
 
@@ -10,7 +11,7 @@ Planning to include it in a conda repo.
 
 ### Requirements
 
-FPSim is heavily coupled to RDKit. As the easiest way to install it is using conda environments, the use of conda is highly recommended.
+FPSim2 is heavily coupled to RDKit. As the easiest way to install it is using conda environments, the use of conda is highly recommended.
 
 * RDKit (install it via conda using rdkit or conda-forge channels)
     - conda install -c conda-forge rdkit
@@ -23,12 +24,12 @@ FPSim is heavily coupled to RDKit. As the easiest way to install it is using con
 
 ### Create FP file
 
-    from FPSim import create_fp_file
+    from FPSim2 import create_fp_file
 
     # input file, output file, FP type, FP parameters
     create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 
-FPSim will use RDKit default parameters for a fingerprint type in case no parameters are used. Available FP types and default parameters listed below.
+FPSim2 will use RDKit default parameters for a fingerprint type in case no parameters are used. Available FP types and default parameters listed below.
 
 ### FP Types
 
@@ -45,7 +46,7 @@ All fingerprints are calculated using RDKit.
 
 ### Limitations
 
-Due to it's simplicity FPSim can only use integer ids for FPs, however it can generate new ids for the provided molecules using gen_ids flag.
+Due to it's simplicity FPSim2 can only use integer ids for FPs, however it can generate new ids for the provided molecules using gen_ids flag.
 
     create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, gen_ids=True)
 
@@ -54,7 +55,7 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 
 ### Run a search
 
-    from FPSim import run_search
+    from FPSim2 import run_search
 
     results = run_search('CC(=O)Oc1ccccc1C(=O)O', 'chembl.h5', threshold=0.7, coeff='tanimoto')
     for r in results:
@@ -64,8 +65,8 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 
 If your data fits in RAM, you can preload all the fps in memory and run much faster queries.
 
-    from FPSim import run_in_memory_search
-    from FPSim.io import load_query, load_fps
+    from FPSim2 import run_in_memory_search
+    from FPSim2.io import load_query, load_fps
 
     fp_filename = 'chembl.h5'
 

@@ -113,7 +113,7 @@ cdef list _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double th
 def similarity_search(query, fp_filename, chunk_indexes, threshold=0.7, coeff=0):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
-        res = _similarity_search(query, fps, threshold, coeff)
+    res = _similarity_search(query, fps, threshold, coeff)
     return res
 
 
