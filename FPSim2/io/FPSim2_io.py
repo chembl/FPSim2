@@ -239,3 +239,10 @@ def load_fps(fp_filename, chunk_size=1000000):
         chunks_ini =[x for x in range(0, n_mols, chunk_size)]
         fps = [fps[cini:cini+chunk_size] for cini in chunks_ini]
     return fps
+
+
+def get_disk_memory_size(fp_filename):
+    with tables.open_file(fp_filename, mode='r') as fp_file:
+        disk = fp_file.root.fps.size_on_disk
+        memory = fp_file.root.fps.size_in_memory
+    return disk, memory
