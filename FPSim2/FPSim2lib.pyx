@@ -71,15 +71,28 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
                 query_count += __builtin_popcountll(query[0, j])
 
         for i in range(fps.shape[0]):
-            for j in range(query.shape[1]):
-                # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 to skip the mol_id)
+            for j in range(0, query.shape[1], 4):
+                # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in fps to skip the mol_id)
+                # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
                 int_count += __builtin_popcountll(fps[i, j + 1] & query[0, j])
+                int_count += __builtin_popcountll(fps[i, j + 2] & query[0, j + 1])
+                int_count += __builtin_popcountll(fps[i, j + 3] & query[0, j + 2])
+                int_count += __builtin_popcountll(fps[i, j + 4] & query[0, j + 3])
                 if coeff_func == 0:
                     un_count += __builtin_popcountll(fps[i, j + 1] | query[0, j])
+                    un_count += __builtin_popcountll(fps[i, j + 2] | query[0, j + 1])
+                    un_count += __builtin_popcountll(fps[i, j + 3] | query[0, j + 2])
+                    un_count += __builtin_popcountll(fps[i, j + 4] | query[0, j + 3])
                 elif coeff_func == 1:
                     other_count += __builtin_popcountll(fps[i, j + 1])
+                    other_count += __builtin_popcountll(fps[i, j + 2])
+                    other_count += __builtin_popcountll(fps[i, j + 3])
+                    other_count += __builtin_popcountll(fps[i, j + 4])
                 elif coeff_func == 2:
                     rel_co_count +=  __builtin_popcountll(query[0, j] & ~fps[i, j + 1])
+                    rel_co_count +=  __builtin_popcountll(query[0, j + 1] & ~fps[i, j + 2])
+                    rel_co_count +=  __builtin_popcountll(query[0, j + 2] & ~fps[i, j + 3])
+                    rel_co_count +=  __builtin_popcountll(query[0, j + 3] & ~fps[i, j + 4])
 
             # tanimoto
             if coeff_func == 0:
