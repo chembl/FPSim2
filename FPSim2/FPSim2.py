@@ -3,6 +3,7 @@ import concurrent.futures as cf
 from .FPSim2lib import similarity_search, in_memory_ss
 from .io import tables, load_query, COEFFS
 from operator import itemgetter
+import numpy as np
 import time
 
 
@@ -30,12 +31,13 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
             m = future_ss[future]
             try:
                 res = future.result()
-                results.append(res)
+                if res.shape[0] != 0:
+                    results.append(res)
             except Exception as e:
                 print('Chunk {} thread died: '.format(m), e)
-    # flatten results
-    res = [item for sublist in results for item in sublist]
-    return sorted(res, key=itemgetter(1), reverse=True)
+    np_res = np.concatenate(results)
+    np_res[::-1].sort(order='coeff')
+    return np_res
 
 
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
@@ -47,8 +49,10 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
             m = future_ss[future]
             try:
                 res = future.result()
-                results.append(res)
+                if res.shape[0] != 0:
+                    results.append(res)
             except Exception as e:
                 print('Chunk {} thread died: '.format(m), e)
-    res = [item for sublist in results for item in sublist]
-    return sorted(res, key=itemgetter(1), reverse=True)
+    np_res = np.concatenate(results)
+    np_res[::-1].sort(order='coeff')
+    return np_res

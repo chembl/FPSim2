@@ -49,10 +49,8 @@ cdef inline double _tanimoto_coeff(int int_count, int un_count) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef list _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func):
+cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func):
 
-    cdef vector[double] temp_scores
-    cdef vector[uint64_t] temp_ids
     cdef int i
     cdef int j
     cdef int un_count = 0
@@ -62,7 +60,11 @@ cdef list _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double th
     cdef int other_count = 0
     cdef double coeff
 
+    cdef vector[double] temp_scores
+    cdef vector[uint64_t] temp_ids
+
     with nogil:
+
         # precalc query popcount for dice coeff
         if coeff_func == 1:
             for j in range(query.shape[1]):
@@ -92,6 +94,7 @@ cdef list _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double th
             if coeff >= threshold:
                 temp_scores.push_back(coeff)
                 temp_ids.push_back(fps[i][0])
+
             # reset values for next fp
             un_count = 0
             int_count = 0
@@ -99,15 +102,15 @@ cdef list _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double th
             other_count = 0
             rel_co_count = 0
 
-    cdef int N = temp_scores.size()
-    cdef list list_coeffs = N * [0]
-    cdef list list_ids = N * [0]
-    for i in range(N):
-        list_coeffs[i] = temp_scores.back()
+    # inside the GIL :(
+    cdef np.ndarray results = np.ndarray((temp_scores.size(),), dtype=[('mol_id','i8'), ('coeff','f4')])
+    for i in range(temp_scores.size()):
+        results[i][0] = temp_ids.back()
+        results[i][1] = temp_scores.back()
         temp_scores.pop_back()
-        list_ids[i] = temp_ids.back()
         temp_ids.pop_back()
-    return list(zip(list_ids, list_coeffs))
+
+    return results
 
 
 def similarity_search(query, fp_filename, chunk_indexes, threshold=0.7, coeff=0):
