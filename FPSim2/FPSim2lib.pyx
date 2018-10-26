@@ -134,11 +134,18 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
         fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
     # substruct
     elif coeff == 2:
+        t0 = time.time()
         for i in range(1, query.shape[1]*64 + 1):
             a = min(query_count, i) / query_count
             if a >= threshold:
                 counts_to_keep.append(i)
+        t1 = time.time()
+        print("time for", t1-t0, fps.shape)
+        t0 = time.time()
         fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
+        t1 = time.time()
+        print("time ff", t1-t0, fps.shape)
+
     return fps
 
 
