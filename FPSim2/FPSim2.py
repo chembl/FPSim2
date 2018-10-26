@@ -45,7 +45,10 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
     fps = filter_by_bound(query, fps, threshold, COEFFS[coeff])
     print(fps.shape)
     if n_threads == 1:
+        t0 = time.time()
         np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff])
+        t1 = time.time()
+        print("time running in memory search", t1-t0)
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
