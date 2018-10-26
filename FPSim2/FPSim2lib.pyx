@@ -124,7 +124,7 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
     query_count = py_popcount(query)
     counts_to_keep = []
     # tanimoto
-    int i
+    cdef int i
     if coeff == 0:
         for i in range(1, query.shape[1]*64 + 1):
             a = min(query_count, i) / max(query_count, i)
