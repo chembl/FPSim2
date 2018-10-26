@@ -3,6 +3,7 @@ from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
 from .thread_safe_tables import tables
+from FPSim2.FPSim2lib import py_popcount
 import numpy as np
 import textwrap
 import json
@@ -207,7 +208,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
     fps_table = h5file_out.create_earray(h5file_out.root,
                                         'fps',
                                         fps_atom,
-                                        shape=((0, fp_length / 64 + 1)))
+                                        shape=((0, fp_length / 64 + 2)))
 
     # set config table; used fp function, parameters and rdkit version
     param_table = h5file_out.create_vlarray(h5file_out.root, 
@@ -220,7 +221,9 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
     fps = []
     for mol_id, rdmol in supplier(in_fname, gen_ids, smi_delim=smi_delim, mol_id_prop=mol_id_prop):
         efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
+        popcnt = py_popcount(np.array([efp], dtype=np.uint64))
         efp.insert(0, mol_id)
+        efp.append(popcnt)
         efp = np.asarray(efp, dtype=np.uint64)
         fps.append(efp)
         # insert in batches of 10k fps

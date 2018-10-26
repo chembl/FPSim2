@@ -39,10 +39,21 @@ cdef inline double _dice_coeff(int int_count, int query_count, int other_count) 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef inline double _tanimoto_coeff(int int_count, int un_count) nogil:
+cdef inline double _tanimoto_coeff_old(int int_count, int un_count) nogil:
     cdef double t_coeff = 0.0
     if un_count != 0:
         t_coeff = <double>int_count / <double>un_count
+    return t_coeff
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_other) nogil:
+    cdef double t_coeff = 0.0
+    t_coeff = count_query + count_other - int_count
+    if t_coeff != 0.0:
+        t_coeff = int_count / t_coeff
     return t_coeff
 
 
@@ -53,11 +64,9 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
 
     cdef int i
     cdef int j
-    cdef int un_count = 0
     cdef int int_count = 0
     cdef int rel_co_count = 0
     cdef int query_count = 0
-    cdef int other_count = 0
     cdef double coeff
 
     cdef vector[double] temp_scores
@@ -65,10 +74,9 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
 
     with nogil:
 
-        # precalc query popcount for dice coeff
-        if coeff_func == 1:
-            for j in range(query.shape[1]):
-                query_count += __builtin_popcountll(query[0, j])
+        # precalc query popcount
+        for j in range(query.shape[1]):
+            query_count += __builtin_popcountll(query[0, j])
 
         for i in range(fps.shape[0]):
             for j in range(0, query.shape[1], 4):
@@ -78,17 +86,8 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
                 int_count += __builtin_popcountll(fps[i, j + 2] & query[0, j + 1])
                 int_count += __builtin_popcountll(fps[i, j + 3] & query[0, j + 2])
                 int_count += __builtin_popcountll(fps[i, j + 4] & query[0, j + 3])
-                if coeff_func == 0:
-                    un_count += __builtin_popcountll(fps[i, j + 1] | query[0, j])
-                    un_count += __builtin_popcountll(fps[i, j + 2] | query[0, j + 1])
-                    un_count += __builtin_popcountll(fps[i, j + 3] | query[0, j + 2])
-                    un_count += __builtin_popcountll(fps[i, j + 4] | query[0, j + 3])
-                elif coeff_func == 1:
-                    other_count += __builtin_popcountll(fps[i, j + 1])
-                    other_count += __builtin_popcountll(fps[i, j + 2])
-                    other_count += __builtin_popcountll(fps[i, j + 3])
-                    other_count += __builtin_popcountll(fps[i, j + 4])
-                elif coeff_func == 2:
+
+                if coeff_func == 2:
                     rel_co_count +=  __builtin_popcountll(query[0, j] & ~fps[i, j + 1])
                     rel_co_count +=  __builtin_popcountll(query[0, j + 1] & ~fps[i, j + 2])
                     rel_co_count +=  __builtin_popcountll(query[0, j + 2] & ~fps[i, j + 3])
@@ -96,10 +95,10 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
 
             # tanimoto
             if coeff_func == 0:
-                coeff = _tanimoto_coeff(int_count, un_count)
+                coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[1] + 1])
             # dice
             elif coeff_func == 1:
-                coeff = _dice_coeff(int_count, query_count, other_count)
+                coeff = _dice_coeff(int_count, query_count, fps[i, query.shape[1] + 1])
             # substruct (tversky a=1, b=0 eq)
             elif coeff_func == 2:
                 coeff = _substruct_coeff(rel_co_count, int_count)
@@ -109,10 +108,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
                 temp_ids.push_back(fps[i][0])
 
             # reset values for next fp
-            un_count = 0
             int_count = 0
-            query_count = 0
-            other_count = 0
             rel_co_count = 0
 
     # inside the GIL :(
@@ -124,6 +120,25 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
         temp_ids.pop_back()
 
     return results
+
+
+cpdef int py_popcount(query):
+    cdef int query_count = 0
+    cdef int j
+    for j in range(query.shape[1]):
+        query_count += __builtin_popcountll(query[0, j])
+    return query_count
+
+
+cpdef filter_by_bound(query, fps, threshold):
+    query_count = py_popcount(query)
+    counts_to_keep = []
+    for i in range(query.shape[1]*64 + 1):
+        a = min(query_count, i) / max(query_count, i)
+        if a >= threshold:
+            counts_to_keep.append(i)
+    fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
+    return fps
 
 
 def similarity_search(query, fp_filename, chunk_indexes, threshold=0.7, coeff=0):
