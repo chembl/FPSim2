@@ -235,12 +235,9 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
     h5file_out.close()
 
 
-def load_fps(fp_filename, chunk_size=1000000):
+def load_fps(fp_filename):
     with tables.open_file(fp_filename, mode='r') as fp_file:
-        fps = fp_file.root.fps
-        n_mols = fp_file.root.fps.shape[0]
-        chunks_ini =[x for x in range(0, n_mols, chunk_size)]
-        fps = [fps[cini:cini+chunk_size] for cini in chunks_ini]
+        fps = fp_file.root.fps[:]
     return fps
 
 

@@ -39,16 +39,6 @@ cdef inline double _dice_coeff(int int_count, int query_count, int other_count) 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef inline double _tanimoto_coeff_old(int int_count, int un_count) nogil:
-    cdef double t_coeff = 0.0
-    if un_count != 0:
-        t_coeff = <double>int_count / <double>un_count
-    return t_coeff
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_other) nogil:
     cdef double t_coeff = 0.0
     t_coeff = count_query + count_other - int_count
@@ -130,14 +120,24 @@ cpdef int py_popcount(query):
     return query_count
 
 
-cpdef filter_by_bound(query, fps, threshold):
+cpdef filter_by_bound(query, fps, threshold, coeff):
     query_count = py_popcount(query)
     counts_to_keep = []
-    for i in range(query.shape[1]*64 + 1):
-        a = min(query_count, i) / max(query_count, i)
-        if a >= threshold:
-            counts_to_keep.append(i)
-    fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
+    # tanimoto
+    int i
+    if coeff == 0:
+        for i in range(1, query.shape[1]*64 + 1):
+            a = min(query_count, i) / max(query_count, i)
+            if a >= threshold:
+                counts_to_keep.append(i)
+        fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
+    # substruct
+    elif coeff == 2:
+        for i in range(1, query.shape[1]*64 + 1):
+            a = min(query_count, i) / query_count
+            if a >= threshold:
+                counts_to_keep.append(i)
+        fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
     return fps
 
 

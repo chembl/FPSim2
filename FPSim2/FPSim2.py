@@ -42,15 +42,14 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 
 
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
+    fps = filter_by_bound(query, fps, threshold, COEFFS[coeff])
     if n_threads == 1:
-        fps = filter_by_bound(query, fps[0], threshold)
         np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff])
-        np_res[::-1].sort(order='coeff')
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
             future_ss = {tpe.submit(in_memory_ss, query, chunk, threshold, COEFFS[coeff]): 
-                            c_id for c_id, chunk in enumerate(fps)}
+                            c_id for c_id, chunk in enumerate(np.array_split(fps, n_threads))}
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]
                 try:
@@ -60,5 +59,5 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
                 except Exception as e:
                     print('Chunk {} thread died: '.format(m), e)
         np_res = np.concatenate(results)
-        np_res[::-1].sort(order='coeff')
+    np_res[::-1].sort(order='coeff')
     return np_res
