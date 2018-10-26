@@ -42,7 +42,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
     if n_threads == 1:
-        np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff])
+        np_res = in_memory_ss(query, fps[0], threshold, COEFFS[coeff])
         np_res[::-1].sort(order='coeff')
     else:
         results = []
