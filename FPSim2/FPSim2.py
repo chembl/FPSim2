@@ -41,18 +41,22 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 
 
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
-    results = []
-    with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
-        future_ss = {tpe.submit(in_memory_ss, query, chunk, threshold, COEFFS[coeff]): 
-                        c_id for c_id, chunk in enumerate(fps)}
-        for future in cf.as_completed(future_ss):
-            m = future_ss[future]
-            try:
-                res = future.result()
-                if res.shape[0] != 0:
-                    results.append(res)
-            except Exception as e:
-                print('Chunk {} thread died: '.format(m), e)
-    np_res = np.concatenate(results)
-    np_res[::-1].sort(order='coeff')
+    if n_threads == 1:
+        results = in_memory_ss(query, fps, threshold, COEFFS[coeff])
+        results[::-1].sort(order='coeff')
+    else:
+        results = []
+        with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
+            future_ss = {tpe.submit(in_memory_ss, query, chunk, threshold, COEFFS[coeff]): 
+                            c_id for c_id, chunk in enumerate(fps)}
+            for future in cf.as_completed(future_ss):
+                m = future_ss[future]
+                try:
+                    res = future.result()
+                    if res.shape[0] != 0:
+                        results.append(res)
+                except Exception as e:
+                    print('Chunk {} thread died: '.format(m), e)
+        np_res = np.concatenate(results)
+        np_res[::-1].sort(order='coeff')
     return np_res
