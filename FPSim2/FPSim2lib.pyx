@@ -7,7 +7,7 @@ from libc.stdint cimport uint32_t, uint64_t
 from libcpp.list cimport list as cpplist
 from libcpp.vector cimport vector
 from .io import tables as tb
-
+import time
 
 # include CPU popcnt functions built in GCC for all posix systems
 # using -march=native GCC flag will use best CPU instruction available
