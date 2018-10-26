@@ -136,7 +136,7 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
     elif coeff == 2:
         t0 = time.time()
         for i in range(1, query.shape[1]*64 + 1):
-            a = min(query_count, i) / query_count
+            a = min(query_count, i) / i
             if a >= threshold:
                 counts_to_keep.append(i)
         t1 = time.time()
