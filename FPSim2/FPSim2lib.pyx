@@ -106,7 +106,6 @@ cpdef int py_popcount(query):
     return query_count
 
 @cython.boundscheck(False)
-@cython.wraparound(True)
 @cython.initializedcheck(False)
 cpdef get_bounds_range(query, fps, threshold, coeff):
     cdef int i
@@ -120,33 +119,37 @@ cpdef get_bounds_range(query, fps, threshold, coeff):
 
     indexes_list_length = len(fps[1][1]) - 1
     # tanimoto
-    if coeff == 0:
-        for i, j in enumerate(fps[1][0]):
+    for i, j in enumerate(fps[1][0]):
+        if coeff == 0:
             max_sim = min(query_count, j) / max(query_count, j)
-            if start == 0:
-                start = 1
-                if max_sim >= threshold:
-                    range_to_keep.append(fps[1][1][i])
-            else:
-                if max_sim >= threshold:
-                    if i == indexes_list_length:
-                        range_to_keep.append(fps[0].shape[0])
-                    else:
-                        range_to_keep.append(fps[1][1][i+1])
-    # substruct
-    elif coeff == 2:
-        for i, j in enumerate(fps[1][0]):
+        elif coeff == 2:
             max_sim = min(query_count, i) / i
-            if start == 0:
-                start = 1
-                if max_sim >= threshold:
-                    range_to_keep.append(fps[1][1][i])
-            else:
-                if max_sim >= threshold:
-                    if i == indexes_list_length:
-                        range_to_keep.append(fps[0].shape[0])
-                    else:
-                        range_to_keep.append(fps[1][1][i+1])
+        else:
+            break
+        if start == 0:
+            start = 1
+            if max_sim >= threshold:
+                range_to_keep.append(fps[1][1][i])
+        else:
+            if max_sim >= threshold:
+                if i == indexes_list_length:
+                    range_to_keep.append(fps[0].shape[0])
+                else:
+                    range_to_keep.append(fps[1][1][i+1])
+    # substruct
+    # elif coeff == 2:
+    #     for i, j in enumerate(fps[1][0]):
+    #         max_sim = min(query_count, i) / i
+    #         if start == 0:
+    #             start = 1
+    #             if max_sim >= threshold:
+    #                 range_to_keep.append(fps[1][1][i])
+    #         else:
+    #             if max_sim >= threshold:
+    #                 if i == indexes_list_length:
+    #                     range_to_keep.append(fps[0].shape[0])
+    #                 else:
+    #                     range_to_keep.append(fps[1][1][i+1])
     range_to_keep = [range_to_keep[0], range_to_keep[-1]]
     return range_to_keep
 
