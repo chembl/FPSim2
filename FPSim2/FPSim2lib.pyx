@@ -75,9 +75,6 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             # tanimoto
             if coeff_func == 0:
                 coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[1] + 1])
-            # dice
-            elif coeff_func == 1:
-                coeff = _dice_coeff(int_count, query_count, fps[i, query.shape[1] + 1])
             # substruct (tversky a=1, b=0 eq)
             elif coeff_func == 2:
                 coeff = _substruct_coeff(rel_co_count, int_count)
