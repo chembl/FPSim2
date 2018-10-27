@@ -134,10 +134,10 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
             a = min(query_count, j) / max(query_count, j)
             if not start:
                 if a >= threshold:
-                    counts_to_keep.append(fps[1][1][i])
+                    range_to_keep.append(fps[1][1][i])
             else:
                 if a >= threshold:
-                    counts_to_keep.append(fps[1][1][i+1])
+                    range_to_keep.append(fps[1][1][i+1])
         fps = fps[0][range_to_keep[0]:range_to_keep[-1]]
     # substruct
     elif coeff == 2:
