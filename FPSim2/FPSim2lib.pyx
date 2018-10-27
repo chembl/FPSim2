@@ -125,15 +125,15 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
     cdef int i
     cdef int j
     cdef float a
-    cdef bool start
+    cdef int start = 0
 
     range_to_keep = []
     # tanimoto
     if coeff == 0:
         for i, j in enumerate(fps[1][0]):
             a = min(query_count, j) / max(query_count, j)
-            if not start:
-                start = True
+            if start == 0:
+                start = 1
                 if a >= threshold:
                     range_to_keep.append(fps[1][1][i])
             else:
