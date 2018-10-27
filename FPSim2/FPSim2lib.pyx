@@ -144,8 +144,8 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
         for i in range(1, query.shape[1]*64 + 1):
             a = min(query_count, i) / i
             if a >= threshold:
-                counts_to_keep.append(i)
-        fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
+                range_to_keep.append(i)
+        fps = fps[np.in1d(fps[:,-1], range_to_keep)]
     return fps
 
 
