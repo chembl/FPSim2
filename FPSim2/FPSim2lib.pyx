@@ -39,7 +39,7 @@ cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_oth
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func):
+cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func, int i_start, int i_end):
 
     cdef int i
     cdef int j
@@ -57,7 +57,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
         for j in range(query.shape[1]):
             query_count += __builtin_popcountll(query[0, j])
 
-        for i in range(fps.shape[0]):
+        for i in range(i_start, i_end):
             for j in range(0, query.shape[1], 4):
                 # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in fps to skip the mol_id)
                 # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
@@ -106,40 +106,46 @@ cpdef int py_popcount(query):
     return query_count
 
 
-cpdef filter_by_bound(query, fps, threshold, coeff):
+cpdef get_bounds_range(query, fps, threshold, coeff):
     cdef int i
     cdef int j
     cdef float a
     cdef int start = 0
+    cdef indexes_list_length = 0
 
     query_count = py_popcount(query)
-
     range_to_keep = []
+
+    indexes_list_length = len(fps[1][1])
     # tanimoto
     if coeff == 0:
         for i, j in enumerate(fps[1][0]):
-            a = min(query_count, j) / max(query_count, j)
+            max_sim = min(query_count, j) / max(query_count, j)
             if start == 0:
                 start = 1
-                if a >= threshold:
+                if max_sim >= threshold:
                     range_to_keep.append(fps[1][1][i])
             else:
-                if a >= threshold:
+                if i == indexes_list_length:
+                    range_to_keep.append(fps[0].shape[0])
+                else:
                     range_to_keep.append(fps[1][1][i+1])
-        fps = fps[0][range_to_keep[0]:range_to_keep[-1]]
     # substruct
     elif coeff == 2:
         for i, j in enumerate(fps[1][0]):
-            a = min(query_count, i) / i
+            max_sim = min(query_count, i) / i
             if start == 0:
                 start = 1
-                if a >= threshold:
+                if max_sim >= threshold:
                     range_to_keep.append(fps[1][1][i])
             else:
-                if a >= threshold:
-                    range_to_keep.append(fps[1][1][i+1])
-        fps = fps[0][range_to_keep[0]:range_to_keep[-1]]
-    return fps
+                if max_sim >= threshold:
+                    if i == indexes_list_length:
+                        range_to_keep.append(fps[0].shape[0])
+                    else:
+                        range_to_keep.append(fps[1][1][i+1])
+    range_to_keep = [range_to_keep[0], range_to_keep[-1]]
+    return range_to_keep
 
 
 def similarity_search(query, fp_filename, chunk_indexes, threshold=0.7, coeff=0):
@@ -149,6 +155,6 @@ def similarity_search(query, fp_filename, chunk_indexes, threshold=0.7, coeff=0)
     return res
 
 
-def in_memory_ss(query, fps, threshold=0.7, coeff=0):
-    res = _similarity_search(query, fps, threshold, coeff)
+def in_memory_ss(query, fps, threshold, coeff, i_start, i_end):
+    res = _similarity_search(query, fps, threshold, coeff, i_start, i_end)
     return res

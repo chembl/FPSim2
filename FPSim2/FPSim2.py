@@ -44,14 +44,18 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
     if coeff == 'substructure':
         threshold = 1.0
-    t0 = time.time()
-    fps = filter_by_bound(query, fps, threshold, COEFFS[coeff])
+    fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
+    if not fp_range:
+        return []
+    else:
+        i_start = fp_range[0]
+        i_end = fp_range[1]
     if n_threads == 1:
-        np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff])
+        np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff], fp_range[0], fp_range[1])
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
-            future_ss = {tpe.submit(in_memory_ss, query, chunk, threshold, COEFFS[coeff]): 
+            future_ss = {tpe.submit(in_memory_ss, query, chunk, threshold, COEFFS[coeff], fp_range[0], fp_range[1]): 
                             c_id for c_id, chunk in enumerate(np.array_split(fps, n_threads))}
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]
