@@ -105,7 +105,7 @@ cpdef int py_popcount(query):
         query_count += __builtin_popcountll(query[0, j])
     return query_count
 
-@cython.boundscheck(False)
+@cython.boundscheck(True)
 @cython.wraparound(True)
 @cython.initializedcheck(True)
 cpdef get_bounds_range(query, fps, threshold, coeff):
@@ -128,10 +128,11 @@ cpdef get_bounds_range(query, fps, threshold, coeff):
                 if max_sim >= threshold:
                     range_to_keep.append(fps[1][1][i])
             else:
-                if i == indexes_list_length:
-                    range_to_keep.append(fps[0].shape[0])
-                else:
-                    range_to_keep.append(fps[1][1][i+1])
+                if max_sim >= threshold:
+                    if i == indexes_list_length:
+                        range_to_keep.append(fps[0].shape[0])
+                    else:
+                        range_to_keep.append(fps[1][1][i+1])
     # substruct
     elif coeff == 2:
         for i, j in enumerate(fps[1][0]):
