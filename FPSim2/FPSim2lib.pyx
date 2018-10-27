@@ -118,7 +118,7 @@ cpdef get_bounds_range(query, fps, threshold, coeff):
     query_count = py_popcount(query)
     range_to_keep = []
 
-    indexes_list_length = len(fps[1][1])
+    indexes_list_length = len(fps[1][1]) - 1
     # tanimoto
     if coeff == 0:
         for i, j in enumerate(fps[1][0]):
@@ -128,7 +128,7 @@ cpdef get_bounds_range(query, fps, threshold, coeff):
                 if max_sim >= threshold:
                     range_to_keep.append(fps[1][1][i])
             else:
-                if i == indexes_list_length - 1:
+                if i == indexes_list_length:
                     range_to_keep.append(fps[0].shape[0])
                 else:
                     range_to_keep.append(fps[1][1][i+1])
