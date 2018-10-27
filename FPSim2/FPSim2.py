@@ -51,7 +51,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         i_start = fp_range[0]
         i_end = fp_range[1]
     if n_threads == 1:
-        np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff], fp_range[0], fp_range[1])
+        np_res = in_memory_ss(query, fps[0], threshold, COEFFS[coeff], fp_range[0], fp_range[1])
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
