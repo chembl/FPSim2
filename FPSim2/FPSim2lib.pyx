@@ -151,7 +151,7 @@ cpdef get_bounds_range(query, fps, threshold, coeff):
 def similarity_search(query, fp_filename, chunk_indexes, threshold, coeff, i_start, i_end):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
-    res = _similarity_search(query, fps, threshold, coeff)
+    res = _similarity_search(query, fps, threshold, coeff, i_start, i_end)
     return res
 
 
