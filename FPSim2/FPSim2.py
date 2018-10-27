@@ -46,8 +46,6 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         threshold = 1.0
     t0 = time.time()
     fps = filter_by_bound(query, fps, threshold, COEFFS[coeff])
-    t1 = time.time()
-    print("time filtering", t1-t0, fps.shape)
     if n_threads == 1:
         np_res = in_memory_ss(query, fps, threshold, COEFFS[coeff])
     else:
