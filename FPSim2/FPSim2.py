@@ -57,7 +57,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
             chunk_size = (i_end - i_start) / n_threads
-            chunks_idxs = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size)
+            chunks_idxs = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size))
             future_ss = {tpe.submit(in_memory_ss, query, fps, threshold, COEFFS[coeff], chunk_idx[0], chunk_idx[1]): 
                             c_id for c_id, chunk_idx in enumerate(chunks_idxs)}
             for future in cf.as_completed(future_ss):
@@ -71,6 +71,3 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         np_res = np.concatenate(results)
     np_res[::-1].sort(order='coeff')
     return np_res
-
-
-chunks_ini = [x for x in range(10520, 174449, 1000)]
