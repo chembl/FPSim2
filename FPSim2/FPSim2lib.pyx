@@ -126,7 +126,7 @@ cpdef get_bounds_range(query, fps, threshold, coeff):
                 if max_sim >= threshold:
                     range_to_keep.append(fps[1][1][i])
             else:
-                if i == indexes_list_length:
+                if i == indexes_list_length - 1:
                     range_to_keep.append(fps[0].shape[0])
                 else:
                     range_to_keep.append(fps[1][1][i+1])
