@@ -8,7 +8,7 @@ import numpy as np
 import time
 
 
-def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_threads=mp.cpu_count()):
+def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, db_sorted=False, n_threads=mp.cpu_count()):
     with tables.open_file(fp_filename, mode='r') as fp_file:
         n_mols = fp_file.root.fps.shape[0]
         fp_tpye = fp_file.root.config[0]
@@ -22,14 +22,17 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
             print('Warning: Running a substructure search with {} fingerprints. '
                 'Consider using RDKPatternFingerprint'.format(fp_tpye))
 
-    fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
-    if not fp_range:
-        return []
+    if db_sorted:
+        fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
+        if not fp_range:
+            return []
+        else:
+            i_start = fp_range[0]
+            i_end = fp_range[1]
     else:
-        i_start = fp_range[0]
-        i_end = fp_range[1]
+        i_start = 0
+        i_end = fp.shape[0] - 1
 
-    # chunkify
     c_indexes = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size))
     results = []
     with cf.ProcessPoolExecutor(max_workers=n_threads) as ppe:
