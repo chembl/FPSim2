@@ -122,30 +122,30 @@ cpdef int py_popcount(query):
 
 cpdef filter_by_bound(query, fps, threshold, coeff):
     query_count = py_popcount(query)
-    counts_to_keep = []
-    # tanimoto
     cdef int i
+    cdef int j
     cdef float a
+    cdef bool start
+
+    range_to_keep = []
+    # tanimoto
     if coeff == 0:
-        for i in range(1, query.shape[1]*64 + 1):
-            a = min(query_count, i) / max(query_count, i)
-            if a >= threshold:
-                counts_to_keep.append(i)
-        fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
+        for i, j in enumerate(fps[1][0]):
+            a = min(query_count, j) / max(query_count, j)
+            if not start:
+                if a >= threshold:
+                    counts_to_keep.append(fps[1][1][i])
+            else:
+                if a >= threshold:
+                    counts_to_keep.append(fps[1][1][i+1])
+        fps = fps[0][range_to_keep[0]:range_to_keep[-1]]
     # substruct
     elif coeff == 2:
-        t0 = time.time()
         for i in range(1, query.shape[1]*64 + 1):
             a = min(query_count, i) / i
             if a >= threshold:
                 counts_to_keep.append(i)
-        t1 = time.time()
-        print("time for", t1-t0, fps.shape)
-        t0 = time.time()
         fps = fps[np.in1d(fps[:,-1], counts_to_keep)]
-        t1 = time.time()
-        print("time ff", t1-t0, fps.shape)
-
     return fps
 
 

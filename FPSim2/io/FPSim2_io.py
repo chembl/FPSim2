@@ -238,7 +238,10 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
 def load_fps(fp_filename):
     with tables.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
-    return fps
+    # sort by counts
+    fps = fps[fps[:,-1].argsort()]
+    idx = np.unique(mfps[:,-1], return_index=True)
+    return [fps, idx]
 
 
 def get_disk_memory_size(fp_filename):
