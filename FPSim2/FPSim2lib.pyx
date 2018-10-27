@@ -36,9 +36,9 @@ cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_oth
     return t_coeff
 
 
-@cython.boundscheck(True)
-@cython.wraparound(True)
-@cython.initializedcheck(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func, int i_start, int i_end):
 
     cdef int i
@@ -51,10 +51,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
     cdef vector[double] temp_scores
     cdef vector[uint64_t] temp_ids
 
-    print(i_start, i_end)
-
     with nogil:
-
         # precalc query popcount
         for j in range(query.shape[1]):
             query_count += __builtin_popcountll(query[0, j])
