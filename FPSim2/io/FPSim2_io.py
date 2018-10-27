@@ -181,7 +181,7 @@ def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
             continue
 
 
-def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',', mol_id_prop='mol_id', gen_ids=False):
+def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', compress=True, gen_ids=False):
     # if params dict is empty use defaults
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
@@ -201,13 +201,18 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
+    filters = None
+    if compress:
+        filters = tables.Filters(complib='zlib', complevel=5)
+
     # set the output file and fps table
     h5file_out = tables.open_file(out_fname, mode='w')
     fps_atom = tables.Atom.from_dtype(np.dtype('uint64'))
     fps_table = h5file_out.create_earray(h5file_out.root,
                                         'fps',
                                         fps_atom,
-                                        shape=((0, fp_length / 64 + 2)))
+                                        shape=((0, fp_length / 64 + 2)),
+                                        filters=filters)
 
     # set config table; used fp function, parameters and rdkit version
     param_table = h5file_out.create_vlarray(h5file_out.root, 
@@ -218,7 +223,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
     param_table.append(rdkit.__version__)
 
     fps = []
-    for mol_id, rdmol in supplier(in_fname, gen_ids, smi_delim=smi_delim, mol_id_prop=mol_id_prop):
+    for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
         efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
         popcnt = py_popcount(np.array([efp], dtype=np.uint64))
         efp.insert(0, mol_id)
