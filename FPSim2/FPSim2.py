@@ -44,23 +44,22 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
     if coeff == 'substructure':
         threshold = 1.0
-    t0 = time.time()
     fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
     if not fp_range:
         return []
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
-    t1 = time.time()
-    print("time filtering", t1-t0, i_end, i_start)
 
     if n_threads == 1:
-        np_res = in_memory_ss(query, fps[0], threshold, COEFFS[coeff], fp_range[0], fp_range[1])
+        np_res = in_memory_ss(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
-            future_ss = {tpe.submit(in_memory_ss, query, chunk, threshold, COEFFS[coeff], fp_range[0], fp_range[1]): 
-                            c_id for c_id, chunk in enumerate(np.array_split(fps, n_threads))}
+            chunk_size = (i_end - i_start) / n_threads
+            chunks_idxs = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size)
+            future_ss = {tpe.submit(in_memory_ss, query, fps, threshold, COEFFS[coeff], chunk_idx[0], chunk_idx[1]): 
+                            c_id for c_id, chunk_idx in enumerate(chunks_idxs)}
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]
                 try:
@@ -72,3 +71,6 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         np_res = np.concatenate(results)
     np_res[::-1].sort(order='coeff')
     return np_res
+
+
+chunks_ini = [x for x in range(10520, 174449, 1000)]
