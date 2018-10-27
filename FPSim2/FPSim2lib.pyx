@@ -51,6 +51,8 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
     cdef vector[double] temp_scores
     cdef vector[uint64_t] temp_ids
 
+    print(i_start, i_end)
+
     with nogil:
 
         # precalc query popcount
