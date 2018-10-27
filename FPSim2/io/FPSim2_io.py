@@ -3,6 +3,7 @@ from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
 from .thread_safe_tables import tables
+from FPSim2.FPSim2lib import py_popcount
 import numpy as np
 import textwrap
 import json
@@ -19,7 +20,6 @@ INCHI_RE = r'^((InChI=)?[^J][0-9a-z+\-\(\)\\\/,]+)$'
 
 COEFFS = {
     'tanimoto': 0,
-    'dice': 1,
     'substructure': 2
 }
 
@@ -181,7 +181,7 @@ def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
             continue
 
 
-def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',', mol_id_prop='mol_id', gen_ids=False):
+def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', compress=True, gen_ids=False):
     # if params dict is empty use defaults
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
@@ -201,13 +201,18 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
+    filters = None
+    if compress:
+        filters = tables.Filters(complib='zlib', complevel=5)
+
     # set the output file and fps table
     h5file_out = tables.open_file(out_fname, mode='w')
     fps_atom = tables.Atom.from_dtype(np.dtype('uint64'))
     fps_table = h5file_out.create_earray(h5file_out.root,
                                         'fps',
                                         fps_atom,
-                                        shape=((0, fp_length / 64 + 1)))
+                                        shape=((0, fp_length / 64 + 2)),
+                                        filters=filters)
 
     # set config table; used fp function, parameters and rdkit version
     param_table = h5file_out.create_vlarray(h5file_out.root, 
@@ -218,9 +223,11 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
     param_table.append(rdkit.__version__)
 
     fps = []
-    for mol_id, rdmol in supplier(in_fname, gen_ids, smi_delim=smi_delim, mol_id_prop=mol_id_prop):
+    for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
         efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
+        popcnt = py_popcount(np.array([efp], dtype=np.uint64))
         efp.insert(0, mol_id)
+        efp.append(popcnt)
         efp = np.asarray(efp, dtype=np.uint64)
         fps.append(efp)
         # insert in batches of 10k fps
@@ -232,13 +239,13 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, smi_delim=',
     h5file_out.close()
 
 
-def load_fps(fp_filename, chunk_size=1000000):
+def load_fps(fp_filename):
     with tables.open_file(fp_filename, mode='r') as fp_file:
-        fps = fp_file.root.fps
-        n_mols = fp_file.root.fps.shape[0]
-        chunks_ini =[x for x in range(0, n_mols, chunk_size)]
-        fps = [fps[cini:cini+chunk_size] for cini in chunks_ini]
-    return fps
+        fps = fp_file.root.fps[:]
+    # sort by counts
+    fps = fps[fps[:,-1].argsort()]
+    idx = np.unique(fps[:,-1], return_index=True)
+    return [fps, idx]
 
 
 def get_disk_memory_size(fp_filename):
