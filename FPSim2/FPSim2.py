@@ -31,7 +31,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
             i_end = fp_range[1]
     else:
         i_start = 0
-        i_end = fp.shape[0] - 1
+        i_end = n_mols - 1
 
     c_indexes = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size))
     results = []
