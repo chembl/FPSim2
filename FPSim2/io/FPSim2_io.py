@@ -240,7 +240,7 @@ def load_fps(fp_filename):
         fps = fp_file.root.fps[:]
     # sort by counts
     fps = fps[fps[:,-1].argsort()]
-    idx = np.unique(mfps[:,-1], return_index=True)
+    idx = np.unique(fps[:,-1], return_index=True)
     return [fps, idx]
 
 
