@@ -36,9 +36,9 @@ cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_oth
     return t_coeff
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
+@cython.boundscheck(True)
+@cython.wraparound(True)
+@cython.initializedcheck(True)
 cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func, int i_start, int i_end):
 
     cdef int i
@@ -104,6 +104,7 @@ cpdef int py_popcount(query):
     for j in range(query.shape[1]):
         query_count += __builtin_popcountll(query[0, j])
     return query_count
+
 
 @cython.boundscheck(False)
 @cython.initializedcheck(False)
