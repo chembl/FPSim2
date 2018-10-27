@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import concurrent.futures as cf
 from .FPSim2lib import similarity_search, in_memory_ss
-from .FPSim2lib import filter_by_bound
+from .FPSim2lib import get_bounds_range
 from .io import tables, load_query, COEFFS
 from operator import itemgetter
 import numpy as np
