@@ -20,7 +20,6 @@ INCHI_RE = r'^((InChI=)?[^J][0-9a-z+\-\(\)\\\/,]+)$'
 
 COEFFS = {
     'tanimoto': 0,
-    'dice': 1,
     'substructure': 2
 }
 

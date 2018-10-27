@@ -28,17 +28,6 @@ cdef inline double _substruct_coeff(int fp_subs, int int_count) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef inline double _dice_coeff(int int_count, int query_count, int other_count) nogil:
-    cdef double d_coeff
-    d_coeff = query_count + other_count
-    if d_coeff != 0.0:
-        d_coeff = int_count * 2 / d_coeff
-    return d_coeff
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
 cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_other) nogil:
     cdef double t_coeff = 0.0
     t_coeff = count_query + count_other - int_count
@@ -121,11 +110,12 @@ cpdef int py_popcount(query):
 
 
 cpdef filter_by_bound(query, fps, threshold, coeff):
-    query_count = py_popcount(query)
     cdef int i
     cdef int j
     cdef float a
     cdef int start = 0
+
+    query_count = py_popcount(query)
 
     range_to_keep = []
     # tanimoto
