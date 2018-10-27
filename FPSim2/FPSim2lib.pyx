@@ -106,7 +106,7 @@ cpdef int py_popcount(query):
     return query_count
 
 @cython.boundscheck(False)
-@cython.wraparound(False)
+@cython.wraparound(True)
 @cython.initializedcheck(False)
 cpdef get_bounds_range(query, fps, threshold, coeff):
     cdef int i
