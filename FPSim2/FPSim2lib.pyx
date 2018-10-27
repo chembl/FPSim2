@@ -138,6 +138,7 @@ cpdef filter_by_bound(query, fps, threshold, coeff):
                     range_to_keep.append(fps[1][1][i])
             else:
                 if a >= threshold:
+                  print(i, j)
                     range_to_keep.append(fps[1][1][i+1])
         fps = fps[0][range_to_keep[0]:range_to_keep[-1]]
     # substruct
