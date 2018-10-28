@@ -50,7 +50,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
     cdef int int_count = 0
     cdef int rel_co_count = 0
     cdef int query_count = 0
-    cdef double coeff
+    cdef double coeff = 0.0
     cdef int total_sims = 0
     cdef int simres_length = 256
 
