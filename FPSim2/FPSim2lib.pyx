@@ -56,9 +56,6 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
     cdef int total_sims = 0
     cdef int simres_length = 256
 
-    # cdef vector[double] temp_scores
-    # cdef vector[uint64_t] temp_ids
-
     # allocate number * sizeof(Result) bytes of memory
     cdef Result *results = <Result *> malloc(simres_length * sizeof(Result))
 
@@ -99,15 +96,11 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
                 # reallocating memory
                 results = <Result *> realloc(results, simres_length * sizeof(Result))
 
-
-                # temp_scores.push_back(coeff)
-                # temp_ids.push_back(fps[i][0])
-
             # reset values for next fp
             int_count = 0
             rel_co_count = 0
 
-    view = <Result[:total_sims]> results
+            view = <Result[:total_sims]> results
     return np.asarray(view)
 
     # # inside the GIL :(
