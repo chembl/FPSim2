@@ -97,7 +97,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             if total_sims == simres_length:
                 simres_length *= 2
                 # reallocating memory
-                *results = <Result *> realloc(results, simres_length * sizeof(Result))
+                results = <Result *> realloc(results, simres_length * sizeof(Result))
 
 
                 # temp_scores.push_back(coeff)
