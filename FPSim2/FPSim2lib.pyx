@@ -114,11 +114,7 @@ cpdef int py_popcount(query):
 @cython.boundscheck(False)
 @cython.initializedcheck(False)
 cpdef get_bounds_range(query, ranges, threshold, coeff):
-    cdef int i
-    cdef int j
     cdef float max_sim
-    cdef int start = 0
-    cdef indexes_list_length = 0
 
     query_count = py_popcount(query)
     range_to_keep = []
