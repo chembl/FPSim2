@@ -1,7 +1,6 @@
 import multiprocessing as mp
 import concurrent.futures as cf
-from .FPSim2lib import similarity_search, in_memory_ss
-from .FPSim2lib import get_bounds_range
+from .FPSim2lib import similarity_search, _similarity_search, get_bounds_range
 from .io import tables, load_query, COEFFS
 from operator import itemgetter
 import numpy as np
@@ -23,9 +22,9 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
                 'Consider using RDKPatternFingerprint'.format(fp_tpye))
 
     if db_sorted:
-        fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
+        fp_range = get_bounds_range(query, fps[1], threshold, COEFFS[coeff])
         if not fp_range:
-            return []
+            return np.asarray([])
         else:
             i_start = fp_range[0]
             i_end = fp_range[1]
@@ -56,15 +55,15 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
     if coeff == 'substructure':
         threshold = 1.0
-    fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
+    fp_range = get_bounds_range(query, fps[1], threshold, COEFFS[coeff])
     if not fp_range:
-        return []
+        return np.asarray([])
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
 
     if n_threads == 1:
-        np_res = in_memory_ss(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
+        np_res = _similarity_search(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
