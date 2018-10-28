@@ -113,37 +113,32 @@ cpdef int py_popcount(query):
 
 @cython.boundscheck(False)
 @cython.initializedcheck(False)
-cpdef get_bounds_range(query, fps, threshold, coeff):
+cpdef get_bounds_range(query, ranges, threshold, coeff):
     cdef int i
     cdef int j
-    cdef float a
+    cdef float max_sim
     cdef int start = 0
     cdef indexes_list_length = 0
 
     query_count = py_popcount(query)
     range_to_keep = []
 
-    indexes_list_length = len(fps[1][1]) - 1
-    for i, j in enumerate(fps[1][0]):
+    for count, c_range in ranges:
         # tanimoto
         if coeff == 0:
-            max_sim = min(query_count, j) / max(query_count, j)
+            max_sim = min(query_count, count) / max(query_count, count)
         # substructure
         elif coeff == 2:
-            max_sim = min(query_count, i) / i
+            max_sim = min(query_count, count) / count
         else:
             break
-        if start == 0:
-            start = 1
-            if max_sim >= threshold:
-                range_to_keep.append(fps[1][1][i])
-        else:
-            if max_sim >= threshold:
-                if i == indexes_list_length:
-                    range_to_keep.append(fps[0].shape[0])
-                else:
-                    range_to_keep.append(fps[1][1][i+1])
-    range_to_keep = [range_to_keep[0], range_to_keep[-1]]
+
+        if max_sim >= threshold:
+            range_to_keep.append(c_range)
+
+    if range_to_keep:
+        range_to_keep = (range_to_keep[0][0], range_to_keep[-1][1])
+
     return range_to_keep
 
 

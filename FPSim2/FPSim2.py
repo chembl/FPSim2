@@ -23,7 +23,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
                 'Consider using RDKPatternFingerprint'.format(fp_tpye))
 
     if db_sorted:
-        fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
+        fp_range = get_bounds_range(query, fps[1], threshold, COEFFS[coeff])
         if not fp_range:
             return []
         else:
@@ -56,7 +56,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
     if coeff == 'substructure':
         threshold = 1.0
-    fp_range = get_bounds_range(query, fps, threshold, COEFFS[coeff])
+    fp_range = get_bounds_range(query, fps[1], threshold, COEFFS[coeff])
     if not fp_range:
         return []
     else:
