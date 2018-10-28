@@ -44,6 +44,8 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
                 res = future.result()
                 if res.shape[0] != 0:
                     results.append(res)
+            except ValueError:
+                pass
             except Exception as e:
                 print('Chunk {} thread died: '.format(m), e)
     np_res = np.concatenate(results)

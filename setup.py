@@ -4,7 +4,7 @@ import numpy as np
 
 setup(
     name='FPSim2',
-    version='0.1',
+    version='0.12',
     author='Eloy Félix',
     author_email='eloyfelix@gmail.com',
     description='Simple package for fast molecular similarity searching',
