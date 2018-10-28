@@ -1,12 +1,10 @@
-# distutils: language = c++
+# distutils: language = c
 # cython: language_level=3
 import numpy as np
 cimport numpy as np
 cimport cython
 from libc.stdint cimport uint32_t, uint64_t
-from libcpp.list cimport list as cpplist
-from libcpp.vector cimport vector
-from libc.stdlib cimport malloc, realloc, free
+from libc.stdlib cimport malloc, realloc
 from .io import tables as tb
 import time
 
@@ -100,6 +98,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             int_count = 0
             rel_co_count = 0
 
+    # create a memory view
     view = <Result[:total_sims]> results
     return np.asarray(view)
 
