@@ -243,7 +243,8 @@ def load_fps(fp_filename):
     with tables.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
     # sort by counts
-    fps = fps[fps[:,-1].argsort()]
+    # ugly but the only way of doing inplace sort in not structured arrays
+    fps.view(','.join(['uint64']*fps.shape[1])).sort(order=['f{}'.format(fps.shape[1] - 1)], axis=0)
     idx = np.unique(fps[:,-1], return_index=True)
     return [fps, idx]
 
