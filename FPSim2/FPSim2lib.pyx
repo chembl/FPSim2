@@ -143,8 +143,3 @@ def similarity_search(query, fp_filename, chunk_indexes, threshold, coeff):
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
     res = _similarity_search(query, fps, threshold, coeff, 0, fps.shape[0])
     return res
-
-
-def in_memory_ss(query, fps, threshold, coeff, i_start, i_end):
-    res = _similarity_search(query, fps, threshold, coeff, i_start, i_end)
-    return res
