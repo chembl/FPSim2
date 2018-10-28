@@ -107,7 +107,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             int_count = 0
             rel_co_count = 0
 
-    view = <Foo[:total_sims]> results
+    view = <Result[:total_sims]> results
     return np.asarray(view)
 
     # # inside the GIL :(
