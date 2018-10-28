@@ -6,12 +6,18 @@ cimport cython
 from libc.stdint cimport uint32_t, uint64_t
 from libcpp.list cimport list as cpplist
 from libcpp.vector cimport vector
+from libc.stdlib cimport malloc, realloc, free
 from .io import tables as tb
 import time
 
 # include CPU popcnt functions built in GCC for all posix systems
 # using -march=native GCC flag will use best CPU instruction available
 cdef extern int __builtin_popcountll(unsigned long long) nogil
+
+
+cdef packed struct Result:
+    uint64_t mol_id
+    float coeff
 
 
 @cython.boundscheck(False)
@@ -47,9 +53,14 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
     cdef int rel_co_count = 0
     cdef int query_count = 0
     cdef double coeff
+    cdef int total_sims = 0
+    cdef int simres_length = 256
 
-    cdef vector[double] temp_scores
-    cdef vector[uint64_t] temp_ids
+    # cdef vector[double] temp_scores
+    # cdef vector[uint64_t] temp_ids
+
+    # allocate number * sizeof(Result) bytes of memory
+    cdef Result *results = <Result *> malloc(simres_length * sizeof(Result))
 
     with nogil:
         # precalc query popcount
@@ -79,22 +90,34 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
                 coeff = _substruct_coeff(rel_co_count, int_count)
 
             if coeff >= threshold:
-                temp_scores.push_back(coeff)
-                temp_ids.push_back(fps[i][0])
+                results[total_sims].mol_id = fps[i][0]
+                results[total_sims].coeff = coeff
+                total_sims += 1
+
+            if total_sims == simres_length):
+                simres_length *= 2
+                # reallocating memory
+                *results = <Result *> realloc(results, simres_length * sizeof(Result))
+
+
+                # temp_scores.push_back(coeff)
+                # temp_ids.push_back(fps[i][0])
 
             # reset values for next fp
             int_count = 0
             rel_co_count = 0
 
-    # inside the GIL :(
-    cdef np.ndarray results = np.ndarray((temp_scores.size(),), dtype=[('mol_id','i8'), ('coeff','f4')])
-    for i in range(temp_scores.size()):
-        results[i][0] = temp_ids.back()
-        results[i][1] = temp_scores.back()
-        temp_scores.pop_back()
-        temp_ids.pop_back()
+    view = <Foo[:total_sims]> results
+    return np.asarray(view)
 
-    return results
+    # # inside the GIL :(
+    # cdef np.ndarray results = np.ndarray((temp_scores.size(),), dtype=[('mol_id','i8'), ('coeff','f4')])
+    # for i in range(temp_scores.size()):
+    #     results[i][0] = temp_ids.back()
+    #     results[i][1] = temp_scores.back()
+    #     temp_scores.pop_back()
+    #     temp_ids.pop_back()
+    # return results
 
 
 cpdef int py_popcount(query):
