@@ -102,15 +102,6 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
     view = <Result[:total_sims]> results
     return np.asarray(view)
 
-    # # inside the GIL :(
-    # cdef np.ndarray results = np.ndarray((temp_scores.size(),), dtype=[('mol_id','i8'), ('coeff','f4')])
-    # for i in range(temp_scores.size()):
-    #     results[i][0] = temp_ids.back()
-    #     results[i][1] = temp_scores.back()
-    #     temp_scores.pop_back()
-    #     temp_ids.pop_back()
-    # return results
-
 
 cpdef int py_popcount(query):
     cdef int query_count = 0

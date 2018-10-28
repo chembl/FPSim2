@@ -88,5 +88,4 @@ If you want to know if your dataset will fit in memory without loading a single 
 ### Available coefficients
 
 - tanimoto (aka [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index))
-- [dice](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient)
 - substructure ([Tversky](https://en.wikipedia.org/wiki/Tversky_index) with α=1, β=0). Use it with RDKPatternFingerprint.
