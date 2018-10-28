@@ -75,6 +75,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
                 m = future_ss[future]
                 try:
                     res = future.result()
+                    print(res.shape)
                     if res.shape[0] != 0:
                         results.append(res)
                 except Exception as e:
