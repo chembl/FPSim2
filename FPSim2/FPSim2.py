@@ -1,6 +1,6 @@
 import multiprocessing as mp
 import concurrent.futures as cf
-from .FPSim2lib import similarity_search, in_memory_ss
+from .FPSim2lib import similarity_search, _similarity_search
 from .FPSim2lib import get_bounds_range
 from .io import tables, load_query, COEFFS
 from operator import itemgetter
@@ -64,7 +64,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         i_end = fp_range[1]
 
     if n_threads == 1:
-        np_res = in_memory_ss(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
+        np_res = _similarity_search(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
