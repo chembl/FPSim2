@@ -245,7 +245,13 @@ def load_fps(fp_filename):
     # sort by counts
     fps = fps[fps[:,-1].argsort()]
     idx = np.unique(fps[:,-1], return_index=True)
-    return [fps, idx]
+    count_ranges = []
+    for i, k in enumerate(zip(*idx)):
+        if k[0] == idx[0][-1]:
+            count_ranges.append((k[0], (k[1], fps.shape[0])))
+        else:
+            count_ranges.append((k[0], (k[1], idx[1][int(i+1)])))
+    return [fps, count_ranges]
 
 
 def get_disk_memory_size(fp_filename):
