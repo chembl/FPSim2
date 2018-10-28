@@ -80,7 +80,6 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
                 except ValueError:
                     pass
                 except Exception as e:
-                    print(type(e))
                     print('Chunk {} thread died: '.format(m), e)
         np_res = np.concatenate(results)
     np_res[::-1].sort(order='coeff')
