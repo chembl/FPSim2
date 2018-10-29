@@ -44,7 +44,7 @@ FP_FUNC_DEFAULTS = {
         'bitFlags': 15761407
     },
     'Morgan': {
-        'radius': 3, 
+        'radius': 2, 
         'nBits': 2048, 
         'invariants': [], 
         'fromAtoms': [], 
