@@ -1,6 +1,7 @@
 # FPSim2: Simple package for fast molecular similarity searches
 
 This is not even a alpha version. Everything is changing and anything that can crash... will eventually do it.
+
 FPSim2 is designed to run fast compound similarity searches and to be easily integrated with any Python web framework in order to expose similarity services.
 
 ## Installation 
@@ -88,4 +89,4 @@ If you want to know if your dataset will fit in memory without loading a single 
 ### Available coefficients
 
 - tanimoto (aka [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index))
-- substructure ([Tversky](https://en.wikipedia.org/wiki/Tversky_index) with α=1, β=0). Use it with RDKPatternFingerprint.
+- substructure ([Tversky](https://en.wikipedia.org/wiki/Tversky_index) with α=1, β=0). Use it altogether with RDKPatternFingerprint.
