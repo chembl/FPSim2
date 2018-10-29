@@ -5,8 +5,8 @@ cimport numpy as np
 cimport cython
 from libc.stdint cimport uint32_t, uint64_t
 from libc.stdlib cimport malloc, realloc
-from .io import tables as tb
-import time
+import tables as tb
+
 
 # include CPU popcnt functions built in GCC for all posix systems
 # using -march=native GCC flag will use best CPU instruction available

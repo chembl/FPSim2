@@ -2,7 +2,7 @@ import rdkit
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
-from .thread_safe_tables import tables
+import tables as tb
 from FPSim2.FPSim2lib import py_popcount
 import numpy as np
 import textwrap
@@ -110,7 +110,7 @@ def load_query(query, fp_filename):
         rdmol = Chem.MolFromInchi(query)
     else:
         rdmol = Chem.MolFromMolBlock(query)
-    with tables.open_file(fp_filename, mode='r') as fp_file:
+    with tb.open_file(fp_filename, mode='r') as fp_file:
         # retrieve config from fps file
         config = fp_file.root.config
         fp_func = config[0]
@@ -203,11 +203,11 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
     filters = None
     if compress:
-        filters = tables.Filters(complib='zlib', complevel=5)
+        filters = tb.Filters(complib='zlib', complevel=5)
 
     # set the output file and fps table
-    h5file_out = tables.open_file(out_fname, mode='w')
-    fps_atom = tables.Atom.from_dtype(np.dtype('uint64'))
+    h5file_out = tb.open_file(out_fname, mode='w')
+    fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
     fps_table = h5file_out.create_earray(h5file_out.root,
                                         'fps',
                                         fps_atom,
@@ -217,7 +217,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     # set config table; used fp function, parameters and rdkit version
     param_table = h5file_out.create_vlarray(h5file_out.root, 
                                             'config', 
-                                            atom=tables.ObjectAtom())
+                                            atom=tb.ObjectAtom())
     param_table.append(fp_func)
     param_table.append(fp_func_params)
     param_table.append(rdkit.__version__)
@@ -240,7 +240,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
 
 def load_fps(fp_filename):
-    with tables.open_file(fp_filename, mode='r') as fp_file:
+    with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
     # sort by counts
     # ugly but the only way of doing inplace sort in not structured arrays
@@ -256,7 +256,7 @@ def load_fps(fp_filename):
 
 
 def get_disk_memory_size(fp_filename):
-    with tables.open_file(fp_filename, mode='r') as fp_file:
+    with tb.open_file(fp_filename, mode='r') as fp_file:
         disk = fp_file.root.fps.size_on_disk
         memory = fp_file.root.fps.size_in_memory
     return disk, memory

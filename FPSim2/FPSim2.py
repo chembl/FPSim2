@@ -1,10 +1,9 @@
 import multiprocessing as mp
 import concurrent.futures as cf
 from .FPSim2lib import similarity_search, _similarity_search, get_bounds_range
-from .io import tables, load_query, COEFFS
-from operator import itemgetter
+from .io import load_query, COEFFS
+import tables as tb
 import numpy as np
-import time
 
 
 def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, db_sorted=False, n_threads=mp.cpu_count()):
