@@ -4,7 +4,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from libc.stdint cimport uint32_t, uint64_t
-from libc.stdlib cimport malloc, realloc
+from libc.stdlib cimport malloc, realloc, free
 from .io import tables as tb
 import time
 
@@ -98,11 +98,20 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             int_count = 0
             rel_co_count = 0
 
-    # create a memory view
-    view = <Result[:total_sims]> results
-    return np.asarray(view)
+    # outside the GIL
+    cdef np.ndarray np_results = np.ndarray((total_sims,), dtype=[('mol_id','i8'), ('coeff','f4')])
+    for i in range(total_sims):
+        np_results[i][0] = results[i].mol_id
+        np_results[i][1] = results[i].coeff
+
+    # free manually allocated memory and return the results
+    free(results)
+    return np_results
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 cpdef int py_popcount(query):
     cdef int query_count = 0
     cdef int j
