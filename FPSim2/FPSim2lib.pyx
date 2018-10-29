@@ -134,7 +134,7 @@ cpdef get_bounds_range(query, ranges, threshold, coeff):
             max_sim = min(query_count, count) / max(query_count, count)
         # substructure
         elif coeff == 2:
-            max_sim = min(query_count, count) / count
+            max_sim = min(query_count, count) / query_count
         else:
             break
 
