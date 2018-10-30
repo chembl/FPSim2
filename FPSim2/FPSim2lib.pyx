@@ -121,6 +121,7 @@ cpdef int py_popcount(query):
 
 
 @cython.boundscheck(False)
+@cython.wraparound(False)
 @cython.initializedcheck(False)
 cpdef get_bounds_range(query, ranges, threshold, coeff):
     cdef float max_sim
@@ -142,7 +143,7 @@ cpdef get_bounds_range(query, ranges, threshold, coeff):
             range_to_keep.append(c_range)
 
     if range_to_keep:
-        range_to_keep = (range_to_keep[0][0], range_to_keep[-1][1])
+        range_to_keep = (range_to_keep[0][0], range_to_keep[len(range_to_keep)-1][1])
 
     return range_to_keep
 

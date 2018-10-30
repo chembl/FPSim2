@@ -186,10 +186,6 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
 
-    # RDKit Morgan FP has no default value for radius
-    if fp_func == 'Morgan' and 'radius' not in fp_func_params.keys():
-        fp_func_params.update({'radius': 3})
-
     # select SMI/SDF supplier depending the file extension
     input_type = in_fname.split('.')[-1]
     if input_type == 'smi':
@@ -253,10 +249,3 @@ def load_fps(fp_filename):
         else:
             count_ranges.append((k[0], (k[1], idx[1][int(i+1)])))
     return [fps, count_ranges]
-
-
-def get_disk_memory_size(fp_filename):
-    with tb.open_file(fp_filename, mode='r') as fp_file:
-        disk = fp_file.root.fps.size_on_disk
-        memory = fp_file.root.fps.size_in_memory
-    return disk, memory

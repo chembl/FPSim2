@@ -7,7 +7,7 @@ import numpy as np
 
 
 def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, db_sorted=False, n_threads=mp.cpu_count()):
-    with tables.open_file(fp_filename, mode='r') as fp_file:
+    with tb.open_file(fp_filename, mode='r') as fp_file:
         n_mols = fp_file.root.fps.shape[0]
         fp_tpye = fp_file.root.config[0]
 
@@ -46,8 +46,11 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
                 pass
             except Exception as e:
                 print('Chunk {} thread died: '.format(m), e)
-    np_res = np.concatenate(results)
-    np_res[::-1].sort(order='coeff')
+    if results:
+        np_res = np.concatenate(results)
+        np_res[::-1].sort(order='coeff')
+    else:
+        np_res = np.asarray(results)
     return np_res
 
 
@@ -63,6 +66,8 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
 
     if n_threads == 1:
         np_res = _similarity_search(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
+        np_res[::-1].sort(order='coeff')
+        return np_res
     else:
         results = []
         with cf.ThreadPoolExecutor(max_workers=n_threads) as tpe:
@@ -81,6 +86,9 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
                     pass
                 except Exception as e:
                     print('Chunk {} thread died: '.format(m), e)
-        np_res = np.concatenate(results)
-    np_res[::-1].sort(order='coeff')
+        if results:
+            np_res = np.concatenate(results)
+            np_res[::-1].sort(order='coeff')
+        else:
+            np_res = np.asarray(results)
     return np_res

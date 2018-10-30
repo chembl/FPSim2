@@ -78,14 +78,6 @@ If your data fits in RAM, you can preload all the fps in memory and run much fas
     for r in results:
         print(r)
 
-If you want to know if your dataset will fit in memory without loading a single byte:
-
-    from FPSim2.io import get_disk_memory_size
-
-    fp_filename = 'chembl.h5'
-    disk, memory = get_disk_memory_size(fp_filename)
-    print('Your FPs will need {} MB of available memory'.format(memory / 1024 / 1024))
-
 ### Available coefficients
 
 - tanimoto (aka [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index))
