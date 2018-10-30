@@ -10,6 +10,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
     with tb.open_file(fp_filename, mode='r') as fp_file:
         n_mols = fp_file.root.fps.shape[0]
         fp_tpye = fp_file.root.config[0]
+        count_ranges = fp_file.root.config[3]
 
     query = load_query(query, fp_filename)
 
@@ -21,7 +22,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
                 'Consider using RDKPatternFingerprint'.format(fp_tpye))
 
     if db_sorted:
-        fp_range = get_bounds_range(query, fps[1], threshold, COEFFS[coeff])
+        fp_range = get_bounds_range(query, count_ranges, threshold, COEFFS[coeff])
         if not fp_range:
             return np.asarray([])
         else:
