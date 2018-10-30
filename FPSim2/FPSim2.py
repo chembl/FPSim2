@@ -10,7 +10,8 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
     with tb.open_file(fp_filename, mode='r') as fp_file:
         n_mols = fp_file.root.fps.shape[0]
         fp_tpye = fp_file.root.config[0]
-        count_ranges = fp_file.root.config[3]
+        if db_sorted:
+            count_ranges = fp_file.root.config[3]
 
     query = load_query(query, fp_filename)
 
