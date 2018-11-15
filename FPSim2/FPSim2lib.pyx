@@ -98,7 +98,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             int_count = 0
             rel_co_count = 0
 
-    # outside the GIL
+    # this is happening inside the GIL
     cdef np.ndarray np_results = np.ndarray((total_sims,), dtype=[('mol_id','i8'), ('coeff','f4')])
     for i in range(total_sims):
         np_results[i][0] = results[i].mol_id

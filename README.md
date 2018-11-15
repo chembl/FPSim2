@@ -1,25 +1,19 @@
 # FPSim2: Simple package for fast molecular similarity searches
 
-This is not even a alpha version. Everything is changing and anything that can crash... will eventually do it.
-
 FPSim2 is designed to run fast compound similarity searches and to be easily integrated with any Python web framework in order to expose similarity services.
 
 ## Installation 
 
-    python setup.py install
+Use a conda environment to install it:
 
-Planning to include it in a conda repo.
+    conda install -c efelix fpsim2 
 
 ### Requirements
 
-FPSim2 is heavily coupled to RDKit. As the easiest way to install it is using conda environments, the use of conda is highly recommended.
+FPSim2 is heavily coupled to RDKit. Install it via rdkit or conda-forge channels
 
-* RDKit (install it via conda using rdkit or conda-forge channels)
-    - conda install -c conda-forge rdkit
-    - conda install -c rdkit rdkit
-* PyTables
-* Cython
-
+- conda install -c conda-forge rdkit
+- conda install -c rdkit rdkit
 
 ## Usage
 
@@ -53,18 +47,7 @@ Due to it's simplicity FPSim2 can only use integer ids for FPs, however it can g
 
 In case RDKit is not able to load a molecule, the id assigned to the molecule will be also skipped so the nth molecule in the input file will have id=n.
 
-
-### Run a search
-
-    from FPSim2 import run_search
-
-    results = run_search('CC(=O)Oc1ccccc1C(=O)O', 'chembl.h5', threshold=0.7, coeff='tanimoto')
-    for r in results:
-        print(r)
-
 ### Run a in memory search
-
-If your data fits in RAM, you can preload all the fps in memory and run much faster queries.
 
     from FPSim2 import run_in_memory_search
     from FPSim2.io import load_query, load_fps

@@ -24,7 +24,7 @@ setup(
     ext_modules=[
         Extension('FPSim2.FPSim2lib',
                     sources=['FPSim2/FPSim2lib.pyx'],
-                    extra_compile_args=['-march=native', '-funroll-loops'],
+                    extra_compile_args=['-march=native'],
                     language='c',
                     include_dirs=[np.get_include()]),
     ],
