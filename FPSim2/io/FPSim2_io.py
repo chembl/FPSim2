@@ -255,7 +255,7 @@ def sort_fps_file(fp_filename):
 
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fp_func_params = fp_file.root.config[1]
-        fp_size = get_fp_length(fp_file.root.config[0], fp_func_params)
+        fp_length = get_fp_length(fp_file.root.config[0], fp_func_params)
         fps = fp_file.root.fps
 
         # set the output file and fps table
@@ -275,6 +275,6 @@ def sort_fps_file(fp_filename):
             param_table.append(fp_func_params)
             param_table.append(fp_file.root.config[2])
 
-            for i in range(1, fp_size + 1):
+            for i in range(1, fp_length + 1):
                 tmp_stuff = fps[np.where(fps[:, -1] == i)[0], :]
                 fps_table.append(np.asarray(fps))
