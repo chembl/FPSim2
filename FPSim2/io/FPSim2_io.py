@@ -258,6 +258,8 @@ def sort_fps_file(fp_filename):
         fp_length = get_fp_length(fp_file.root.config[0], fp_func_params)
         fps = fp_file.root.fps
 
+        filters = tb.Filters(complib='zlib', complevel=5)
+
         # set the output file and fps table
         with tb.open_file(fp_filename.split('.')[0]+'_'+'sorted'+'.h5', mode='w') as h5file_out:
             fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
