@@ -258,23 +258,23 @@ def sort_fps_file(fp_filename):
         fp_size = get_fp_length(fp_file.root.config[0], fp_func_params)
         fps = fp_file.root.fps
 
-            # set the output file and fps table
-            with tb.open_file(fp_filename.split('.')[0]+'_'+'sorted'+'.h5', mode='w') as h5file_out
-                fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
-                fps_table = h5file_out.create_earray(h5file_out.root,
-                                                    'fps',
-                                                    fps_atom,
-                                                    shape=((0, fp_length / 64 + 2)),
-                                                    filters=filters)
+        # set the output file and fps table
+        with tb.open_file(fp_filename.split('.')[0]+'_'+'sorted'+'.h5', mode='w') as h5file_out
+            fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
+            fps_table = h5file_out.create_earray(h5file_out.root,
+                                                'fps',
+                                                fps_atom,
+                                                shape=((0, fp_length / 64 + 2)),
+                                                filters=filters)
 
-                # set config table; used fp function, parameters and rdkit version
-                param_table = h5file_out.create_vlarray(h5file_out.root, 
-                                                        'config', 
-                                                        atom=tb.ObjectAtom())
-                param_table.append(fp_file.root.config[0])
-                param_table.append(fp_func_params)
-                param_table.append(fp_file.root.config[2])
+            # set config table; used fp function, parameters and rdkit version
+            param_table = h5file_out.create_vlarray(h5file_out.root, 
+                                                    'config', 
+                                                    atom=tb.ObjectAtom())
+            param_table.append(fp_file.root.config[0])
+            param_table.append(fp_func_params)
+            param_table.append(fp_file.root.config[2])
 
-                for i in range(1, fp_size + 1):
-                    tmp_stuff = fps[np.where(fps[:, -1] == i)[0], :]
-                    fps_table.append(np.asarray(fps))
+            for i in range(1, fp_size + 1):
+                tmp_stuff = fps[np.where(fps[:, -1] == i)[0], :]
+                fps_table.append(np.asarray(fps))
