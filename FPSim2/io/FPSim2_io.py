@@ -259,7 +259,7 @@ def sort_fps_file(fp_filename):
         fps = fp_file.root.fps
 
         # set the output file and fps table
-        with tb.open_file(fp_filename.split('.')[0]+'_'+'sorted'+'.h5', mode='w') as h5file_out
+        with tb.open_file(fp_filename.split('.')[0]+'_'+'sorted'+'.h5', mode='w') as h5file_out:
             fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
             fps_table = h5file_out.create_earray(h5file_out.root,
                                                 'fps',
