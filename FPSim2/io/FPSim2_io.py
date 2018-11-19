@@ -292,7 +292,7 @@ def create_fp_table_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id
     fps = []
     for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
         efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-        popcnt = py_popcount(np.array([efp], dtype=np.uint64))
+        popcnt = py_popcount(np.array(efp, dtype=np.uint64))
         efp.insert(0, mol_id)
         efp.append(popcnt)
         fps.append(tuple(efp))
