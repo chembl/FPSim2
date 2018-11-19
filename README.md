@@ -12,7 +12,6 @@ Use a conda environment to install it:
 
 FPSim2 is heavily coupled to RDKit. Install it via rdkit or conda-forge channels
 
-- conda install -c conda-forge rdkit
 - conda install -c rdkit rdkit
 
 ## Usage

@@ -185,61 +185,7 @@ def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
             continue
 
 
-def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', compress=True, gen_ids=False):
-    # if params dict is empty use defaults
-    if not fp_func_params:
-        fp_func_params = FP_FUNC_DEFAULTS[fp_func]
-
-    # select SMI/SDF supplier depending the file extension
-    input_type = in_fname.split('.')[-1]
-    if input_type == 'smi':
-        supplier = smi_mol_supplier
-    elif input_type == 'sdf':
-        supplier = sdf_mol_supplier
-    else:
-        raise Exception('No valid input file provided.')
-
-    fp_length = get_fp_length(fp_func, fp_func_params)
-
-    filters = None
-    if compress:
-        filters = tb.Filters(complib='zlib', complevel=5)
-
-    # set the output file and fps table
-    h5file_out = tb.open_file(out_fname, mode='w')
-    fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
-    fps_table = h5file_out.create_earray(h5file_out.root,
-                                        'fps',
-                                        fps_atom,
-                                        shape=((0, fp_length / 64 + 2)),
-                                        filters=filters)
-
-    # set config table; used fp function, parameters and rdkit version
-    param_table = h5file_out.create_vlarray(h5file_out.root, 
-                                            'config', 
-                                            atom=tb.ObjectAtom())
-    param_table.append(fp_func)
-    param_table.append(fp_func_params)
-    param_table.append(rdkit.__version__)
-
-    fps = []
-    for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
-        efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-        popcnt = py_popcount(np.array([efp], dtype=np.uint64))
-        efp.insert(0, mol_id)
-        efp.append(popcnt)
-        efp = np.asarray(efp, dtype=np.uint64)
-        fps.append(efp)
-        # insert in batches of 10k fps
-        if len(fps) == BATCH_WRITE_SIZE:
-            fps_table.append(np.asarray(fps))
-            fps = []
-    # append last batch < 10k
-    fps_table.append(np.asarray(fps))
-    h5file_out.close()
-
-
-def create_fp_table_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', compress=True, gen_ids=False):
+def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False):
     # if params dict is empty use defaults
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
@@ -256,8 +202,6 @@ def create_fp_table_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id
     fp_length = get_fp_length(fp_func, fp_func_params)
 
     filters = filters = tb.Filters(complib='zlib', complevel=5)
-    if not compress:
-        filters = None
 
     # set the output file and fps table
     h5file_out = tb.open_file(out_fname + '_tmp', mode='w')
@@ -296,14 +240,13 @@ def create_fp_table_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id
         efp.insert(0, mol_id)
         efp.append(popcnt)
         fps.append(tuple(efp))
-        # insert in batches of 10k fps
         if len(fps) == BATCH_WRITE_SIZE:
             fps_table.append(fps)
             fps = []
     # append last batch < 10k
     fps_table.append(fps)
 
-    # create index so can be sorted
+    # create index so table can be sorted
     fps_table.cols.popcnt.create_index(kind='full')
     h5file_out.close()
 
@@ -338,6 +281,7 @@ def create_fp_table_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id
         cnt_idxs = (first_id, j + 1)
         count_ranges.append((i, cnt_idxs))
 
+    # add count ranges to vlarray
     dst_config.append(count_ranges)
 
     h5file_out.close()
@@ -354,7 +298,6 @@ def load_fps(fp_filename):
     popcnt = fps[['popcnt']].view('<u4')
     fps = fps[fnames]
     num_fields = len(fps[0])
-    # fps = fps.astype(','.join(['<u8'] * num_fields))
     fps = fps.view('<u8')
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
     fps_t = namedtuple('fps', 'fps popcnt count_ranges')
