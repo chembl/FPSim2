@@ -295,6 +295,7 @@ def load_fps(fp_filename):
         count_ranges = fp_file.root.config[3]
     fnames = [x for x in fps.dtype.names[0:-1]]
     # numpy 1.16 returns a view, not a copy
+    np.warnings.filterwarnings('ignore')
     popcnt = fps[['popcnt']].view('<u4')
     fps = fps[fnames]
     num_fields = len(fps[0])
