@@ -201,7 +201,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
-    filters = filters = tb.Filters(complib='zlib', complevel=5)
+    filters = filters = tb.Filters(complib='blosc', complevel=5)
 
     # set the output file and fps table
     h5file_out = tb.open_file(out_fname + '_tmp', mode='w')
