@@ -13,7 +13,7 @@ import tables as tb
 cdef extern int __builtin_popcountll(unsigned long long) nogil
 
 
-cdef packed struct Result:
+cdef struct Result:
     uint64_t mol_id
     float coeff
 
