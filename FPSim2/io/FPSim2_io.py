@@ -372,7 +372,7 @@ def load_fps(fp_filename):
         count_ranges = fp_file.root.config[3]
     fnames = [x for x in fps.dtype.names[0:-1]]
     # numpy 1.14 and >= 1.16 return a view, not a copy
-    popcnt = structured_to_unstructured(fps[['popcnt']])
-    fps2 = structured_to_unstructured(fps[fnames])
+    popcnt = repack_fields(fps[['popcnt']])
+    fps2 = repack_fields(fps[fnames])
     fps_t = namedtuple('fps', 'fps popcnt count_ranges')
     return fps_t(fps=fps2, popcnt=popcnt, count_ranges=count_ranges)
