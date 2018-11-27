@@ -363,7 +363,7 @@ def repack_fields(a, align=False, recurse=False):
         fieldinfo.append((name, fmt))
 
     dt = np.dtype(fieldinfo, align=align)
-return np.dtype((a.type, dt))
+    return np.dtype((a.type, dt))
 
 
 def load_fps(fp_filename):
