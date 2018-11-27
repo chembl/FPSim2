@@ -216,7 +216,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     for i in range(1, int(fp_length / 64) + 1):
         pos += 1
         columns['f'+str(i)] = tb.UInt64Col(pos=pos)
-    columns['popcnt'] = tb.UInt32Col(pos=pos+1)
+    columns['popcnt'] = tb.Int64Col(pos=pos+1)
     Particle.columns = columns
 
     fps_table = h5file_out.create_table(h5file_out.root, 
