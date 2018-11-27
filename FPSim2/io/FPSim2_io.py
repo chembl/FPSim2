@@ -366,7 +366,7 @@ def repack_fields(a, align=False, recurse=False):
     return np.dtype((a.type, dt))
 
 
-def load_fps(fp_filename, copy=False):
+def load_fps(fp_filename):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
         count_ranges = fp_file.root.config[3]
