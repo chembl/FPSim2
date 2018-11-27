@@ -341,6 +341,31 @@ def _get_fields_and_offsets(dt, offset=0):
     return fields
 
 
+def repack_fields(a, align=False, recurse=False):
+    if not isinstance(a, np.dtype):
+        dt = repack_fields(a.dtype, align=align, recurse=recurse)
+        return a.astype(dt, copy=False)
+
+    if a.names is None:
+        return a
+
+    fieldinfo = []
+    for name in a.names:
+        tup = a.fields[name]
+        if recurse:
+            fmt = repack_fields(tup[0], align=align, recurse=True)
+        else:
+            fmt = tup[0]
+
+        if len(tup) == 3:
+            name = (tup[2], name)
+
+        fieldinfo.append((name, fmt))
+
+    dt = np.dtype(fieldinfo, align=align)
+return np.dtype((a.type, dt))
+
+
 def load_fps(fp_filename):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
