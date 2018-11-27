@@ -366,13 +366,13 @@ def repack_fields(a, align=False, recurse=False):
     return np.dtype((a.type, dt))
 
 
-def load_fps(fp_filename):
+def load_fps(fp_filename, copy=False):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
         count_ranges = fp_file.root.config[3]
     fnames = [x for x in fps.dtype.names[0:-1]]
     # numpy 1.14 and >= 1.16 return a view, not a copy
-    popcnt = structured_to_unstructured(fps[['popcnt']])
-    fps2 = structured_to_unstructured(fps[fnames])
+    popcnt = structured_to_unstructured(fps[['popcnt']], copy=False)
+    fps2 = structured_to_unstructured(fps[fnames], copy=False)
     fps_t = namedtuple('fps', 'fps popcnt count_ranges')
     return fps_t(fps=fps2, popcnt=popcnt, count_ranges=count_ranges)
