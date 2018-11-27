@@ -316,7 +316,7 @@ def structured_to_unstructured(arr, dtype=None, copy=False, casting='unsafe'):
     # next cast to a packed format with all fields converted to new dtype
     packed_fields = np.dtype({'names': names,
                               'formats': [(out_dtype, c) for c in counts]})
-    arr = arr.astype(packed_fields, copy=copy, casting=casting, copy=False)
+    arr = arr.astype(packed_fields, copy=copy, casting=casting)
 
     # finally is it safe to view the packed fields as the unstructured type
     return arr.view((out_dtype, sum(counts)))
