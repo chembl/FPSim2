@@ -65,6 +65,8 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
+    
+    print(i_start, i_end)
 
     if n_threads == 1:
         np_res = _similarity_search(query, fps.fps, fps.popcnt, threshold, COEFFS[coeff], i_start, i_end)
