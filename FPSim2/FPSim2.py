@@ -6,12 +6,11 @@ import tables as tb
 import numpy as np
 
 
-def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, db_sorted=False, n_threads=mp.cpu_count()):
+def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_threads=mp.cpu_count()):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         n_mols = fp_file.root.fps.shape[0]
         fp_tpye = fp_file.root.config[0]
-        if db_sorted:
-            count_ranges = fp_file.root.config[3]
+        count_ranges = fp_file.root.config[3]
 
     query = load_query(query, fp_filename)
 
@@ -22,16 +21,12 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
             print('Warning: Running a substructure search with {} fingerprints. '
                 'Consider using RDKPatternFingerprint'.format(fp_tpye))
 
-    if db_sorted:
-        fp_range = get_bounds_range(query, count_ranges, threshold, COEFFS[coeff])
-        if not fp_range:
-            return np.asarray([])
-        else:
-            i_start = fp_range[0]
-            i_end = fp_range[1]
+    fp_range = get_bounds_range(query, count_ranges, threshold, COEFFS[coeff])
+    if not fp_range:
+        return np.asarray([])
     else:
-        i_start = 0
-        i_end = n_mols - 1
+        i_start = fp_range[0]
+        i_end = fp_range[1]
 
     c_indexes = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size))
     results = []
