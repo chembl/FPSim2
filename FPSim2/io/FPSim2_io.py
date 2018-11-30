@@ -289,58 +289,6 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     os.remove(out_fname + '_tmp')
 
 
-# NEW IN NUMPY 1.6
-def structured_to_unstructured(arr, dtype=None, copy=False, casting='unsafe'):
-    if arr.dtype.names is None:
-        raise ValueError('arr must be a structured array')
-
-    fields = _get_fields_and_offsets(arr.dtype)
-    names, dts, counts, offsets = zip(*fields)
-    n_fields = len(names)
-
-    if dtype is None:
-        out_dtype = np.result_type(*[dt.base for dt in dts])
-    else:
-        out_dtype = dtype
-
-    # Use a series of views and casts to convert to an unstructured array:
-
-    # first view using flattened fields (doesn't work for object arrays)
-    # Note: dts may include a shape for subarrays
-    flattened_fields = np.dtype({'names': names,
-                                 'formats': dts,
-                                 'offsets': offsets,
-                                 'itemsize': arr.dtype.itemsize})
-    arr = arr.view(flattened_fields)
-
-    # next cast to a packed format with all fields converted to new dtype
-    packed_fields = np.dtype({'names': names,
-                              'formats': [(out_dtype, c) for c in counts]})
-    arr = arr.astype(packed_fields, copy=copy, casting=casting)
-
-    # finally is it safe to view the packed fields as the unstructured type
-    return arr.view((out_dtype, sum(counts)))
-
-
-def _get_fields_and_offsets(dt, offset=0):
-    """
-    Returns a flat list of (name, dtype, count, offset) tuples of all the
-    scalar fields in the dtype "dt", including nested fields, in left
-    to right order.
-    """
-    fields = []
-    for name in dt.names:
-        field = dt.fields[name]
-        if field[0].names is None:
-            count = 1
-            for size in field[0].shape:
-                count *= size
-            fields.append((name, field[0], count, field[1] + offset))
-        else:
-            fields.extend(_get_fields_and_offsets(field[0], field[1] + offset))
-    return fields
-
-
 def load_fps(fp_filename):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
