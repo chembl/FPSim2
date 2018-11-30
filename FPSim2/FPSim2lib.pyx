@@ -13,7 +13,7 @@ import tables as tb
 cdef extern int __builtin_popcountll(unsigned long long) nogil
 
 
-cdef packed struct Result:
+cdef struct Result:
     uint64_t mol_id
     float coeff
 
@@ -21,7 +21,7 @@ cdef packed struct Result:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef inline double _substruct_coeff(int fp_subs, int int_count) nogil:
+cdef inline double _substruct_coeff(uint32_t fp_subs, uint32_t int_count) nogil:
     cdef double s_coeff
     s_coeff = fp_subs + int_count
     if s_coeff != 0.0:
@@ -32,7 +32,7 @@ cdef inline double _substruct_coeff(int fp_subs, int int_count) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_other) nogil:
+cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uint32_t count_other) nogil:
     cdef double t_coeff = 0.0
     t_coeff = count_query + count_other - int_count
     if t_coeff != 0.0:
@@ -43,13 +43,13 @@ cdef inline double _tanimoto_coeff(int int_count, int count_query, int count_oth
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double threshold, int coeff_func, int i_start, int i_end):
+cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold, int coeff_func, int i_start, int i_end):
 
     cdef int i
     cdef int j
-    cdef int int_count = 0
-    cdef int rel_co_count = 0
-    cdef int query_count = 0
+    cdef uint32_t int_count = 0
+    cdef uint32_t rel_co_count = 0
+    cdef uint32_t query_count = 0
     cdef double coeff = 0.0
     cdef int total_sims = 0
     cdef int simres_length = 256
@@ -59,27 +59,27 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
 
     with nogil:
         # precalc query popcount
-        for j in range(query.shape[1]):
-            query_count += __builtin_popcountll(query[0, j])
+        for j in range(query.shape[0]):
+            query_count += __builtin_popcountll(query[j])
 
         for i in range(i_start, i_end):
-            for j in range(0, query.shape[1], 4):
+            for j in range(0, query.shape[0], 4):
                 # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in fps to skip the mol_id)
                 # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
-                int_count += __builtin_popcountll(fps[i, j + 1] & query[0, j])
-                int_count += __builtin_popcountll(fps[i, j + 2] & query[0, j + 1])
-                int_count += __builtin_popcountll(fps[i, j + 3] & query[0, j + 2])
-                int_count += __builtin_popcountll(fps[i, j + 4] & query[0, j + 3])
+                int_count += __builtin_popcountll(fps[i, j + 1] & query[j])
+                int_count += __builtin_popcountll(fps[i, j + 2] & query[j + 1])
+                int_count += __builtin_popcountll(fps[i, j + 3] & query[j + 2])
+                int_count += __builtin_popcountll(fps[i, j + 4] & query[j + 3])
 
                 if coeff_func == 2:
-                    rel_co_count +=  __builtin_popcountll(query[0, j] & ~fps[i, j + 1])
-                    rel_co_count +=  __builtin_popcountll(query[0, j + 1] & ~fps[i, j + 2])
-                    rel_co_count +=  __builtin_popcountll(query[0, j + 2] & ~fps[i, j + 3])
-                    rel_co_count +=  __builtin_popcountll(query[0, j + 3] & ~fps[i, j + 4])
+                    rel_co_count +=  __builtin_popcountll(query[j] & ~fps[i, j + 1])
+                    rel_co_count +=  __builtin_popcountll(query[j + 1] & ~fps[i, j + 2])
+                    rel_co_count +=  __builtin_popcountll(query[j + 2] & ~fps[i, j + 3])
+                    rel_co_count +=  __builtin_popcountll(query[j + 3] & ~fps[i, j + 4])
 
             # tanimoto
             if coeff_func == 0:
-                coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[1] + 1])
+                coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[0] + 1])
             # substruct (tversky a=1, b=0 eq)
             elif coeff_func == 2:
                 coeff = _substruct_coeff(rel_co_count, int_count)
@@ -99,7 +99,7 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
             rel_co_count = 0
 
     # this is happening inside the GIL
-    cdef np.ndarray np_results = np.ndarray((total_sims,), dtype=[('mol_id','i8'), ('coeff','f4')])
+    cdef np.ndarray np_results = np.ndarray((total_sims,), dtype=[('mol_id','u8'), ('coeff','f4')])
     for i in range(total_sims):
         np_results[i][0] = results[i].mol_id
         np_results[i][1] = results[i].coeff
@@ -115,8 +115,8 @@ cpdef _similarity_search(uint64_t[:, :] query, uint64_t[:, :] fps, double thresh
 cpdef int py_popcount(query):
     cdef int query_count = 0
     cdef int j
-    for j in range(query.shape[1]):
-        query_count += __builtin_popcountll(query[0, j])
+    for j in range(query.shape[0]):
+        query_count += __builtin_popcountll(query[j])
     return query_count
 
 
@@ -151,5 +151,8 @@ cpdef get_bounds_range(query, ranges, threshold, coeff):
 def similarity_search(query, fp_filename, chunk_indexes, threshold, coeff):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
-    res = _similarity_search(query, fps, threshold, coeff, 0, fps.shape[0])
+    num_fields = len(fps[0])
+    fps2 = fps.view('<u8')
+    fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
+    res = _similarity_search(query, fps3, threshold, coeff, 0, fps.shape[0])
     return res

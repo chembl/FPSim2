@@ -59,7 +59,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
     if coeff == 'substructure':
         threshold = 1.0
-    fp_range = get_bounds_range(query, fps[1], threshold, COEFFS[coeff])
+    fp_range = get_bounds_range(query, fps.count_ranges, threshold, COEFFS[coeff])
     if not fp_range:
         return np.asarray([])
     else:
@@ -67,7 +67,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         i_end = fp_range[1]
 
     if n_threads == 1:
-        np_res = _similarity_search(query, fps[0], threshold, COEFFS[coeff], i_start, i_end)
+        np_res = _similarity_search(query, fps.fps, threshold, COEFFS[coeff], i_start, i_end)
         np_res[::-1].sort(order='coeff')
         return np_res
     else:
@@ -76,7 +76,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
             chunk_size = int((i_end - i_start) / n_threads)
             c_indexes = [[x, x + chunk_size] for x in range(i_start, i_end, chunk_size)]
             c_indexes[-1][1] = i_end
-            future_ss = {tpe.submit(_similarity_search, query, fps[0], threshold, COEFFS[coeff], chunk_idx[0], chunk_idx[1]): 
+            future_ss = {tpe.submit(_similarity_search, query, fps.fps, threshold, COEFFS[coeff], chunk_idx[0], chunk_idx[1]): 
                             c_id for c_id, chunk_idx in enumerate(c_indexes)}
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]

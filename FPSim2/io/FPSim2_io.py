@@ -2,12 +2,14 @@ import rdkit
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
+from collections import namedtuple
 import tables as tb
 from FPSim2.FPSim2lib import py_popcount
 import numpy as np
 import textwrap
 import json
 import re
+import os
 
 
 BATCH_WRITE_SIZE = 10000
@@ -120,7 +122,7 @@ def load_query(query, fp_filename):
                 .format(config[2], rdkit.__version__))
     # generate the fpe
     efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-    return np.array([efp], dtype=np.uint64)
+    return np.array(efp, dtype=np.uint64)
 
 
 def get_fp_length(fp_func, fp_func_params):
@@ -146,9 +148,11 @@ def smi_mol_supplier(in_fname, gen_ids, **kwargs):
                 mol_id = new_mol_id
             else:
                 if gen_ids:
+                    smiles = mol[0]
                     mol_id = new_mol_id
                 else:
                     try:
+                        smiles = mol[0]
                         mol_id = int(mol[1])
                     except Exception as e:
                         raise Exception('FPSim only supports integer ids for molecules, '
@@ -181,7 +185,7 @@ def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
             continue
 
 
-def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', compress=True, gen_ids=False):
+def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False):
     # if params dict is empty use defaults
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
@@ -197,17 +201,28 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
-    filters = None
-    if compress:
-        filters = tb.Filters(complib='zlib', complevel=5)
+    filters = filters = tb.Filters(complib='blosc', complevel=5)
 
     # set the output file and fps table
-    h5file_out = tb.open_file(out_fname, mode='w')
-    fps_atom = tb.Atom.from_dtype(np.dtype('uint64'))
-    fps_table = h5file_out.create_earray(h5file_out.root,
-                                        'fps',
-                                        fps_atom,
-                                        shape=((0, fp_length / 64 + 2)),
+    h5file_out = tb.open_file(out_fname + '_tmp', mode='w')
+
+    class Particle(tb.IsDescription):
+        pass
+
+    # hacky...
+    columns = {}
+    pos = 1
+    columns['fp_id'] = tb.UInt64Col(pos=pos)
+    for i in range(1, int(fp_length / 64) + 1):
+        pos += 1
+        columns['f'+str(i)] = tb.UInt64Col(pos=pos)
+    columns['popcnt'] = tb.Int64Col(pos=pos+1)
+    Particle.columns = columns
+
+    fps_table = h5file_out.create_table(h5file_out.root, 
+                                        'fps', 
+                                        Particle,
+                                        'Table storing fps',
                                         filters=filters)
 
     # set config table; used fp function, parameters and rdkit version
@@ -221,31 +236,66 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     fps = []
     for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
         efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-        popcnt = py_popcount(np.array([efp], dtype=np.uint64))
+        popcnt = py_popcount(np.array(efp, dtype=np.uint64))
         efp.insert(0, mol_id)
         efp.append(popcnt)
-        efp = np.asarray(efp, dtype=np.uint64)
-        fps.append(efp)
-        # insert in batches of 10k fps
+        fps.append(tuple(efp))
         if len(fps) == BATCH_WRITE_SIZE:
-            fps_table.append(np.asarray(fps))
+            fps_table.append(fps)
             fps = []
     # append last batch < 10k
-    fps_table.append(np.asarray(fps))
+    fps_table.append(fps)
+
+    # create index so table can be sorted
+    fps_table.cols.popcnt.create_index(kind='full')
     h5file_out.close()
+
+    # sort table (copy a file to another because HDF5 does not adjust the size of the store after removal)
+    h5file_out = tb.open_file(out_fname + '_tmp', mode='r')
+    fp_file = tb.open_file(out_fname, mode='w')
+
+    # create a sorted copy of the fps table
+    dst_fps = h5file_out.root.fps.copy(
+        fp_file.root, 'fps', filters=filters, copyuserattrs=True, overwrite=True,
+        stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
+        start=None, stop=None, step=None, chunkshape='keep', sortby='popcnt', 
+        check_CSI=True, propindexes=True)
+
+    # copy config vlrarray
+    dst_config = h5file_out.root.config.copy(
+        fp_file.root, 'config', filters=None, copyuserattrs=True, overwrite=True,
+        stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
+        start=None, stop=None, step=None, chunkshape='keep', sortby=None, 
+        check_CSI=False, propindexes=False)
+
+    # calc count ranges for baldi optimisation
+    count_ranges = []
+    for i in range(0, fp_length + 1):
+        idx_gen = (row.nrow for row in dst_fps.where("popcnt == {}".format(str(i))))
+        try:
+            first_id = next(idx_gen)
+        except StopIteration:
+            continue
+        for j in idx_gen:
+            pass
+        cnt_idxs = (first_id, j + 1)
+        count_ranges.append((i, cnt_idxs))
+
+    # add count ranges to vlarray
+    dst_config.append(count_ranges)
+
+    h5file_out.close()
+    fp_file.close()
+    os.remove(out_fname + '_tmp')
 
 
 def load_fps(fp_filename):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
-    # sort by counts
-    # ugly but the only way of doing inplace sort in not structured arrays
-    fps.view(','.join(['uint64']*fps.shape[1])).sort(order=['f{}'.format(fps.shape[1] - 1)], axis=0)
-    idx = np.unique(fps[:,-1], return_index=True)
-    count_ranges = []
-    for i, k in enumerate(zip(*idx)):
-        if k[0] == idx[0][-1]:
-            count_ranges.append((k[0], (k[1], fps.shape[0])))
-        else:
-            count_ranges.append((k[0], (k[1], idx[1][int(i+1)])))
-    return [fps, count_ranges]
+        count_ranges = fp_file.root.config[3]
+    # numpy 1.14 and >= 1.16 return a view, not a copy
+    num_fields = len(fps[0])
+    fps2 = fps.view('<u8')
+    fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
+    fps_t = namedtuple('fps', 'fps count_ranges')
+    return fps_t(fps=fps3, count_ranges=count_ranges)
