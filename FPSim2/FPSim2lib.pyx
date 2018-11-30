@@ -43,7 +43,7 @@ cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uin
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, uint32_t[:] popcnt, double threshold, int coeff_func, int i_start, int i_end):
+cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold, int coeff_func, int i_start, int i_end):
 
     cdef int i
     cdef int j
@@ -59,7 +59,7 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, uint32_t[:] popc
 
     with nogil:
         # precalc query popcount
-        for j in range(query.shape[0]):
+        for j in range(query.size):
             query_count += __builtin_popcountll(query[j])
 
         for i in range(i_start, i_end):
@@ -79,7 +79,7 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, uint32_t[:] popc
 
             # tanimoto
             if coeff_func == 0:
-                coeff = _tanimoto_coeff(int_count, query_count, popcnt[i])
+                coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.size + 1])
             # substruct (tversky a=1, b=0 eq)
             elif coeff_func == 2:
                 coeff = _substruct_coeff(rel_co_count, int_count)

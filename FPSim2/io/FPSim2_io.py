@@ -345,9 +345,9 @@ def load_fps(fp_filename):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
         count_ranges = fp_file.root.config[3]
-    fnames = [x for x in fps.dtype.names[0:-1]]
     # numpy 1.14 and >= 1.16 return a view, not a copy
-    popcnt = structured_to_unstructured(fps[['popcnt']], dtype='<u4')
-    fps2 = structured_to_unstructured(fps[fnames], dtype='<u8')
+    num_fields = len(fps[0])
+    fps2 = fps.view('<u8')
+    fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
     fps_t = namedtuple('fps', 'fps popcnt count_ranges')
-    return fps_t(fps=fps2, popcnt=popcnt, count_ranges=count_ranges)
+    return fps_t(fps=fps3, popcnt=popcnt, count_ranges=count_ranges)
