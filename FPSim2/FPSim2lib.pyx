@@ -59,7 +59,7 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
 
     with nogil:
         # precalc query popcount
-        for j in range(query.size):
+        for j in range(query.shape[0]):
             query_count += __builtin_popcountll(query[j])
 
         for i in range(i_start, i_end):
@@ -79,7 +79,7 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
 
             # tanimoto
             if coeff_func == 0:
-                coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.size + 1])
+                coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[0] + 1])
             # substruct (tversky a=1, b=0 eq)
             elif coeff_func == 2:
                 coeff = _substruct_coeff(rel_co_count, int_count)
