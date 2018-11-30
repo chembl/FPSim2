@@ -208,5 +208,5 @@ def similarity_search(query, fp_filename, chunk_indexes, threshold, coeff):
     popcnt = structured_to_unstructured(fps[['popcnt']], dtype='<u4')
     fps2 = structured_to_unstructured(fps[fnames])
 
-    res = _similarity_search(query, fps2, popcnt, threshold, coeff, 0, fps.shape[0])
+    res = _similarity_search(query, fps2, threshold, coeff, 0, fps.shape[0])
     return res
