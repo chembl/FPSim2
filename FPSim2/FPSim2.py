@@ -7,8 +7,17 @@ import numpy as np
 
 
 def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_threads=mp.cpu_count()):
+    """ Run a not in memory search.
+    
+    :param query: Query molecule. SMILES, molblock or InChi formats accepted.
+    :param fp_filename: FPs filename.
+    :param threshold: Threshold for similarity.
+    :param coeff: Coefficient. 'tanimoto' or 'substructure'.
+    :param chunk_size: Chunk size.
+    :param n_threads: Number of threads used to do the search.
+    :return: Numpy structured array with mol_id and coeff for each match.
+    """
     with tb.open_file(fp_filename, mode='r') as fp_file:
-        n_mols = fp_file.root.fps.shape[0]
         fp_tpye = fp_file.root.config[0]
         count_ranges = fp_file.root.config[3]
 
@@ -51,7 +60,16 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
     return np_res
 
 
-def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=mp.cpu_count()):
+def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
+    """ Run a in memory search
+    
+    :param query: Query molecule. Preloaded using load_query function.
+    :param fps: Fingerprints. Loaded using load_fps function.
+    :param threshold: Threshold for similarity.
+    :param coeff: Coefficient. Use 'tanimoto' or 'substructure'.
+    :param n_threads: Number of threads used to do the search.
+    :return: Numpy structured array with mol_id and coeff for each match.
+    """
     if coeff == 'substructure':
         threshold = 1.0
     fp_range = get_bounds_range(query, fps.count_ranges, threshold, COEFFS[coeff])

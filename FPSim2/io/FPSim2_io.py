@@ -7,7 +7,6 @@ import tables as tb
 from FPSim2.FPSim2lib import py_popcount
 import numpy as np
 import textwrap
-import json
 import re
 import os
 
@@ -98,6 +97,13 @@ FP_FUNC_DEFAULTS = {
 
 
 def rdmol_to_efp(rdmol, fp_func, fp_func_params):
+    """ Converts rdkit mol in FPSim2 fp format.
+    
+    :param rdmol: rdkit mol.
+    :param fp_func: Name of the function to generate fps.
+    :param fp_func_params: Parameters for the function to generate fps.
+    :return: efp
+    """
     fp = FP_FUNCS[fp_func](rdmol, **fp_func_params)
     splited = textwrap.wrap(fp.ToBitString(), 64)
     efp = [int(x, 2) for x in splited]
@@ -105,6 +111,12 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
 
 
 def load_query(query, fp_filename):
+    """ Load query molecule from SMILES, molblock or InChi.
+    
+    :param query: SMILES, molblock or InChi.
+    :param fp_filename: FPs filename to use for the search.
+    :return: Query ready to use for run_in_memory_search function.
+    """
     # read query molecule
     if re.match(SMILES_RE, query, flags=0):
         rdmol = Chem.MolFromSmiles(query)
@@ -126,6 +138,12 @@ def load_query(query, fp_filename):
 
 
 def get_fp_length(fp_func, fp_func_params):
+    """ Returns fp length given the name of a function and it's parameters
+    
+    :param fp_func: Name of the function to generate fps.
+    :param fp_func_params: Parameters for the function to generate fps.
+    :return: fp length
+    """
     fp_length = None
     if 'nBits' in fp_func_params.keys():
         fp_length = fp_func_params['nBits']
@@ -139,6 +157,13 @@ def get_fp_length(fp_func, fp_func_params):
 
 
 def smi_mol_supplier(in_fname, gen_ids, **kwargs):
+    """ Generator function that reads .smi files
+    
+    :param in_fname: input .smi file name.
+    :param gen_ids: flag to generate new ids.
+    :param kwargs: keyword arguments. 
+    :return: Yields next id and rdkit mol tuple.
+    """
     with open(in_fname, 'r') as f:
         for new_mol_id, mol in enumerate(f, 1):
             # if .smi with single smiles column just add the id
@@ -167,6 +192,13 @@ def smi_mol_supplier(in_fname, gen_ids, **kwargs):
 
 
 def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
+    """ Generator function that reads .sdf files
+    
+    :param in_fname: .sdf filename.
+    :param gen_ids: flag to generate new ids.
+    :param kwargs: keyword arguments.
+    :return: Yields next id and rdkit mol tuple.
+    """
     suppl = Chem.SDMolSupplier(in_fname)
     for new_mol_id, rdmol in enumerate(suppl, 1):
         if rdmol:
@@ -186,6 +218,16 @@ def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
 
 
 def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False):
+    """ Create FPSim2 fingerprints file from .smi or .sdf files.
+    
+    :param in_fname: .smi or .sdf filename.
+    :param out_fname: FPs output filename.
+    :param fp_func: Name of fingerprint function to use to generate the fingerprints.
+    :param fp_func_params: Parameters for the fingerprint function.
+    :param mol_id_prop: Name of the .sdf property to read the molecule id.
+    :param gen_ids: Flag to auto-generate ids for the molecules.
+    :return: 
+    """
     # if params dict is empty use defaults
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
@@ -201,7 +243,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
-    filters = filters = tb.Filters(complib='blosc', complevel=5)
+    filters = tb.Filters(complib='blosc', complevel=5)
 
     # set the output file and fps table
     h5file_out = tb.open_file(out_fname + '_tmp', mode='w')
@@ -290,10 +332,14 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
 
 def load_fps(fp_filename):
+    """ Load FPs into memory.
+    
+    :param fp_filename: FPs filename.
+    :return: fingerprints.
+    """
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
         count_ranges = fp_file.root.config[3]
-    # numpy 1.14 and >= 1.16 return a view, not a copy
     num_fields = len(fps[0])
     fps2 = fps.view('<u8')
     fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
