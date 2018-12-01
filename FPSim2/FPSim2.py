@@ -6,7 +6,7 @@ import tables as tb
 import numpy as np
 
 
-def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_threads=mp.cpu_count()):
+def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=mp.cpu_count()):
     """ Run a not in memory search.
     
     :param query: Query molecule. SMILES, molblock or InChi formats accepted.
@@ -39,7 +39,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 
     c_indexes = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size))
     results = []
-    with cf.ProcessPoolExecutor(max_workers=n_threads) as ppe:
+    with cf.ProcessPoolExecutor(max_workers=n_processes) as ppe:
         future_ss = {ppe.submit(similarity_search, query, fp_filename, indexes, threshold, COEFFS[coeff]): 
                         c_id for c_id, indexes in enumerate(c_indexes)}
         for future in cf.as_completed(future_ss):
