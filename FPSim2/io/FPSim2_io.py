@@ -318,6 +318,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
             first_id = next(idx_gen)
         except StopIteration:
             continue
+        j = first_id
         for j in idx_gen:
             pass
         cnt_idxs = (first_id, j + 1)

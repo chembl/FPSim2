@@ -32,7 +32,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
 
     fp_range = get_bounds_range(query, count_ranges, threshold, COEFFS[coeff])
     if not fp_range:
-        return np.asarray([])
+        return np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
@@ -74,7 +74,7 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
         threshold = 1.0
     fp_range = get_bounds_range(query, fps.count_ranges, threshold, COEFFS[coeff])
     if not fp_range:
-        return np.asarray([])
+        return np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
