@@ -332,7 +332,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     os.remove(out_fname + '_tmp')
 
 
-def load_fps(fp_filename):
+def load_fps(fp_filename, sort=False):
     """ Load FPs into memory.
     
     :param fp_filename: FPs filename.
@@ -340,6 +340,10 @@ def load_fps(fp_filename):
     """
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]
+        # files should be sorted but if the file is updated without sorting it
+        # can be also in memory sorted
+        if sort:
+            fps.sort(order='popcnt')
         count_ranges = fp_file.root.config[3]
     num_fields = len(fps[0])
     fps2 = fps.view('<u8')

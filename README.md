@@ -4,7 +4,7 @@ FPSim2 is designed to run fast compound similarity searches with huge datasets a
 
 Implementing: 
 
-- State of the art population count algorithm for fingerprint sizes up to 2048 bits from https://arxiv.org/abs/1611.07612. Extra optimisations for fingeprints with sizes > 2048 also planned.
+- Using fast population count algorithm(builtin-popcnt-unrolled) from https://github.com/WojciechMula/sse-popcount.
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/).
 
@@ -65,9 +65,9 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 
     results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1)
 
-As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold and the number of threads used.
+As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results and the number of threads used.
 
-### Run a not in memory search
+### Run a on disk search
 
 If you're searching against a huge dataset or you have small RAM, you can still run searches.
 
@@ -78,7 +78,7 @@ If you're searching against a huge dataset or you have small RAM, you can still 
 
     results = run_search(query_string, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=1)
 
-In the not in memory search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the chunk size and the number of processes used.
+In the on disk search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results, the chunk size and the number of processes used.
 
 ### Available coefficients
 

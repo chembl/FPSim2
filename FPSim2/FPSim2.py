@@ -7,7 +7,7 @@ import numpy as np
 
 
 def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=mp.cpu_count()):
-    """ Run a not in memory search.
+    """ Run a on disk search.
     
     :param query: Query molecule. SMILES, molblock or InChi formats accepted.
     :param fp_filename: FPs filename.
@@ -56,7 +56,7 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
         np_res = np.concatenate(results)
         np_res[::-1].sort(order='coeff')
     else:
-        np_res = np.asarray(results)
+        np_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
     return np_res
 
 
@@ -105,5 +105,5 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
             np_res = np.concatenate(results)
             np_res[::-1].sort(order='coeff')
         else:
-            np_res = np.asarray(results)
+            np_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
     return np_res

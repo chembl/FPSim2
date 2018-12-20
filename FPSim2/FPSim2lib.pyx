@@ -18,6 +18,7 @@ cdef struct Result:
     float coeff
 
 
+@cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
@@ -29,6 +30,7 @@ cdef inline double _substruct_coeff(uint32_t fp_subs, uint32_t int_count) nogil:
     return s_coeff
 
 
+@cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
@@ -120,6 +122,7 @@ cpdef int py_popcount(query):
     return query_count
 
 
+@cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
