@@ -332,6 +332,78 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     os.remove(out_fname + '_tmp')
 
 
+def append_molecules(fp_filename, mol_iter):
+    # code for appending new molecules to an existing file
+    with tb.open_file(fp_filename, mode='a') as fp_file
+        fps_table = fp_file.root.fps
+        new_mols = []
+        for m in mol_iter:
+            mol, mol_id = m
+            if re.match(SMILES_RE, query, flags=0):
+                rdmol = Chem.MolFromSmiles(query)
+            elif re.search(INCHI_RE, query, flags=re.IGNORECASE):
+                rdmol = Chem.MolFromInchi(query)
+            else:
+                rdmol = Chem.MolFromMolBlock(query)
+            efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
+            popcnt = py_popcount(np.array(efp, dtype=np.uint64))
+            efp.insert(0, mol_id)
+            efp.append(popcnt)
+            new_mols.append(tuple(efp))
+            if len(fps) == BATCH_WRITE_SIZE:
+                # append last batch < 10k
+                fps_table.append(new_mols)
+                fps_table = []
+
+
+def sort_fp_file(fp_filename):
+    # rename not sorted filename
+    tmp_filename = fp_filename + '_tmp'
+    os.rename(fp_filename, tmp_filename)
+
+    # copy sorted fps and config to a new file
+    with tb.open_file(tmp_filename, mode='r') as fp_file:
+        with tb.open_file(fp_filename, mode='w') as sorted_fp_file:
+
+            fp_func = fp_file.config[0]
+            fp_func_params = fp_file.config[1]
+            fp_length = get_fp_length(fp_func, fp_func_params)
+
+            # create a sorted copy of the fps table
+            dst_fps = fp_file.root.fps.copy(
+                sorted_fp_file.root, 'fps', filters=filters, copyuserattrs=True, overwrite=True,
+                stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
+                start=None, stop=None, step=None, chunkshape='keep', sortby='popcnt', 
+                check_CSI=True, propindexes=True)
+
+            # copy config vlrarray
+            dst_config = fp_file.root.config.copy(
+                sorted_fp_file.root, 'config', filters=None, copyuserattrs=True, overwrite=True,
+                stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
+                start=None, stop=None, step=None, chunkshape='keep', sortby=None, 
+                check_CSI=False, propindexes=False)
+
+            # calc count ranges for baldi optimisation
+            count_ranges = []
+            for i in range(0, fp_length + 1):
+                idx_gen = (row.nrow for row in dst_fps.where("popcnt == {}".format(str(i))))
+                try:
+                    first_id = next(idx_gen)
+                except StopIteration:
+                    continue
+                j = first_id
+                for j in idx_gen:
+                    pass
+                cnt_idxs = (first_id, j + 1)
+                count_ranges.append((i, cnt_idxs))
+
+            # update count ranges
+            dst_config[3] = count_ranges
+    
+    # remove not sorted file
+    os.remove(tmp_filename)
+
+
 def load_fps(fp_filename, sort=False):
     """ Load FPs into memory.
     

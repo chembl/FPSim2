@@ -23,7 +23,7 @@ cdef struct Result:
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 cdef inline double _substruct_coeff(uint32_t fp_subs, uint32_t int_count) nogil:
-    cdef double s_coeff
+    cdef double s_coeff = 0.0
     s_coeff = fp_subs + int_count
     if s_coeff != 0.0:
         s_coeff = int_count / s_coeff
