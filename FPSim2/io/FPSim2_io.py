@@ -333,6 +333,15 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
 
 def append_molecules(fp_filename, mol_iter):
+    """ append molecules to a fp file.
+
+    Appends molecules to an existing fp file
+    
+    :param fp_filename: FPs filename.
+    :param mol_iter: iterator with molecules.
+
+    :return: None.
+    """
     # code for appending new molecules to an existing file
     with tb.open_file(fp_filename, mode='a') as fp_file
         fps_table = fp_file.root.fps
@@ -357,6 +366,14 @@ def append_molecules(fp_filename, mol_iter):
 
 
 def sort_fp_file(fp_filename):
+    """ Sort fp file.
+
+    Sorts an existing fp file. It can be used after appending new molecules
+    to an existing fp file
+    
+    :param fp_filename: FPs filename.
+    :return: None.
+    """
     # rename not sorted filename
     tmp_filename = fp_filename + '_tmp'
     os.rename(fp_filename, tmp_filename)
