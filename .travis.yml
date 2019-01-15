@@ -18,9 +18,9 @@ install:
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - if [ "$TRAVIS_OS_NAME" = linux ]; then
-      MINICONDAVERSION="Linux"
+      MINICONDAVERSION="Linux";
     else
-      MINICONDAVERSION="MacOSX"
+      MINICONDAVERSION="MacOSX";
     fi
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-$MINICONDAVERSION-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
