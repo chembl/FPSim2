@@ -343,7 +343,7 @@ def append_molecules(fp_filename, mol_iter):
     :return: None.
     """
     # code for appending new molecules to an existing file
-    with tb.open_file(fp_filename, mode='a') as fp_file
+    with tb.open_file(fp_filename, mode='a') as fp_file:
         fps_table = fp_file.root.fps
         new_mols = []
         for m in mol_iter:
