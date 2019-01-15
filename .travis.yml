@@ -3,9 +3,13 @@ language: c
 matrix:
   include:
   - os: osx
-    env: CONDA=3.6
+    env: CONDA=3.5
   - os: osx
-    env: CONDA=3.7
+    env: CONDA=3.6
+  # - os: osx
+  #   env: CONDA=3.7
+    - os: linux
+    env: CONDA=3.5
   - os: linux
     env: CONDA=3.6
   - os: linux
