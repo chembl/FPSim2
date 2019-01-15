@@ -6,9 +6,9 @@ language: python
 matrix:
   include:
   - os: linux
-    env: PYTHON=3.6
+    env: CONDA=3.6
   - os: linux
-    env: PYTHON=3.7
+    env: CONDA=3.7
 
 install:
   - sudo apt-get update
