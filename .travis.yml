@@ -8,7 +8,7 @@ matrix:
     env: CONDA=3.6
   # - os: osx
   #   env: CONDA=3.7
-    - os: linux
+  - os: linux
     env: CONDA=3.5
   - os: linux
     env: CONDA=3.6
