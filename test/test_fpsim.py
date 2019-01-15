@@ -1,8 +1,10 @@
 import pytest
 from FPSim2 import run_in_memory_search, run_search
+from FPSim2.FPSim2lib import py_popcount
 from FPSim2.io import *
 from rdkit import Chem
 import tables as tb
+import numpy as np
 
 
 def test_rdmol_top_efp():
@@ -39,6 +41,11 @@ def test_run_in_memory_search():
 
 
 def test_run_search():
-    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', '10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
+    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
+
+
+def test_py_popcount():
+    res = py_popcount(np.array([0, 140737488355328, 0, 0, 33554432, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1073741824, 0, 0, 0, 0, 9223372036854775808, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint64))
+    assert res == 4
