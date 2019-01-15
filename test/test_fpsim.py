@@ -41,7 +41,7 @@ def test_run_in_memory_search():
 
 
 def test_run_search():
-    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', '10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
+    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 

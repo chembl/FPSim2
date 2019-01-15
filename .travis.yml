@@ -1,7 +1,5 @@
-language: python
-python:
-  # We don't actually use the Travis Python, but this keeps it organized.
-  - "3.6"
+# Don't use language: python; this gives us an unnecessary virtualenv
+language: c
 matrix:
   include:
   - os: osx
