@@ -32,6 +32,7 @@ def test_load_fps():
 
 def test_run_in_memory_search():
     query = load_query('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5')
+    fps = load_fps('test/10mols.h5')
     results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
     assert results.shape[0] == 4
     assert results[0] == (1, 1.)
