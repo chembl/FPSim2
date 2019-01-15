@@ -17,9 +17,10 @@ Use a conda environment to install it. Builds for linux and mac currently availa
 
 ### Requirements
 
-FPSim2 is heavily coupled to RDKit. Install it via rdkit channel
+FPSim2 is heavily coupled to RDKit. Install it via rdkit or conda-forge channels
 
     conda install -c rdkit rdkit
+    conda install -c conda-forge rdkit
 
 ## Usage
 
