@@ -1,4 +1,5 @@
 import pytest
+from FPSim2 import run_in_memory_search, run_search
 from FPSim2.io import *
 from rdkit import Chem
 import tables as tb
@@ -13,8 +14,8 @@ def test_rdmol_top_efp():
 def test_create_fp_file():
     fp_type = 'Morgan'
     fp_params = {'radius': 2, 'nBits': 2048}
-    create_fp_file('10mols.smi', '10mols.h5', fp_type, fp_params)
-    with tb.open_file(fp_filename, mode='r') as fp_file:
+    create_fp_file('test/10mols.smi', 'test/10mols.h5', fp_type, fp_params)
+    with tb.open_file('test/10mols.h5', mode='r') as fp_file:
         config = fp_file.root.config
         assert config[0] == fp_type
         assert config[1]['radius'] == fp_params['radius']
@@ -23,7 +24,20 @@ def test_create_fp_file():
 
 
 def test_load_fps():
-    fps = load_fps('10mols.h5')
+    fps = load_fps('test/10mols.h5')
     assert fps.fps.shape[0] == 10
     assert fps.fps.shape[1] == 34
     assert fps.count_ranges != []
+
+
+def test_run_in_memory_search():
+    query = load_query('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5')
+    results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
+    assert results.shape[0] == 4
+    assert results[0] == (1, 1.)
+
+
+def test_run_search():
+    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', '10mols.h5', threshold=0.7, coeff='tanimoto' n_processes=1)
+    assert results.shape[0] == 4
+    assert results[0] == (1, 1.)

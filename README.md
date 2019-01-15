@@ -1,10 +1,10 @@
 # FPSim2: Simple package for fast molecular similarity searches
 
-FPSim2 is designed to run fast compound similarity searches with huge datasets and to be easily integrated with any Python web framework in order to expose similarity search services. FPSim2 excels using high search thresholds (>=0.7).
+FPSim2 is designed to run fast compound similarity searches with big datasets and to be easily integrated with any Python web framework in order to expose similarity search services. FPSim2 works better using high search thresholds (>=0.7).
 
 Implementing: 
 
-- Using fast population count algorithm(builtin-popcnt-unrolled) from https://github.com/WojciechMula/sse-popcount.
+- Using fast population count algorithm(builtin-popcnt-unrolled) using SIMD instructions from https://github.com/WojciechMula/sse-popcount.
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/).
 
