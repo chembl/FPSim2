@@ -18,16 +18,14 @@ setup(
     install_requires=[
         'tables>=3.4.4',
         'numpy>=1.15.2'
-   ],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+        ],
     ext_modules=[
         Extension('FPSim2.FPSim2lib',
                     sources=['FPSim2/FPSim2lib.pyx'],
                     extra_compile_args=['-march=native'],
                     language='c',
                     include_dirs=[np.get_include()]),
-    ],
+        ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: MIT License',
