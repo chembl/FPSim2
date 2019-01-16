@@ -1,4 +1,7 @@
 [![Build Status](https://travis-ci.org/chembl/FPSim2.svg?branch=master)](https://travis-ci.org/chembl/FPSim2)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Anaconda-Server Badge](https://anaconda.org/efelix/fpsim2/badges/version.svg)](https://anaconda.org/efelix/fpsim2)
+[![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
 
 
 # FPSim2: Simple package for fast molecular similarity searches
@@ -14,24 +17,28 @@ Implementing:
 
 ## Installation 
 
-Use a conda environment to install it. Builds for linux(py3.5, py3.6 and py3.7) and mac(py3.5 and py3.6) currently available:
-
-    conda install -c efelix fpsim2 
-
-### Requirements
-
-FPSim2 is heavily coupled to RDKit. Install it via rdkit or conda-forge channels:
-
-    conda install -c conda-forge rdkit
+Use a conda environment to install it. Builds available for:
+- linux:
+    - Python 3.5
+    - Python 3.6
+    - Python 3.7
+- mac:
+    - Python 3.5
+    - Python 3.6
+```
+conda install fpsim2 -c efelix -c conda-forge
+```
 
 ## Usage
 
 ### Create FP file
 
-    from FPSim2 import create_fp_file
+```python
+from FPSim2 import create_fp_file
 
-    # input file, output file, FP type, FP parameters
-    create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+# input file, output file, FP type, FP parameters
+create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+```
 
 FPSim2 will use RDKit default parameters for a fingerprint type in case no parameters are used. Available FP types and default parameters listed below.
 
@@ -52,21 +59,25 @@ All fingerprints are calculated using RDKit.
 
 Due to it's simplicity FPSim2 can only use integer ids for FPs, however it can generate new ids for the provided molecules using gen_ids flag.
 
-    create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, gen_ids=True)
+```python
+create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, gen_ids=True)
+```
 
 In case RDKit is not able to load a molecule, the id assigned to the molecule will be also skipped so the nth molecule in the input file will have id=n.
 
 ### Run a in memory search
 
-    from FPSim2 import run_in_memory_search
-    from FPSim2.io import load_query, load_fps
+```python
+from FPSim2 import run_in_memory_search
+from FPSim2.io import load_query, load_fps
 
-    fp_filename = 'chembl.h5'
+fp_filename = 'chembl.h5'
 
-    query = load_query('CC(=O)Oc1ccccc1C(=O)O', fp_filename)
-    fps = load_fps(fp_filename)
+query = load_query('CC(=O)Oc1ccccc1C(=O)O', fp_filename)
+fps = load_fps(fp_filename)
 
-    results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1)
+results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1)
+```
 
 As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results and the number of threads used.
 
@@ -74,12 +85,14 @@ As GIL is most of the time released, searches can be speeded up using multiple t
 
 If you're searching against a huge dataset or you have small RAM, you can still run searches.
 
-    from FPSim2 import run_search
+```python
+from FPSim2 import run_search
 
-    fp_filename = 'chembl.h5'
-    query_string = 'CC(=O)Oc1ccccc1C(=O)O'
+fp_filename = 'chembl.h5'
+query_string = 'CC(=O)Oc1ccccc1C(=O)O'
 
-    results = run_search(query_string, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=1)
+results = run_search(query_string, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=1)
+```
 
 In the on disk search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results, the chunk size and the number of processes used.
 
