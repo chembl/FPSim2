@@ -1,25 +1,27 @@
+[![Build Status](https://travis-ci.org/chembl/FPSim2.svg?branch=master)](https://travis-ci.org/chembl/FPSim2)
+
+
 # FPSim2: Simple package for fast molecular similarity searches
 
 FPSim2 is designed to run fast compound similarity searches with big datasets and to be easily integrated with any Python web framework in order to expose similarity search services. FPSim2 works better using high search thresholds (>=0.7).
 
 Implementing: 
 
-- Using fast population count algorithm(builtin-popcnt-unrolled) using SIMD instructions from https://github.com/WojciechMula/sse-popcount.
+- Using fast population count algorithm(builtin-popcnt-unrolled) from https://github.com/WojciechMula/sse-popcount using SIMD instructions.
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/).
 
 
 ## Installation 
 
-Use a conda environment to install it. Builds for linux and mac currently available:
+Use a conda environment to install it. Builds for linux(py3.5, py3.6 and py3.7) and mac(py3.5 and py3.6) currently available:
 
     conda install -c efelix fpsim2 
 
 ### Requirements
 
-FPSim2 is heavily coupled to RDKit. Install it via rdkit or conda-forge channels
+FPSim2 is heavily coupled to RDKit. Install it via rdkit or conda-forge channels:
 
-    conda install -c rdkit rdkit
     conda install -c conda-forge rdkit
 
 ## Usage
@@ -85,3 +87,7 @@ In the on disk search variant, parallelisation is achieved with processes. Perfo
 
 - tanimoto (aka [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index))
 - substructure ([Tversky](https://en.wikipedia.org/wiki/Tversky_index) with α=1, β=0). Use it altogether with RDKPatternFingerprint.
+
+## Trying it online
+
+To try out FPSim2 interactively in your web browser, just click on the binder [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
