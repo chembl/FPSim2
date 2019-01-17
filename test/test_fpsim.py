@@ -60,4 +60,5 @@ def test_append_molecules():
 def test_sort_fp_file():
     sort_fp_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
-    assert fps.fps[-1][-1] == 1
+    assert fps.fps[-1][-1] == 48
+    assert fps.fps[0][-1] == 1
