@@ -49,3 +49,16 @@ def test_run_search():
 def test_py_popcount():
     res = py_popcount(np.array([0, 140737488355328, 0, 0, 33554432, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1073741824, 0, 0, 0, 0, 9223372036854775808, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint64))
     assert res == 4
+
+
+def test_append_molecules():
+    append_molecules('test/10mols.h5', [['CC', 1], ['CCC', 2], ['CCCC', 3]])
+    with tb.open_file('test/10mols.h5', mode='r') as fp_file:
+        assert fp_file.root.fps.shape[0] == 13
+
+
+def test_sort_fp_file():
+    sort_fp_file('test/10mols.h5')
+    fps = load_fps('test/10mols.h5')
+    assert fps.fps[-1][-1] == 48
+    assert fps.fps[0][-1] == 2
