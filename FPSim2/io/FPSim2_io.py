@@ -398,12 +398,13 @@ def sort_fp_file(fp_filename):
                 start=None, stop=None, step=None, chunkshape='keep', sortby='popcnt', 
                 check_CSI=True, propindexes=True)
 
-            # copy config vlrarray
-            dst_config = fp_file.root.config.copy(
-                sorted_fp_file.root, 'config', filters=None, copyuserattrs=True, overwrite=True,
-                stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
-                start=None, stop=None, step=None, chunkshape='keep', sortby=None, 
-                check_CSI=False, propindexes=False)
+            # set config table; used fp function, parameters and rdkit version
+            param_table = h5file_out.create_vlarray(sorted_fp_file.root, 
+                                                    'config', 
+                                                    atom=tb.ObjectAtom())
+            param_table.append(fp_func)
+            param_table.append(fp_func_params)
+            param_table.append(rdkit.__version__)
 
             # calc count ranges for baldi optimisation
             count_ranges = []
@@ -420,7 +421,7 @@ def sort_fp_file(fp_filename):
                 count_ranges.append((i, cnt_idxs))
 
             # update count ranges
-            dst_config[3] = count_ranges
+            param_table.append(count_ranges)
     
     # remove not sorted file
     os.remove(tmp_filename)
