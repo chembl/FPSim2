@@ -362,7 +362,7 @@ def append_molecules(fp_filename, mol_iter):
             efp.insert(0, mol_id)
             efp.append(popcnt)
             new_mols.append(tuple(efp))
-            if len(fps) == BATCH_WRITE_SIZE:
+            if len(new_mols) == BATCH_WRITE_SIZE:
                 # append last batch < 10k
                 fps_table.append(new_mols)
                 new_mols = []
