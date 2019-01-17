@@ -348,12 +348,12 @@ def append_molecules(fp_filename, mol_iter):
         new_mols = []
         for m in mol_iter:
             mol, mol_id = m
-            if re.match(SMILES_RE, query, flags=0):
-                rdmol = Chem.MolFromSmiles(query)
-            elif re.search(INCHI_RE, query, flags=re.IGNORECASE):
-                rdmol = Chem.MolFromInchi(query)
+            if re.match(SMILES_RE, mol, flags=0):
+                rdmol = Chem.MolFromSmiles(mol)
+            elif re.search(INCHI_RE, mol, flags=re.IGNORECASE):
+                rdmol = Chem.MolFromInchi(mol)
             else:
-                rdmol = Chem.MolFromMolBlock(query)
+                rdmol = Chem.MolFromMolBlock(mol)
             efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
             popcnt = py_popcount(np.array(efp, dtype=np.uint64))
             efp.insert(0, mol_id)
