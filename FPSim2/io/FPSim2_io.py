@@ -399,7 +399,7 @@ def sort_fp_file(fp_filename):
                 check_CSI=True, propindexes=True)
 
             # set config table; used fp function, parameters and rdkit version
-            param_table = h5file_out.create_vlarray(sorted_fp_file.root, 
+            param_table = sorted_fp_file.create_vlarray(sorted_fp_file.root, 
                                                     'config', 
                                                     atom=tb.ObjectAtom())
             param_table.append(fp_func)
