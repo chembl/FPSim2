@@ -344,6 +344,8 @@ def append_molecules(fp_filename, mol_iter):
     """
     # code for appending new molecules to an existing file
     with tb.open_file(fp_filename, mode='a') as fp_file:
+        fp_func = config[0]
+        fp_func_params = config[1]
         fps_table = fp_file.root.fps
         new_mols = []
         for m in mol_iter:
@@ -354,6 +356,8 @@ def append_molecules(fp_filename, mol_iter):
                 rdmol = Chem.MolFromInchi(mol)
             else:
                 rdmol = Chem.MolFromMolBlock(mol)
+            if not rdmol:
+                continue
             efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
             popcnt = py_popcount(np.array(efp, dtype=np.uint64))
             efp.insert(0, mol_id)
