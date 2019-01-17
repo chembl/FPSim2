@@ -368,6 +368,7 @@ def append_molecules(fp_filename, mol_iter):
                 new_mols = []
         fps_table.append(new_mols)
 
+
 def sort_fp_file(fp_filename):
     """ Sort fp file.
 
@@ -380,6 +381,7 @@ def sort_fp_file(fp_filename):
     # rename not sorted filename
     tmp_filename = fp_filename + '_tmp'
     os.rename(fp_filename, tmp_filename)
+    filters = tb.Filters(complib='blosc', complevel=5)
 
     # copy sorted fps and config to a new file
     with tb.open_file(tmp_filename, mode='r') as fp_file:
