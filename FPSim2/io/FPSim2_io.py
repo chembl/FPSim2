@@ -366,7 +366,7 @@ def append_molecules(fp_filename, mol_iter):
             if len(fps) == BATCH_WRITE_SIZE:
                 # append last batch < 10k
                 fps_table.append(new_mols)
-                fps_table = []
+                new_mols = []
 
 
 def sort_fp_file(fp_filename):
