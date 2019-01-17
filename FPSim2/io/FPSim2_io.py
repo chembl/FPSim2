@@ -366,7 +366,7 @@ def append_molecules(fp_filename, mol_iter):
                 # append last batch < 10k
                 fps_table.append(new_mols)
                 new_mols = []
-
+        fps_table.append(new_mols)
 
 def sort_fp_file(fp_filename):
     """ Sort fp file.
@@ -385,8 +385,8 @@ def sort_fp_file(fp_filename):
     with tb.open_file(tmp_filename, mode='r') as fp_file:
         with tb.open_file(fp_filename, mode='w') as sorted_fp_file:
 
-            fp_func = fp_file.config[0]
-            fp_func_params = fp_file.config[1]
+            fp_func = fp_file.root.config[0]
+            fp_func_params = fp_file.root.config[1]
             fp_length = get_fp_length(fp_func, fp_func_params)
 
             # create a sorted copy of the fps table
