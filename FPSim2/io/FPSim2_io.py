@@ -342,7 +342,6 @@ def append_molecules(fp_filename, mol_iter):
 
     :return: None.
     """
-    # code for appending new molecules to an existing file
     with tb.open_file(fp_filename, mode='a') as fp_file:
         fp_func = config[0]
         fp_func_params = config[1]
