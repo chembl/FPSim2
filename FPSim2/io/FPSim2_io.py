@@ -110,20 +110,24 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
     return efp
 
 
-def load_query(query, fp_filename):
+def load_molecule(molecule_string):
+    if re.match(SMILES_RE, molecule_string, flags=0):
+        rdmol = Chem.MolFromSmiles(molecule_string)
+    elif re.search(INCHI_RE, molecule_string, flags=re.IGNORECASE):
+        rdmol = Chem.MolFromInchi(molecule_string)
+    else:
+        rdmol = Chem.MolFromMolBlock(molecule_string)
+    return rdmol
+
+
+def load_query(molecule_string, fp_filename):
     """ Load query molecule from SMILES, molblock or InChi.
     
     :param query: SMILES, molblock or InChi.
     :param fp_filename: FPs filename to use for the search.
     :return: Query ready to use for search function.
     """
-    # read query molecule
-    if re.match(SMILES_RE, query, flags=0):
-        rdmol = Chem.MolFromSmiles(query)
-    elif re.search(INCHI_RE, query, flags=re.IGNORECASE):
-        rdmol = Chem.MolFromInchi(query)
-    else:
-        rdmol = Chem.MolFromMolBlock(query)
+    rdmol = load_molecule(molecule_string)
     with tb.open_file(fp_filename, mode='r') as fp_file:
         # retrieve config from fps file
         config = fp_file.root.config
@@ -156,15 +160,58 @@ def get_fp_length(fp_func, fp_func_params):
     return fp_length
 
 
-def smi_mol_supplier(in_fname, gen_ids, **kwargs):
-    """ Generator function that reads .smi files
+# def sqla_query_supplier(io_source, gen_ids, **kwargs):
+#     """ Generator function that reads from an SQLAlchemy query
     
-    :param in_fname: input .smi file name.
+#     :param io_source: SQLA query object.
+#     :param gen_ids: flag to generate new ids.
+#     :param kwargs: keyword arguments. 
+#     :return: Yields next id and rdkit mol tuple.
+#     """
+#     pass
+
+
+def list_supplier(io_source, gen_ids, **kwargs):
+    """ Generator function that reads from a Python list
+    
+    :param io_source: Python list.
     :param gen_ids: flag to generate new ids.
     :param kwargs: keyword arguments. 
     :return: Yields next id and rdkit mol tuple.
     """
-    with open(in_fname, 'r') as f:
+    for new_mol_id, mol in enumerate(io_source, 1):
+        if len(mol) == 1:
+            smiles = mol[0]
+            mol_id = new_mol_id
+        else:
+            if gen_ids:
+                smiles = mol[0]
+                mol_id = new_mol_id
+            else:
+                try:
+                    smiles = mol[0]
+                    mol_id = int(mol[1])
+                except Exception as e:
+                    raise Exception('FPSim only supports integer ids for molecules, '
+                                    'cosinder setting gen_ids=True when running '
+                                    'create_fp_file to autogenerate them.')
+                smiles = mol[0].strip()
+        rdmol = load_molecule(smiles)
+        if rdmol:
+            yield mol_id, rdmol
+        else:
+            continue
+
+
+def smi_mol_supplier(io_source, gen_ids, **kwargs):
+    """ Generator function that reads .smi files
+    
+    :param io_source: input .smi file name.
+    :param gen_ids: flag to generate new ids.
+    :param kwargs: keyword arguments. 
+    :return: Yields next id and rdkit mol tuple.
+    """
+    with open(io_source, 'r') as f:
         for new_mol_id, mol in enumerate(f, 1):
             # if .smi with single smiles column just add the id
             mol = mol.split()
@@ -191,15 +238,15 @@ def smi_mol_supplier(in_fname, gen_ids, **kwargs):
                 continue
 
 
-def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
+def sdf_mol_supplier(io_source, gen_ids, **kwargs):
     """ Generator function that reads .sdf files
     
-    :param in_fname: .sdf filename.
+    :param io_source: .sdf filename.
     :param gen_ids: flag to generate new ids.
     :param kwargs: keyword arguments.
     :return: Yields next id and rdkit mol tuple.
     """
-    suppl = Chem.SDMolSupplier(in_fname)
+    suppl = Chem.SDMolSupplier(io_source)
     for new_mol_id, rdmol in enumerate(suppl, 1):
         if rdmol:
             if gen_ids:
@@ -247,8 +294,8 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
     return count_ranges
 
 
-def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
-    """ Create FPSim2 fingerprints file from .smi or .sdf files.
+def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
+    """ Create FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
     
     :param in_fname: .smi or .sdf filename.
     :param out_fname: FPs output filename.
@@ -263,7 +310,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
 
     # select SMI/SDF supplier depending the file extension
-    input_type = in_fname.split('.')[-1]
+    input_type = io_source.split('.')[-1]
     if input_type == 'smi':
         supplier = smi_mol_supplier
     elif input_type == 'sdf':
@@ -379,7 +426,6 @@ def sort_fp_file(fp_filename):
     # copy sorted fps and config to a new file
     with tb.open_file(tmp_filename, mode='r') as fp_file:
         with tb.open_file(fp_filename, mode='w') as sorted_fp_file:
-
             fp_func = fp_file.root.config[0]
             fp_func_params = fp_file.root.config[1]
             fp_length = get_fp_length(fp_func, fp_func_params)
