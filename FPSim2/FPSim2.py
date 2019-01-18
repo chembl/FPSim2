@@ -6,7 +6,7 @@ import tables as tb
 import numpy as np
 
 
-def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=mp.cpu_count()):
+def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=mp.cpu_count()):
     """ Run a on disk search.
     
     :param query: Query molecule. SMILES, molblock or InChi formats accepted.
@@ -54,13 +54,14 @@ def run_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1
                 print('Chunk {} thread died: '.format(m), e)
     if results:
         np_res = np.concatenate(results)
-        np_res[::-1].sort(order='coeff')
+        if coeff != 'substructure':
+            np_res[::-1].sort(order='coeff')
     else:
         np_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
     return np_res
 
 
-def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
+def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
     """ Run a in memory search
     
     :param query: Query molecule. Preloaded using load_query function.
@@ -103,7 +104,8 @@ def run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=
                     print('Chunk {} thread died: '.format(m), e)
         if results:
             np_res = np.concatenate(results)
-            np_res[::-1].sort(order='coeff')
+            if coeff != 'substructure':
+                np_res[::-1].sort(order='coeff')
         else:
             np_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
     return np_res

@@ -1,5 +1,5 @@
 import pytest
-from FPSim2 import run_in_memory_search, run_search
+from FPSim2 import search, on_disk_search
 from FPSim2.FPSim2lib import py_popcount
 from FPSim2.io import *
 from rdkit import Chem
@@ -32,16 +32,16 @@ def test_load_fps():
     assert fps.count_ranges != []
 
 
-def test_run_in_memory_search():
+def test_search():
     query = load_query('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5')
     fps = load_fps('test/10mols.h5')
-    results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
+    results = search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
 
-def test_run_search():
-    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
+def test_on_disk_search():
+    results = on_disk_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 

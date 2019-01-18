@@ -115,7 +115,7 @@ def load_query(query, fp_filename):
     
     :param query: SMILES, molblock or InChi.
     :param fp_filename: FPs filename to use for the search.
-    :return: Query ready to use for run_in_memory_search function.
+    :return: Query ready to use for search function.
     """
     # read query molecule
     if re.match(SMILES_RE, query, flags=0):
@@ -217,6 +217,36 @@ def sdf_mol_supplier(in_fname, gen_ids, **kwargs):
             continue
 
 
+def calc_count_ranges(fps, fp_length, in_memory=False):
+    """ Calc popcount bins  
+    
+    :param fps_table: table storing fps.
+    :param fp_length: length of the fp.
+    :return: list with ranges.
+    """
+    count_ranges = []
+    if in_memory:
+        idx = np.unique(fps[:,-1], return_index=True)
+        for i, k in enumerate(zip(*idx)):
+            if k[0] == idx[0][-1]:
+                count_ranges.append((k[0], (k[1], fps.shape[0])))
+            else:
+                count_ranges.append((k[0], (k[1], idx[1][int(i+1)])))
+    else:
+        for i in range(0, fp_length + 1):
+            idx_gen = (row.nrow for row in fps.where("popcnt == {}".format(str(i))))
+            try:
+                first_id = next(idx_gen)
+            except StopIteration:
+                continue
+            j = first_id
+            for j in idx_gen:
+                pass
+            cnt_idxs = (first_id, j + 1)
+            count_ranges.append((i, cnt_idxs))
+    return count_ranges
+
+
 def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False):
     """ Create FPSim2 fingerprints file from .smi or .sdf files.
     
@@ -243,6 +273,7 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
+    # set compression
     filters = tb.Filters(complib='blosc', complevel=5)
 
     # set the output file and fps table
@@ -310,21 +341,8 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
         start=None, stop=None, step=None, chunkshape='keep', sortby=None, 
         check_CSI=False, propindexes=False)
 
-    # calc count ranges for baldi optimisation
-    count_ranges = []
-    for i in range(0, fp_length + 1):
-        idx_gen = (row.nrow for row in dst_fps.where("popcnt == {}".format(str(i))))
-        try:
-            first_id = next(idx_gen)
-        except StopIteration:
-            continue
-        j = first_id
-        for j in idx_gen:
-            pass
-        cnt_idxs = (first_id, j + 1)
-        count_ranges.append((i, cnt_idxs))
-
-    # add count ranges to vlarray
+    # calc count ranges for bounds optimisation and add it to vlarray
+    count_ranges = calc_count_ranges(dst_fps, fp_length)
     dst_config.append(count_ranges)
 
     h5file_out.close()
@@ -406,21 +424,8 @@ def sort_fp_file(fp_filename):
             param_table.append(fp_func_params)
             param_table.append(rdkit.__version__)
 
-            # calc count ranges for baldi optimisation
-            count_ranges = []
-            for i in range(0, fp_length + 1):
-                idx_gen = (row.nrow for row in dst_fps.where("popcnt == {}".format(str(i))))
-                try:
-                    first_id = next(idx_gen)
-                except StopIteration:
-                    continue
-                j = first_id
-                for j in idx_gen:
-                    pass
-                cnt_idxs = (first_id, j + 1)
-                count_ranges.append((i, cnt_idxs))
-
             # update count ranges
+            count_ranges = calc_count_ranges(dst_fps, fp_length)
             param_table.append(count_ranges)
     
     # remove not sorted file
@@ -439,7 +444,12 @@ def load_fps(fp_filename, sort=False):
         # can be also in memory sorted
         if sort:
             fps.sort(order='popcnt')
-        count_ranges = fp_file.root.config[3]
+            fp_func = fp_file.root.config[0]
+            fp_func_params = fp_file.root.config[1]
+            fp_length = get_fp_length(fp_func, fp_func_params)
+            count_ranges = calc_count_ranges(fp_file, fp_length, True)
+        else:
+            count_ranges = fp_file.root.config[3]
     num_fields = len(fps[0])
     fps2 = fps.view('<u8')
     fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
