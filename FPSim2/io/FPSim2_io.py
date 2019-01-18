@@ -247,7 +247,7 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
     return count_ranges
 
 
-def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False):
+def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
     """ Create FPSim2 fingerprints file from .smi or .sdf files.
     
     :param in_fname: .smi or .sdf filename.
@@ -277,78 +277,53 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
     filters = tb.Filters(complib='blosc', complevel=5)
 
     # set the output file and fps table
-    h5file_out = tb.open_file(out_fname + '_tmp', mode='w')
+    with tb.open_file(out_fname, mode='w') as fp_file:
+        class Particle(tb.IsDescription):
+            pass
 
-    class Particle(tb.IsDescription):
-        pass
+        # hacky...
+        columns = {}
+        pos = 1
+        columns['fp_id'] = tb.UInt64Col(pos=pos)
+        for i in range(1, int(fp_length / 64) + 1):
+            pos += 1
+            columns['f'+str(i)] = tb.UInt64Col(pos=pos)
+        columns['popcnt'] = tb.Int64Col(pos=pos+1)
+        Particle.columns = columns
 
-    # hacky...
-    columns = {}
-    pos = 1
-    columns['fp_id'] = tb.UInt64Col(pos=pos)
-    for i in range(1, int(fp_length / 64) + 1):
-        pos += 1
-        columns['f'+str(i)] = tb.UInt64Col(pos=pos)
-    columns['popcnt'] = tb.Int64Col(pos=pos+1)
-    Particle.columns = columns
+        fps_table = fp_file.create_table(fp_file.root, 
+                                            'fps', 
+                                            Particle,
+                                            'Table storing fps',
+                                            filters=filters)
 
-    fps_table = h5file_out.create_table(h5file_out.root, 
-                                        'fps', 
-                                        Particle,
-                                        'Table storing fps',
-                                        filters=filters)
+        # set config table; used fp function, parameters and rdkit version
+        param_table = fp_file.create_vlarray(fp_file.root, 
+                                                'config', 
+                                                atom=tb.ObjectAtom())
+        param_table.append(fp_func)
+        param_table.append(fp_func_params)
+        param_table.append(rdkit.__version__)
 
-    # set config table; used fp function, parameters and rdkit version
-    param_table = h5file_out.create_vlarray(h5file_out.root, 
-                                            'config', 
-                                            atom=tb.ObjectAtom())
-    param_table.append(fp_func)
-    param_table.append(fp_func_params)
-    param_table.append(rdkit.__version__)
+        fps = []
+        for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
+            efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
+            popcnt = py_popcount(np.array(efp, dtype=np.uint64))
+            efp.insert(0, mol_id)
+            efp.append(popcnt)
+            fps.append(tuple(efp))
+            if len(fps) == BATCH_WRITE_SIZE:
+                fps_table.append(fps)
+                fps = []
+        # append last batch < 10k
+        fps_table.append(fps)
 
-    fps = []
-    for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
-        efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-        popcnt = py_popcount(np.array(efp, dtype=np.uint64))
-        efp.insert(0, mol_id)
-        efp.append(popcnt)
-        fps.append(tuple(efp))
-        if len(fps) == BATCH_WRITE_SIZE:
-            fps_table.append(fps)
-            fps = []
-    # append last batch < 10k
-    fps_table.append(fps)
+        # create index so table can be sorted
+        fps_table.cols.popcnt.create_index(kind='full')
 
-    # create index so table can be sorted
-    fps_table.cols.popcnt.create_index(kind='full')
-    h5file_out.close()
-
-    # sort table (copy a file to another because HDF5 does not adjust the size of the store after removal)
-    h5file_out = tb.open_file(out_fname + '_tmp', mode='r')
-    fp_file = tb.open_file(out_fname, mode='w')
-
-    # create a sorted copy of the fps table
-    dst_fps = h5file_out.root.fps.copy(
-        fp_file.root, 'fps', filters=filters, copyuserattrs=True, overwrite=True,
-        stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
-        start=None, stop=None, step=None, chunkshape='keep', sortby='popcnt', 
-        check_CSI=True, propindexes=True)
-
-    # copy config vlrarray
-    dst_config = h5file_out.root.config.copy(
-        fp_file.root, 'config', filters=None, copyuserattrs=True, overwrite=True,
-        stats={'groups': 0, 'leaves': 0, 'links': 0, 'bytes': 0, 'hardlinks': 0},
-        start=None, stop=None, step=None, chunkshape='keep', sortby=None, 
-        check_CSI=False, propindexes=False)
-
-    # calc count ranges for bounds optimisation and add it to vlarray
-    count_ranges = calc_count_ranges(dst_fps, fp_length)
-    dst_config.append(count_ranges)
-
-    h5file_out.close()
-    fp_file.close()
-    os.remove(out_fname + '_tmp')
-
+        if sort_by_popcnt:
+            sort_fp_file(out_fname)
+    
 
 def append_molecules(fp_filename, mol_iter):
     """ append molecules to a fp file.
