@@ -321,8 +321,8 @@ def create_fp_file(in_fname, out_fname, fp_func, fp_func_params={}, mol_id_prop=
         # create index so table can be sorted
         fps_table.cols.popcnt.create_index(kind='full')
 
-        if sort_by_popcnt:
-            sort_fp_file(out_fname)
+    if sort_by_popcnt:
+        sort_fp_file(out_fname)
     
 
 def append_molecules(fp_filename, mol_iter):
