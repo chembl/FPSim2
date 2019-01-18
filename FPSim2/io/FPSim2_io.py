@@ -1,10 +1,10 @@
 import rdkit
 from rdkit import Chem
+from FPSim2.FPSim2lib import py_popcount
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
 from collections import namedtuple
 import tables as tb
-from FPSim2.FPSim2lib import py_popcount
 import numpy as np
 import textwrap
 import re
@@ -447,7 +447,7 @@ def load_fps(fp_filename, sort=False):
             fp_func = fp_file.root.config[0]
             fp_func_params = fp_file.root.config[1]
             fp_length = get_fp_length(fp_func, fp_func_params)
-            count_ranges = calc_count_ranges(fp_file, fp_length, True)
+            count_ranges = calc_count_ranges(fps, fp_length, True)
         else:
             count_ranges = fp_file.root.config[3]
     num_fields = len(fps[0])
