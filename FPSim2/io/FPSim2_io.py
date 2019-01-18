@@ -297,7 +297,7 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
 def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
     """ Create FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
     
-    :param in_fname: .smi or .sdf filename.
+    :param io_source: .smi or .sdf filename.
     :param out_fname: FPs output filename.
     :param fp_func: Name of fingerprint function to use to generate the fingerprints.
     :param fp_func_params: Parameters for the fingerprint function.
@@ -353,7 +353,7 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
         param_table.append(rdkit.__version__)
 
         fps = []
-        for mol_id, rdmol in supplier(in_fname, gen_ids, mol_id_prop=mol_id_prop):
+        for mol_id, rdmol in supplier(io_source, gen_ids, mol_id_prop=mol_id_prop):
             efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
             popcnt = py_popcount(np.array(efp, dtype=np.uint64))
             efp.insert(0, mol_id)
