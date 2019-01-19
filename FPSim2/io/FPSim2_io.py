@@ -372,7 +372,7 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
         sort_fp_file(out_fname)
     
 
-def append_molecules(io_source, mol_iter):
+def append_molecules(fp_filename, io_source):
     """ append molecules to a fp file.
 
     Appends molecules to an existing fp file
