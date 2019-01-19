@@ -417,7 +417,6 @@ def delete_fps(fp_filename, ids_list):
         all_rows_to_delete = []
         for fp_id in ids_list:
             rows_to_delete = [row.nrow for row in fps_table.where("fp_id == {}".format(str(fp_id)))]
-            print(rows_to_delete)
             all_rows_to_delete.append(rows_to_delete)
         all_rows_to_delete = [item for sublist in all_rows_to_delete for item in sublist]
         print(all_rows_to_delete)
