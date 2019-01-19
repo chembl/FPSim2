@@ -13,6 +13,7 @@ Implementing:
 - Using fast population count algorithm(builtin-popcnt-unrolled) from https://github.com/WojciechMula/sse-popcount using SIMD instructions.
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/).
+- In memory and on disk search modes.
 
 
 ## Installation 
@@ -68,7 +69,7 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 ### Run a in memory search
 
 ```python
-from FPSim2 import run_in_memory_search
+from FPSim2 import search
 from FPSim2.io import load_query, load_fps
 
 fp_filename = 'chembl.h5'
@@ -76,7 +77,7 @@ fp_filename = 'chembl.h5'
 query = load_query('CC(=O)Oc1ccccc1C(=O)O', fp_filename)
 fps = load_fps(fp_filename)
 
-results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1)
+results = search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1)
 ```
 
 As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results and the number of threads used.
@@ -86,12 +87,12 @@ As GIL is most of the time released, searches can be speeded up using multiple t
 If you're searching against a huge dataset or you have small RAM, you can still run searches.
 
 ```python
-from FPSim2 import run_search
+from FPSim2 import on_disk_search
 
 fp_filename = 'chembl.h5'
 query_string = 'CC(=O)Oc1ccccc1C(=O)O'
 
-results = run_search(query_string, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=1)
+results = on_disk_search(query_string, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=1)
 ```
 
 In the on disk search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results, the chunk size and the number of processes used.

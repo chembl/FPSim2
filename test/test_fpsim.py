@@ -1,5 +1,7 @@
 import pytest
-from FPSim2 import run_in_memory_search, run_search
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from FPSim2 import search, on_disk_search
 from FPSim2.FPSim2lib import py_popcount
 from FPSim2.io import *
 from rdkit import Chem
@@ -25,6 +27,24 @@ def test_create_fp_file():
         assert fp_file.root.fps.shape[0] == 10
 
 
+def test_create_fp_file_sqla():
+    fp_type = 'Morgan'
+    fp_params = {'radius': 2, 'nBits': 2048}
+
+    engine = create_engine('sqlite:///test/test.db')
+    s = Session(engine)
+    sql_query = "select mol_string, mol_id from structure"
+    resprox = s.execute(sql_query)
+
+    create_fp_file(resprox, 'test/10mols_sqla.h5', fp_type, fp_params)
+    with tb.open_file('test/10mols_sqla.h5', mode='r') as fp_file:
+        config = fp_file.root.config
+        assert config[0] == fp_type
+        assert config[1]['radius'] == fp_params['radius']
+        assert config[1]['nBits'] == fp_params['nBits']
+        assert fp_file.root.fps.shape[0] == 10
+
+
 def test_load_fps():
     fps = load_fps('test/10mols.h5')
     assert fps.fps.shape[0] == 10
@@ -32,16 +52,22 @@ def test_load_fps():
     assert fps.count_ranges != []
 
 
-def test_run_in_memory_search():
+def test_load_fps_sort():
+    fps = load_fps('test/10mols.h5')
+    fps2 = load_fps('test/10mols.h5', sort=True)
+    assert fps2.count_ranges == fps.count_ranges 
+
+
+def test_search():
     query = load_query('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5')
     fps = load_fps('test/10mols.h5')
-    results = run_in_memory_search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
+    results = search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
 
-def test_run_search():
-    results = run_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
+def test_on_disk_search():
+    results = on_disk_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
@@ -51,10 +77,10 @@ def test_py_popcount():
     assert res == 4
 
 
-def test_append_molecules():
-    append_molecules('test/10mols.h5', [['CC', 1], ['CCC', 2], ['CCCC', 3]])
-    with tb.open_file('test/10mols.h5', mode='r') as fp_file:
-        assert fp_file.root.fps.shape[0] == 13
+def test_append_fps():
+    append_fps('test/10mols.h5', [['CC', 11], ['CCC', 12], ['CCCC', 13]])
+    fps = load_fps('test/10mols.h5')
+    assert fps.fps.shape[0] == 13
 
 
 def test_sort_fp_file():
@@ -62,3 +88,12 @@ def test_sort_fp_file():
     fps = load_fps('test/10mols.h5')
     assert fps.fps[-1][-1] == 48
     assert fps.fps[0][-1] == 2
+
+
+def test_delete_fps():
+    delete_fps('test/10mols.h5', [11, 12, 13])
+    sort_fp_file('test/10mols.h5')
+    fps = load_fps('test/10mols.h5')
+    assert fps.fps.shape[0] == 10
+    assert fps.fps[-1][-1] == 48
+    assert fps.fps[0][-1] == 35
