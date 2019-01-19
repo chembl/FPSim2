@@ -413,14 +413,14 @@ def delete_fps(fp_filename, ids_list):
     :return: None.
     """
     with tb.open_file(fp_filename, mode='a') as fp_file:
-        fps = fp_file.root.fps
+        fps_table = fp_file.root.fps
         all_rows_to_delete = []
         for fp_id in ids_list:
-            rows_to_delete = [row.nrow for row in fps.where("fp_id == {}".format(str(fp_id)))]
+            rows_to_delete = [row.nrow for row in fps_table.where("fp_id == {}".format(str(fp_id)))]
             all_rows_to_delete.append(rows_to_delete)
         all_rows_to_delete = [item for sublist in all_rows_to_delete for item in sublist]
         for td in all_rows_to_delete:
-            fps.remove_row(td)
+            fps_table.remove_row(td + 1)
 
 
 def sort_fp_file(fp_filename):
