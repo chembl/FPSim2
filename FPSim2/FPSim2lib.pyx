@@ -107,7 +107,8 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
         np_results[i][1] = results[i].coeff
 
     # free manually allocated memory and return the results
-    free(results)
+    with nogil:
+        free(results)
     return np_results
 
 
