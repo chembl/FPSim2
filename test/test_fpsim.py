@@ -77,8 +77,8 @@ def test_py_popcount():
     assert res == 4
 
 
-def test_append_molecules():
-    append_molecules('test/10mols.h5', [['CC', 1], ['CCC', 2], ['CCCC', 3]])
+def test_append_fps():
+    append_fps('test/10mols.h5', [['CC', 11], ['CCC', 12], ['CCCC', 13]])
     with tb.open_file('test/10mols.h5', mode='r') as fp_file:
         assert fp_file.root.fps.shape[0] == 13
 
@@ -88,3 +88,10 @@ def test_sort_fp_file():
     fps = load_fps('test/10mols.h5')
     assert fps.fps[-1][-1] == 48
     assert fps.fps[0][-1] == 2
+
+
+def test_delete_fps():
+    delete_fps('test/10mols.h5', [11, 12, 13])
+    fps = load_fps('test/10mols.h5')
+    assert fps.fps[-1][-1] == 48
+    assert fps.fps[0][-1] == 26
