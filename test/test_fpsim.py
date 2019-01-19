@@ -79,8 +79,8 @@ def test_py_popcount():
 
 def test_append_fps():
     append_fps('test/10mols.h5', [['CC', 11], ['CCC', 12], ['CCCC', 13]])
-    with tb.open_file('test/10mols.h5', mode='r') as fp_file:
-        assert fp_file.root.fps.shape[0] == 13
+    fps = load_fps('test/10mols.h5')
+    assert fps.shape[0] == 13
 
 
 def test_sort_fp_file():
@@ -92,6 +92,7 @@ def test_sort_fp_file():
 
 def test_delete_fps():
     delete_fps('test/10mols.h5', [11, 12, 13])
+    sort_fp_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
     print(fps)
     assert fps.fps.shape[0] == 10
