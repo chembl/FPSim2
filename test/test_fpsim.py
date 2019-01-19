@@ -1,4 +1,6 @@
 import pytest
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
 from FPSim2 import search, on_disk_search
 from FPSim2.FPSim2lib import py_popcount
 from FPSim2.io import *
@@ -14,6 +16,24 @@ def test_rdmol_top_efp():
 
 
 def test_create_fp_file():
+    fp_type = 'Morgan'
+    fp_params = {'radius': 2, 'nBits': 2048}
+
+    engine = create_engine('sqlite:///tests/example.db')
+    s = Session(engine)
+    sql_query = "select mol_string, mol_id from structure"
+    resprox = s.execute(sql_query)
+
+    create_fp_file(resprox, 'test/10mols_sqla.h5', fp_type, fp_params)
+    with tb.open_file('test/10mols_sqla.h5', mode='r') as fp_file:
+        config = fp_file.root.config
+        assert config[0] == fp_type
+        assert config[1]['radius'] == fp_params['radius']
+        assert config[1]['nBits'] == fp_params['nBits']
+        assert fp_file.root.fps.shape[0] == 10
+
+
+def test_create_fp_file_sqla():
     fp_type = 'Morgan'
     fp_params = {'radius': 2, 'nBits': 2048}
     create_fp_file('test/10mols.smi', 'test/10mols.h5', fp_type, fp_params)
