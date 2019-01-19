@@ -389,7 +389,7 @@ def append_molecules(fp_filename, io_source):
         fp_func_params = fp_file.root.config[1]
         fps_table = fp_file.root.fps
         new_mols = []
-        for m in supplier(io_source):
+        for m in supplier(io_source, gen_ids=False):
             mol, mol_id = m
             if re.match(SMILES_RE, mol, flags=0):
                 rdmol = Chem.MolFromSmiles(mol)
