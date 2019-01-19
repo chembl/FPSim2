@@ -86,7 +86,6 @@ def test_append_fps():
 def test_sort_fp_file():
     sort_fp_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
-    print(fps)
     assert fps.fps[-1][-1] == 48
     assert fps.fps[0][-1] == 2
 
