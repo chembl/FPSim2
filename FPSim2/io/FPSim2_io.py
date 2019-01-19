@@ -419,10 +419,12 @@ def delete_fps(fp_filename, ids_list):
             rows_to_delete = [row.nrow for row in fps_table.where("fp_id == {}".format(str(fp_id)))]
             all_rows_to_delete.append(rows_to_delete)
         all_rows_to_delete = [item for sublist in all_rows_to_delete for item in sublist]
-        print(fp_file.root.fps[:])
-        print(all_rows_to_delete)
+        # print(fp_file.root.fps[:])
+        # print(all_rows_to_delete)
+        fps_table.autoindex = False
         for td in all_rows_to_delete:
             fps_table.remove_row(td)
+        fps_table.autoindex = True
 
 
 def sort_fp_file(fp_filename):
