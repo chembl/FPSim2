@@ -32,6 +32,12 @@ def test_load_fps():
     assert fps.count_ranges != []
 
 
+def test_load_fps_sort():
+    fps = load_fps('test/10mols.h5')
+    fps2 = load_fps('test/10mols.h5', sort=True)
+    assert fps2.count_ranges == fps.count_ranges 
+
+
 def test_search():
     query = load_query('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5')
     fps = load_fps('test/10mols.h5')

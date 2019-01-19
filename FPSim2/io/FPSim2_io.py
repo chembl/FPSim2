@@ -1,5 +1,6 @@
 import rdkit
 from rdkit import Chem
+from sqlalchemy.engine.result import ResultProxy
 from FPSim2.FPSim2lib import py_popcount
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
@@ -110,31 +111,31 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
     return efp
 
 
-def load_molecule(molecule_string):
-    if re.match(SMILES_RE, molecule_string, flags=0):
-        rdmol = Chem.MolFromSmiles(molecule_string)
-    elif re.search(INCHI_RE, molecule_string, flags=re.IGNORECASE):
-        rdmol = Chem.MolFromInchi(molecule_string)
+def load_molecule(mol_string):
+    if re.match(SMILES_RE, mol_string, flags=0):
+        rdmol = Chem.MolFromSmiles(mol_string)
+    elif re.search(INCHI_RE, mol_string, flags=re.IGNORECASE):
+        rdmol = Chem.MolFromInchi(mol_string)
     else:
-        rdmol = Chem.MolFromMolBlock(molecule_string)
+        rdmol = Chem.MolFromMolBlock(mol_string)
     return rdmol
 
 
-def load_query(molecule_string, fp_filename):
+def load_query(mol_string, fp_filename):
     """ Load query molecule from SMILES, molblock or InChi.
     
     :param query: SMILES, molblock or InChi.
     :param fp_filename: FPs filename to use for the search.
     :return: Query ready to use for search function.
     """
-    rdmol = load_molecule(molecule_string)
+    rdmol = load_molecule(mol_string)
     with tb.open_file(fp_filename, mode='r') as fp_file:
         # retrieve config from fps file
         config = fp_file.root.config
         fp_func = config[0]
         fp_func_params = config[1]
         if rdkit.__version__ != config[2]:
-            print('Warning, FPS were created with RDKit {}, using {}'
+            print('Warning, FPS were created with RDKit {}, now using {}'
                 .format(config[2], rdkit.__version__))
     # generate the fpe
     efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
@@ -160,43 +161,32 @@ def get_fp_length(fp_func, fp_func_params):
     return fp_length
 
 
-# def sqla_query_supplier(io_source, gen_ids, **kwargs):
-#     """ Generator function that reads from an SQLAlchemy query
+def it_supplier(io_source, gen_ids, **kwargs):
+    """ Generator function that reads from a Python list or SQLA ResultProxy.
     
-#     :param io_source: SQLA query object.
-#     :param gen_ids: flag to generate new ids.
-#     :param kwargs: keyword arguments. 
-#     :return: Yields next id and rdkit mol tuple.
-#     """
-#     pass
-
-
-def list_supplier(io_source, gen_ids, **kwargs):
-    """ Generator function that reads from a Python list
-    
-    :param io_source: Python list.
+    :param io_source: py list or sqla ResultProxy.
     :param gen_ids: flag to generate new ids.
     :param kwargs: keyword arguments. 
     :return: Yields next id and rdkit mol tuple.
     """
     for new_mol_id, mol in enumerate(io_source, 1):
         if len(mol) == 1:
-            smiles = mol[0]
+            mol_string = mol[0]
             mol_id = new_mol_id
         else:
             if gen_ids:
-                smiles = mol[0]
+                mol_string = mol[0]
                 mol_id = new_mol_id
             else:
                 try:
-                    smiles = mol[0]
+                    mol_string = mol[0]
                     mol_id = int(mol[1])
                 except Exception as e:
                     raise Exception('FPSim only supports integer ids for molecules, '
                                     'cosinder setting gen_ids=True when running '
                                     'create_fp_file to autogenerate them.')
-                smiles = mol[0].strip()
-        rdmol = load_molecule(smiles)
+                mol_string = mol[0].strip()
+        rdmol = load_molecule(mol_string)
         if rdmol:
             yield mol_id, rdmol
         else:
@@ -294,6 +284,22 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
     return count_ranges
 
 
+def get_mol_suplier(io_source):
+    # select mol supplier depending on the object type and file extension
+    supplier = None
+    if isinstance(io_source, list) or isinstance(io_source, ResultProxy):
+        supplier = it_supplier
+    else:
+        input_type = io_source.split('.')[-1]
+        if input_type == 'smi':
+            supplier = smi_mol_supplier
+        elif input_type == 'sdf':
+            supplier = sdf_mol_supplier
+    if not supplier:
+        raise Exception('No valid input molecules input.')
+    return supplier
+
+
 def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
     """ Create FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
     
@@ -309,14 +315,8 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
     if not fp_func_params:
         fp_func_params = FP_FUNC_DEFAULTS[fp_func]
 
-    # select SMI/SDF supplier depending the file extension
-    input_type = io_source.split('.')[-1]
-    if input_type == 'smi':
-        supplier = smi_mol_supplier
-    elif input_type == 'sdf':
-        supplier = sdf_mol_supplier
-    else:
-        raise Exception('No valid input file provided.')
+    # get mol supplier
+    supplier = get_mol_suplier(io_source)
 
     fp_length = get_fp_length(fp_func, fp_func_params)
 
@@ -346,8 +346,8 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
 
         # set config table; used fp function, parameters and rdkit version
         param_table = fp_file.create_vlarray(fp_file.root, 
-                                                'config', 
-                                                atom=tb.ObjectAtom())
+                                             'config', 
+                                             atom=tb.ObjectAtom())
         param_table.append(fp_func)
         param_table.append(fp_func_params)
         param_table.append(rdkit.__version__)
@@ -372,7 +372,7 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
         sort_fp_file(out_fname)
     
 
-def append_molecules(fp_filename, mol_iter):
+def append_molecules(io_source, mol_iter):
     """ append molecules to a fp file.
 
     Appends molecules to an existing fp file
@@ -382,12 +382,14 @@ def append_molecules(fp_filename, mol_iter):
 
     :return: None.
     """
+    supplier = get_mol_suplier(io_source)
+
     with tb.open_file(fp_filename, mode='a') as fp_file:
         fp_func = fp_file.root.config[0]
         fp_func_params = fp_file.root.config[1]
         fps_table = fp_file.root.fps
         new_mols = []
-        for m in mol_iter:
+        for m in supplier(io_source):
             mol, mol_id = m
             if re.match(SMILES_RE, mol, flags=0):
                 rdmol = Chem.MolFromSmiles(mol)
@@ -412,8 +414,7 @@ def append_molecules(fp_filename, mol_iter):
 def sort_fp_file(fp_filename):
     """ Sort fp file.
 
-    Sorts an existing fp file. It can be used after appending new molecules
-    to an existing fp file
+    Sorts an existing fp file. 
     
     :param fp_filename: FPs filename.
     :return: None.
@@ -439,8 +440,8 @@ def sort_fp_file(fp_filename):
 
             # set config table; used fp function, parameters and rdkit version
             param_table = sorted_fp_file.create_vlarray(sorted_fp_file.root, 
-                                                    'config', 
-                                                    atom=tb.ObjectAtom())
+                                                        'config', 
+                                                        atom=tb.ObjectAtom())
             param_table.append(fp_func)
             param_table.append(fp_func_params)
             param_table.append(rdkit.__version__)
@@ -468,7 +469,7 @@ def load_fps(fp_filename, sort=False):
             fp_func = fp_file.root.config[0]
             fp_func_params = fp_file.root.config[1]
             fp_length = get_fp_length(fp_func, fp_func_params)
-            count_ranges = calc_count_ranges(fps, fp_length, True)
+            count_ranges = calc_count_ranges(fps, fp_length, in_memory=True)
         else:
             count_ranges = fp_file.root.config[3]
     num_fields = len(fps[0])
