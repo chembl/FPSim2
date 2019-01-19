@@ -94,6 +94,6 @@ def test_delete_fps():
     delete_fps('test/10mols.h5', [11, 12, 13])
     fps = load_fps('test/10mols.h5')
     print(fps)
-    assert fps.shape[0] == 10
+    assert fps.fps.shape[0] == 10
     assert fps.fps[-1][-1] == 48
     assert fps.fps[0][-1] == 35
