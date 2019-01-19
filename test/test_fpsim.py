@@ -19,7 +19,7 @@ def test_create_fp_file():
     fp_type = 'Morgan'
     fp_params = {'radius': 2, 'nBits': 2048}
 
-    engine = create_engine('sqlite:///tests/example.db')
+    engine = create_engine('sqlite:///tests/test.db')
     s = Session(engine)
     sql_query = "select mol_string, mol_id from structure"
     resprox = s.execute(sql_query)
