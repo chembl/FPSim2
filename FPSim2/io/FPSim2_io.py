@@ -331,7 +331,7 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
         # hacky...
         columns = {}
         pos = 1
-        columns['fp_id'] = tb.UInt64Col(pos=pos)
+        columns['fp_id'] = tb.Int64Col(pos=pos)
         for i in range(1, int(fp_length / 64) + 1):
             pos += 1
             columns['f'+str(i)] = tb.UInt64Col(pos=pos)
@@ -405,6 +405,13 @@ def append_fps(fp_filename, io_source, mol_id_prop='mol_id'):
 
 
 def delete_fps(fp_filename, ids_list):
+    """ Delete fps from fp file.
+    
+    :param fp_filename: FPs filename.
+    :param fp_filename: ids to delete list.
+
+    :return: None.
+    """
     with tb.open_file(fp_filename, mode='a') as fp_file:
         fps = fp_file.root.fps
         all_rows_to_delete = []
