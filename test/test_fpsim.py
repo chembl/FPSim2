@@ -80,7 +80,7 @@ def test_py_popcount():
 def test_append_fps():
     append_fps('test/10mols.h5', [['CC', 11], ['CCC', 12], ['CCCC', 13]])
     fps = load_fps('test/10mols.h5')
-    assert fps.shape[0] == 13
+    assert fps.fps.shape[0] == 13
 
 
 def test_sort_fp_file():
