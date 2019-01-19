@@ -372,7 +372,7 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
         sort_fp_file(out_fname)
     
 
-def append_molecules(fp_filename, io_source):
+def append_molecules(fp_filename, io_source, mol_id_prop='mol_id'):
     """ append molecules to a fp file.
 
     Appends molecules to an existing fp file
@@ -389,14 +389,7 @@ def append_molecules(fp_filename, io_source):
         fp_func_params = fp_file.root.config[1]
         fps_table = fp_file.root.fps
         new_mols = []
-        for m in supplier(io_source, gen_ids=False):
-            mol, mol_id = m
-            if re.match(SMILES_RE, mol, flags=0):
-                rdmol = Chem.MolFromSmiles(mol)
-            elif re.search(INCHI_RE, mol, flags=re.IGNORECASE):
-                rdmol = Chem.MolFromInchi(mol)
-            else:
-                rdmol = Chem.MolFromMolBlock(mol)
+        for mol_id, rdmol in supplier(io_source, False, mol_id_prop=mol_id_prop):
             if not rdmol:
                 continue
             efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
