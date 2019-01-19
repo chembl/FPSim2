@@ -263,7 +263,7 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
     """
     count_ranges = []
     if in_memory:
-        idx = np.unique(fps[:,-1], return_index=True)
+        idx = np.unique(fps['popcnt'], return_index=True)
         for i, k in enumerate(zip(*idx)):
             if k[0] == idx[0][-1]:
                 count_ranges.append((k[0], (k[1], fps.shape[0])))
