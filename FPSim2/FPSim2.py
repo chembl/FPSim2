@@ -6,33 +6,6 @@ import tables as tb
 import numpy as np
 
 
-class FPSimDB:
-
-    fp_type = None
-    fp_params = None
-    fps = None
-
-    def __init__(self, fp_filename):
-        # self.fp_type = 
-        # self.fp_params = 
-        pass
-
-    def load_fps(self):
-        pass
-
-    def similarity_search(self, query, theshold, n_threads=1):
-        pass
-    
-    def substructure_search(self, query, n_threads=1)
-        pass
-
-    def on_disk_similarity_search(self, query, threshold, chunk_size=1000000, n_processes=mp.cpu_count()):
-        pass
-    
-    def on_disk_substructure_search(self, query, chunk_size=1000000, n_processes=mp.cpu_count()):
-        pass
-
-
 def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=mp.cpu_count()):
     """ Run a on disk search.
     
