@@ -56,7 +56,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_star
     cdef uint8_t total_sims = 0
     cdef uint8_t simres_length = 256
 
-    cdef Result *results = <Result *> malloc(sizeof(uint64_t))
+    cdef uint64_t *results = <uint64_t *> malloc(sizeof(uint64_t))
 
     with nogil:
         # precalc query popcount
