@@ -79,7 +79,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_star
 
             if total_sims == simres_length:
                 simres_length *= 2
-                results = <Result *> realloc(results, sizeof(uint64_t))
+                results = <uint64_t *> realloc(results, sizeof(uint64_t))
 
             # reset values for next fp
             int_count = 0
