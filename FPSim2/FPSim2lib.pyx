@@ -3,7 +3,7 @@
 import numpy as np
 cimport numpy as np
 cimport cython
-from libc.stdint cimport uint8_t, uint32_t, uint64_t
+from libc.stdint cimport uint32_t, uint64_t
 from libc.stdlib cimport malloc, realloc, free
 import tables as tb
 
@@ -47,7 +47,7 @@ cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uin
 @cython.initializedcheck(False)
 cdef inline uint32_t _i_popcount(uint64_t[:] query, uint64_t[:] other) nogil:
     cdef uint32_t int_count = 0
-    cdef uint8_t j
+    cdef uint32_t j
     for j in range(0, query.shape[0], 4):
         # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in other to skip the mol_id)
         # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
@@ -61,16 +61,16 @@ cdef inline uint32_t _i_popcount(uint64_t[:] query, uint64_t[:] other) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_start, uint8_t i_end):
+cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint32_t i_start, uint32_t i_end):
 
-    cdef uint8_t i
-    cdef uint8_t j
+    cdef uint32_t i
+    cdef uint32_t j
     cdef uint32_t int_count = 0
     cdef uint32_t rel_co_count = 0
     cdef uint32_t query_count = 0
     cdef double coeff = 0.0
-    cdef uint8_t total_sims = 0
-    cdef uint8_t simres_length = 256
+    cdef uint32_t total_sims = 0
+    cdef uint32_t simres_length = 256
 
     cdef uint64_t *results = <uint64_t *> malloc(sizeof(uint64_t))
 
@@ -115,15 +115,15 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_star
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold, uint8_t i_start, uint8_t i_end):
+cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold, uint32_t i_start, uint32_t i_end):
 
-    cdef uint8_t i
-    cdef uint8_t j
+    cdef uint32_t i
+    cdef uint32_t j
     cdef uint32_t int_count = 0
     cdef uint32_t query_count = 0
     cdef double coeff = 0.0
-    cdef uint8_t total_sims = 0
-    cdef uint8_t simres_length = 256
+    cdef uint32_t total_sims = 0
+    cdef uint32_t simres_length = 256
 
     # allocate number * sizeof(Result) bytes of memory
     cdef Result *results = <Result *> malloc(simres_length * sizeof(Result))
