@@ -1,6 +1,6 @@
 import multiprocessing as mp
 import concurrent.futures as cf
-from .FPSim2lib import similarity_search, _similarity_search, get_bounds_range
+from .FPSim2lib import run_search, _similarity_search, _substructure_search, get_bounds_range
 from .io import load_query, COEFFS
 import tables as tb
 import numpy as np
@@ -43,7 +43,7 @@ def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_si
     c_indexes = ((x, x + chunk_size) for x in range(i_start, i_end, chunk_size))
     results = []
     with cf.ProcessPoolExecutor(max_workers=n_processes) as ppe:
-        future_ss = {ppe.submit(similarity_search, query, fp_filename, indexes, threshold, COEFFS[coeff]): 
+        future_ss = {ppe.submit(run_search, query, fp_filename, indexes, threshold, COEFFS[coeff]): 
                         c_id for c_id, indexes in enumerate(c_indexes)}
         for future in cf.as_completed(future_ss):
             m = future_ss[future]
@@ -78,8 +78,10 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
         empty_res = np.ndarray((0,), dtype='<u8')
         # if substructure automatically set threshold to 1.0
         threshold = 1.0
+        search_func = _substructure_search
     else:
         empty_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+        search_func = _similarity_search
 
     fp_range = get_bounds_range(query, fps.count_ranges, threshold, COEFFS[coeff])
     if not fp_range:
@@ -89,8 +91,11 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
         i_end = fp_range[1]
 
     if n_threads == 1:
-        np_res = _similarity_search(query, fps.fps, threshold, COEFFS[coeff], i_start, i_end)
-        np_res[::-1].sort(order='coeff')
+        if coeff == 'substructure':
+            np_res = search_func(query, fps.fps, threshold, i_start, i_end)
+        else:
+            np_res = search_func(query, fps.fps, threshold, i_start, i_end)
+            np_res[::-1].sort(order='coeff')
         return np_res
     else:
         results = []
@@ -98,7 +103,7 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
             chunk_size = int((i_end - i_start) / n_threads)
             c_indexes = [[x, x + chunk_size] for x in range(i_start, i_end, chunk_size)]
             c_indexes[-1][1] = i_end
-            future_ss = {tpe.submit(_similarity_search, query, fps.fps, threshold, COEFFS[coeff], chunk_idx[0], chunk_idx[1]): 
+            future_ss = {tpe.submit(search_func, query, fps.fps, threshold, chunk_idx[0], chunk_idx[1]): 
                             c_id for c_id, chunk_idx in enumerate(c_indexes)}
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]

@@ -61,7 +61,7 @@ cdef inline uint32_t _i_popcount(uint64_t[:] query, uint64_t[:] other) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint32_t i_start, uint32_t i_end):
+cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold, uint32_t i_start, uint32_t i_end):
 
     cdef uint32_t i
     cdef uint32_t j
@@ -89,7 +89,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint32_t i_sta
 
             coeff = _substruct_coeff(rel_co_count, int_count)
 
-            if coeff == 1.0:
+            if coeff == threshold:
                 results[total_sims] = fps[i][0]
                 total_sims += 1
 
@@ -204,14 +204,14 @@ cpdef get_bounds_range(query, ranges, threshold, coeff):
     return range_to_keep
 
 
-def similarity_search(query, fp_filename, chunk_indexes, threshold, coeff):
+def run_search(query, fp_filename, chunk_indexes, threshold, coeff):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
     num_fields = len(fps[0])
     fps2 = fps.view('<u8')
     fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
     if coeff == 2:
-        res = _substructure_search(query, fps3, 0, fps.shape[0])
+        res = _substructure_search(query, fps3, threshold, 0, fps.shape[0])
     else:
         res = _similarity_search(query, fps3, threshold, 0, fps.shape[0])
     return res
