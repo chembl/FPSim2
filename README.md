@@ -12,8 +12,8 @@ Implementing:
 
 - Using fast population count algorithm(builtin-popcnt-unrolled) from https://github.com/WojciechMula/sse-popcount using SIMD instructions.
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
-- A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/).
-- In memory and on disk search modes.
+- A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/)
+- In memory and on disk search modes
 
 
 ## Installation 
@@ -24,6 +24,9 @@ Use a conda environment to install it. Builds available for:
     - Python 3.7
 - mac:
     - Python 3.6
+
+Python 3.7 for mac build will also be available once [RDKit #2207 issue](https://github.com/rdkit/rdkit/issues/2207) is solved
+
 ```
 conda install fpsim2 -c efelix -c conda-forge
 ```
@@ -35,8 +38,25 @@ conda install fpsim2 -c efelix -c conda-forge
 ```python
 from FPSim2 import create_fp_file
 
-# input file, output file, FP type, FP parameters
+# from .smi file
 create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+
+# from .sdf file, need to specify sdf property containing the molecule id
+create_fp_file('chembl.sdf', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, mol_id_prop='mol_id')
+
+# from Python list
+create_fp_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+
+# from sqlalchemy ResulProxy
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+
+engine = create_engine('sqlite:///test/test.db')
+s = Session(engine)
+sql_query = "select mol_string, mol_id from structure"
+res_prox = s.execute(sql_query)
+
+create_fp_file(res_prox, 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 ```
 
 FPSim2 will use RDKit default parameters for a fingerprint type in case no parameters are used. Available FP types and default parameters listed below.

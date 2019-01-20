@@ -9,15 +9,17 @@ import tables as tb
 import numpy as np
 
 
+fp_type = 'Morgan'
+fp_params = {'radius': 2, 'nBits': 2048}
+
+
 def test_rdmol_top_efp():
     rdmol = Chem.MolFromSmiles('CCC')
     ok = [0, 140737488355328, 0, 0, 33554432, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1073741824, 0, 0, 0, 0, 9223372036854775808, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    assert rdmol_to_efp(rdmol, 'Morgan', {'radius': 2, 'nBits': 2048}) == ok
+    assert rdmol_to_efp(rdmol, fp_type, fp_params) == ok
 
 
 def test_create_fp_file():
-    fp_type = 'Morgan'
-    fp_params = {'radius': 2, 'nBits': 2048}
     create_fp_file('test/10mols.smi', 'test/10mols.h5', fp_type, fp_params)
     with tb.open_file('test/10mols.h5', mode='r') as fp_file:
         config = fp_file.root.config
@@ -28,9 +30,7 @@ def test_create_fp_file():
 
 
 def test_create_fp_file_sdf():
-    fp_type = 'Morgan'
-    fp_params = {'radius': 2, 'nBits': 2048}
-    create_fp_file('test/10mols.sdf', 'test/10mols_sdf.h5', fp_type, fp_params)
+    create_fp_file('test/10mols.sdf', 'test/10mols_sdf.h5', fp_type, fp_params, mol_id_prop='mol_id')
     with tb.open_file('test/10mols_sdf.h5', mode='r') as fp_file:
         config = fp_file.root.config
         assert config[0] == fp_type
@@ -39,10 +39,17 @@ def test_create_fp_file_sdf():
         assert fp_file.root.fps.shape[0] == 10
 
 
-def test_create_fp_file_sqla():
-    fp_type = 'Morgan'
-    fp_params = {'radius': 2, 'nBits': 2048}
+def test_create_fp_file_list():
+    create_fp_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols_list.h5', fp_type, fp_params)
+    with tb.open_file('test/10mols_list.h5', mode='r') as fp_file:
+        config = fp_file.root.config
+        assert config[0] == fp_type
+        assert config[1]['radius'] == fp_params['radius']
+        assert config[1]['nBits'] == fp_params['nBits']
+        assert fp_file.root.fps.shape[0] == 3
 
+
+def test_create_fp_file_sqla():
     engine = create_engine('sqlite:///test/test.db')
     s = Session(engine)
     sql_query = "select mol_string, mol_id from structure"
