@@ -14,7 +14,7 @@ cdef extern int __builtin_popcountll(unsigned long long) nogil
 
 
 cdef struct Result:
-    uint64_t mol_id
+    uint32_t mol_id
     float coeff
 
 
@@ -72,7 +72,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, double thresho
     cdef uint32_t total_sims = 0
     cdef uint32_t simres_length = 256
 
-    cdef uint64_t *results = <uint64_t *> malloc(simres_length * sizeof(uint64_t))
+    cdef uint32_t *results = <uint32_t *> malloc(simres_length * sizeof(uint32_t))
 
     with nogil:
         # precalc query popcount
@@ -95,7 +95,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, double thresho
 
             if total_sims == simres_length:
                 simres_length *= 2
-                results = <uint64_t *> realloc(results, simres_length * sizeof(uint64_t))
+                results = <uint32_t *> realloc(results, simres_length * sizeof(uint32_t))
 
             # reset values for next fp
             int_count = 0
