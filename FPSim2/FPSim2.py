@@ -78,9 +78,6 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
         empty_res = np.ndarray((0,), dtype='<u8')
         # if substructure automatically set threshold to 1.0
         threshold = 1.0
-        if fp_tpye != 'RDKPatternFingerprint':
-            print('Warning: Running a substructure search with {} fingerprints. '
-                'Consider using RDKPatternFingerprint'.format(fp_tpye))
     else:
         empty_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
 
