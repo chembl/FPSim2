@@ -49,7 +49,7 @@ cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uin
 cdef uint32_t i_popcount(uint64_t[:] query, uint64_t[:] other):
     cdef uint32_t int_count = 0
     cdef uint8_t j
-    for j in range(0, query.shape[0], 4):
+    # for j in range(0, query.shape[0], 4):
         # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in other to skip the mol_id)
         # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
         # int_count += __builtin_popcountll(other[j + 1] & query[j])
