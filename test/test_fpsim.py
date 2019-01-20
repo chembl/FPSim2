@@ -27,6 +27,18 @@ def test_create_fp_file():
         assert fp_file.root.fps.shape[0] == 10
 
 
+def test_create_fp_file_sdf():
+    fp_type = 'Morgan'
+    fp_params = {'radius': 2, 'nBits': 2048}
+    create_fp_file('test/10mols.sdf', 'test/10mols_sdf.h5', fp_type, fp_params)
+    with tb.open_file('test/10mols_sdf.h5', mode='r') as fp_file:
+        config = fp_file.root.config
+        assert config[0] == fp_type
+        assert config[1]['radius'] == fp_params['radius']
+        assert config[1]['nBits'] == fp_params['nBits']
+        assert fp_file.root.fps.shape[0] == 10
+
+
 def test_create_fp_file_sqla():
     fp_type = 'Morgan'
     fp_params = {'radius': 2, 'nBits': 2048}
