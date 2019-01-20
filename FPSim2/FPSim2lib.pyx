@@ -45,16 +45,16 @@ cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uin
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef inline uint32_t _i_popcount(uint32_t query, uint32_t other):
+cdef inline uint32_t _i_popcount(uint64_t[:] query, uint64_t[:] other) nogil:
     cdef uint32_t int_count = 0
-    # cdef uint8_t j
-    # for j in range(0, query.shape[0], 4):
+    cdef uint8_t j
+    for j in range(0, query.shape[0], 4):
         # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in other to skip the mol_id)
         # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
-        # int_count += __builtin_popcountll(other[j + 1] & query[j])
-        # int_count += __builtin_popcountll(other[j + 2] & query[j + 1])
-        # int_count += __builtin_popcountll(other[j + 3] & query[j + 2])
-        # int_count += __builtin_popcountll(other[j + 4] & query[j + 3])
+        int_count += __builtin_popcountll(other[j + 1] & query[j])
+        int_count += __builtin_popcountll(other[j + 2] & query[j + 1])
+        int_count += __builtin_popcountll(other[j + 3] & query[j + 2])
+        int_count += __builtin_popcountll(other[j + 4] & query[j + 3])
     return int_count
 
 
@@ -80,7 +80,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_star
             query_count += __builtin_popcountll(query[j])
 
         for i in range(i_start, i_end):
-            int_count += _i_popcount(4, 4)
+            int_count += _i_popcount(query, fps[i])
             for j in range(0, query.shape[0], 4):
                 rel_co_count +=  __builtin_popcountll(query[j] & ~fps[i, j + 1])
                 rel_co_count +=  __builtin_popcountll(query[j + 1] & ~fps[i, j + 2])
@@ -134,7 +134,7 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
             query_count += __builtin_popcountll(query[j])
 
         for i in range(i_start, i_end):
-            # int_count += _i_popcount(query, fps[i])
+            int_count += _i_popcount(query, fps[i])
 
             coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[0] + 1])
 
