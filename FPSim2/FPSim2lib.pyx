@@ -46,7 +46,7 @@ cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uin
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef uint32_t i_popcount(uint64_t[:] query, uint64_t[:] other):
+cdef uint32_t i_popcount(uint32_t query, uint32_t other):
     cdef uint32_t int_count = 0
     cdef uint8_t j
     # for j in range(0, query.shape[0], 4):
@@ -81,7 +81,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_star
             query_count += __builtin_popcountll(query[j])
 
         for i in range(i_start, i_end):
-            int_count += i_popcount(query, fps[i])
+            int_count += i_popcount(4, 4)
             for j in range(0, query.shape[0], 4):
                 rel_co_count +=  __builtin_popcountll(query[j] & ~fps[i, j + 1])
                 rel_co_count +=  __builtin_popcountll(query[j + 1] & ~fps[i, j + 2])
