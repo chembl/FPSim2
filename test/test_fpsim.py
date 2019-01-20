@@ -3,11 +3,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from FPSim2 import search, on_disk_search
 from FPSim2.FPSim2lib import py_popcount
+from rdkit import Chem, DataStructs
 from FPSim2.io import *
 from rdkit import Chem
 import tables as tb
 import numpy as np
+import math
 
+query_smi = 'Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl'
 
 fp_type = 'Morgan'
 fp_params = {'radius': 2, 'nBits': 2048}
@@ -78,15 +81,33 @@ def test_load_fps_sort():
 
 
 def test_search():
-    query = load_query('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5')
+    query = load_query(query_smi, 'test/10mols.h5')
     fps = load_fps('test/10mols.h5')
     results = search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
 
+def test_validate_against_rdkit():
+
+    with open('test/10mols.smi') as f:
+        smiles = f.readlines()
+    fps = [Chem.rdMolDescriptors.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smi), 
+            radius=2, nBits=2048) for smi in smiles]
+    query = Chem.rdMolDescriptors.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(query_smi), 
+                radius=2, nBits=2048)
+    rdresults = sorted([DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True)
+
+    fps = load_fps('test/10mols.h5')
+    query = load_query(query_smi, 'test/10mols.h5')
+    results = search(query, fps, threshold=0.0, coeff='tanimoto',  n_threads=1)['coeff']
+
+    for rds, fpss in zip(rdresults, results):
+        assert True == math.isclose(rds, fpss, rel_tol=1e-7)
+
+
 def test_on_disk_search():
-    results = on_disk_search('Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl', 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
+    results = on_disk_search(query_smi, 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
