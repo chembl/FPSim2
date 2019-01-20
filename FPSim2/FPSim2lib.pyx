@@ -3,7 +3,7 @@
 import numpy as np
 cimport numpy as np
 cimport cython
-from libc.stdint cimport uint32_t, uint64_t
+from libc.stdint cimport uint8_t, uint32_t, uint64_t
 from libc.stdlib cimport malloc, realloc, free
 import tables as tb
 
