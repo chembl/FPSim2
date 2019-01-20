@@ -102,7 +102,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, double thresho
             rel_co_count = 0
 
     # this is happening inside the GIL
-    cdef np.ndarray np_results = np.ndarray((0,), dtype='<u8')
+    cdef np.ndarray np_results = np.ndarray((total_sims,), dtype='<u8')
     for i in range(total_sims):
         np_results[i] = results[i]
 
