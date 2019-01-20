@@ -135,7 +135,6 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
 
         for i in range(i_start, i_end):
             int_count += _i_popcount(query, fps[i])
-
             coeff = _tanimoto_coeff(int_count, query_count, fps[i, query.shape[0] + 1])
 
             if coeff >= threshold:
