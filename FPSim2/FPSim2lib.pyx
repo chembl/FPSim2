@@ -102,7 +102,7 @@ cpdef _substructure_search(uint64_t[:] query, uint64_t[:, :] fps, uint8_t i_star
 @cython.initializedcheck(False)
 cdef uint32_t i_popcount(uint64_t[:] query, uint64_t[:] other):
     cdef uint32_t int_count = 0
-    cdef uint8_t i
+    cdef uint8_t j
     for i in range(0, query.shape[0], 4):
         # Use __builtin_popcountll for unsigned 64-bit integers (fps j+ 1 in other to skip the mol_id)
         # equivalent to https://github.com/WojciechMula/sse-popcount/blob/master/popcnt-builtin.cpp#L23
