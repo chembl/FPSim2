@@ -20,11 +20,9 @@ Implementing:
 
 Use a conda environment to install it. Builds available for:
 - linux:
-    - Python 3.5
     - Python 3.6
     - Python 3.7
 - mac:
-    - Python 3.5
     - Python 3.6
 ```
 conda install fpsim2 -c efelix -c conda-forge
