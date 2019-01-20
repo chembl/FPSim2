@@ -53,7 +53,7 @@ def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_si
             except ValueError:
                 pass
             except Exception as e:
-                print('Chunk {} thread died: '.format(m), e)
+                print('Chunk {} process died: '.format(m), e)
     if results:
         np_res = np.concatenate(results)
         if coeff != 'substructure':
