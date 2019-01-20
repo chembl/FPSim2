@@ -46,7 +46,7 @@ cdef inline double _tanimoto_coeff(uint32_t int_count, uint32_t count_query, uin
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-cdef uint32_t i_popcount(uint32_t query, uint32_t other):
+cdef inline uint32_t i_popcount(uint32_t query, uint32_t other):
     cdef uint32_t int_count = 0
     cdef uint8_t j
     # for j in range(0, query.shape[0], 4):
