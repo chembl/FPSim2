@@ -24,15 +24,18 @@ def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_si
     query = load_query(query, fp_filename)
 
     if coeff == 'substructure':
-         # if substructure automatically set threshold to 1.0
+        empty_res = np.ndarray((0,), dtype='<u8')
+        # if substructure automatically set threshold to 1.0
         threshold = 1.0
         if fp_tpye != 'RDKPatternFingerprint':
             print('Warning: Running a substructure search with {} fingerprints. '
                 'Consider using RDKPatternFingerprint'.format(fp_tpye))
+    else:
+        empty_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
 
     fp_range = get_bounds_range(query, count_ranges, threshold, COEFFS[coeff])
     if not fp_range:
-        return np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+        return empty_res
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
@@ -57,7 +60,7 @@ def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_si
         if coeff != 'substructure':
             np_res[::-1].sort(order='coeff')
     else:
-        np_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+        np_res = empty_res
     return np_res
 
 
@@ -72,10 +75,18 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
     :return: Numpy structured array with mol_id and coeff for each match.
     """
     if coeff == 'substructure':
+        empty_res = np.ndarray((0,), dtype='<u8')
+        # if substructure automatically set threshold to 1.0
         threshold = 1.0
+        if fp_tpye != 'RDKPatternFingerprint':
+            print('Warning: Running a substructure search with {} fingerprints. '
+                'Consider using RDKPatternFingerprint'.format(fp_tpye))
+    else:
+        empty_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+
     fp_range = get_bounds_range(query, fps.count_ranges, threshold, COEFFS[coeff])
     if not fp_range:
-        return np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+        return empty_res
     else:
         i_start = fp_range[0]
         i_end = fp_range[1]
@@ -107,5 +118,5 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
             if coeff != 'substructure':
                 np_res[::-1].sort(order='coeff')
         else:
-            np_res = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+            np_res = empty_res
     return np_res

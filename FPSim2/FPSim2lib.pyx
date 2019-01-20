@@ -56,8 +56,11 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
     cdef int total_sims = 0
     cdef int simres_length = 256
 
-    # allocate number * sizeof(Result) bytes of memory
-    cdef Result *results = <Result *> malloc(simres_length * sizeof(Result))
+    if coeff_func == 0:
+        # allocate number * sizeof(Result) bytes of memory
+        cdef Result *results = <Result *> malloc(simres_length * sizeof(Result))
+    elif coeff_func == 2:
+        cdef Result *results = <Result *> malloc(sizeof(uint64_t))
 
     with nogil:
         # precalc query popcount
@@ -94,17 +97,25 @@ cpdef _similarity_search(uint64_t[:] query, uint64_t[:, :] fps, double threshold
             if total_sims == simres_length:
                 simres_length *= 2
                 # reallocating memory
-                results = <Result *> realloc(results, simres_length * sizeof(Result))
+                if coeff_func == 0:
+                    results = <Result *> realloc(results, simres_length * sizeof(Result))
+                elif coeff_func == 2:
+                    results = <Result *> realloc(results, sizeof(uint64_t))
 
             # reset values for next fp
             int_count = 0
             rel_co_count = 0
 
     # this is happening inside the GIL
-    cdef np.ndarray np_results = np.ndarray((total_sims,), dtype=[('mol_id','u8'), ('coeff','f4')])
-    for i in range(total_sims):
-        np_results[i][0] = results[i].mol_id
-        np_results[i][1] = results[i].coeff
+    if coeff_func == 0:
+        cdef np.ndarray np_results = np.ndarray((total_sims,), dtype=[('mol_id','u8'), ('coeff','f4')])
+        for i in range(total_sims):
+            np_results[i][0] = results[i].mol_id
+            np_results[i][1] = results[i].coeff
+    elif coeff_func == 2:
+        cdef np.ndarray np_results = np.ndarray((0,), dtype='<u8')
+        for i in range(total_sims):
+            np_results[i] = results[i]
 
     # free manually allocated memory and return the results
     with nogil:
