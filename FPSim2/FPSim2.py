@@ -90,7 +90,7 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
 
     if n_threads == 1:
         np_res = search_func(query, fps.fps, threshold, i_start, i_end)
-        if coeff == 'substructure':
+        if coeff != 'substructure':
             np_res[::-1].sort(order='coeff')
         return np_res
     else:
