@@ -25,7 +25,6 @@ def on_disk_search(query, fp_filename, threshold=0.7, coeff='tanimoto', chunk_si
 
     if coeff == 'substructure':
         empty_res = np.ndarray((0,), dtype='<u8')
-        # if substructure automatically set threshold to 1.0
         threshold = 1.0
         if fp_tpye != 'RDKPatternFingerprint':
             print('Warning: Running a substructure search with {} fingerprints. '
@@ -76,7 +75,6 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
     """
     if coeff == 'substructure':
         empty_res = np.ndarray((0,), dtype='<u8')
-        # if substructure automatically set threshold to 1.0
         threshold = 1.0
         search_func = _substructure_search
     else:
@@ -91,10 +89,8 @@ def search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1):
         i_end = fp_range[1]
 
     if n_threads == 1:
+        np_res = search_func(query, fps.fps, threshold, i_start, i_end)
         if coeff == 'substructure':
-            np_res = search_func(query, fps.fps, threshold, i_start, i_end)
-        else:
-            np_res = search_func(query, fps.fps, threshold, i_start, i_end)
             np_res[::-1].sort(order='coeff')
         return np_res
     else:
