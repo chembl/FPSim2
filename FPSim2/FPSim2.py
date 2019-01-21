@@ -21,7 +21,7 @@ class FPSim2DB:
             self.fp_params = fp_file.root.config[1]
             self.rdkit_ver = fp_file.root.config[2]
         if fps_load:
-            self.fps = load_fps(self.fp_filename, sort)        
+            self.fps = load_fps(self.fp_filename, fps_sort)        
 
     def _prev(query_string, count_ranges, s_index='tanimoto'):
         query = load_query(query_string, self.fp_filename)
