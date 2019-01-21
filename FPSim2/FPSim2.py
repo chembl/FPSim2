@@ -23,7 +23,7 @@ class FPSim2DB:
         if fps_load:
             self.fps = load_fps(self.fp_filename, fps_sort)        
 
-    def _prev(query_string, count_ranges, s_index):
+    def _prev(self, query_string, count_ranges, s_index):
         query = load_query(query_string, self.fp_filename)
         fp_range = get_bounds_range(query, count_ranges, threshold, S_INDEXS[s_index])
         return query, fp_range
