@@ -82,9 +82,9 @@ def test_load_fps_sort():
 
 def test_search():
     fpe = FPSim2Engine('test/10mols.h5')
-    results = fpe.similarity(query_smi, 0.7, n_workers=1)['coeff']
+    results = fpe.similarity(query_smi, 0.7, n_workers=1)
     assert results.shape[0] == 4
-    assert list(results) == [1, 1.0]
+    assert list(results[0]) == [1, 1.0]
 
 
 def test_validate_against_rdkit():
@@ -98,10 +98,7 @@ def test_validate_against_rdkit():
     rdresults = sorted([DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True)
 
     fpe = FPSim2Engine('test/10mols.h5')
-    results = fpe.similarity(query_smi, 0.7, n_workers=1)['coeff']
-
-    print(rdresults)
-    print(results)
+    results = fpe.similarity(query_smi, 0.0, n_workers=1)['coeff']
 
     for rds, fpss in zip(rdresults, results):
         assert True == math.isclose(rds, fpss, rel_tol=1e-7)
