@@ -71,19 +71,26 @@ class FPSim2Engine:
 
         query, fp_range = self._preflight(query_string, count_ranges, threshold, s_index)
         if fp_range:
-            results = self._parallel_run(query, 
-                                         search_func, 
-                                         executor, 
-                                         fp_range,
-                                         n_workers,
-                                         threshold,
-                                         chunk_size,
-                                         s_index,
-                                         on_disk)
-            if results:
-                np_res = np.concatenate(results)
+            if n_threads == 1:
+                np_res = search_func(query, fps.fps, threshold, i_start, i_end)
+                if s_index != 'substructure':
+                    np_res[::-1].sort(order='coeff')
             else:
-                np_res = empty_np
+                results = self._parallel_run(query, 
+                                            search_func, 
+                                            executor, 
+                                            fp_range,
+                                            n_workers,
+                                            threshold,
+                                            chunk_size,
+                                            s_index,
+                                            on_disk)
+                if results:
+                    np_res = np.concatenate(results)
+                    if s_index != 'substructure':
+                        np_res[::-1].sort(order='coeff')
+                else:
+                    np_res = empty_np
         else:
             np_res = empty_np
         return np_res

@@ -1,9 +1,9 @@
 package:
   name: fpsim2
-  version: "0.0.1"
+  version: "0.0.2"
 
 source:
-  git_rev: v0.0.1
+  git_rev: v0.0.2
   git_url: https://github.com/chembl/FPSim2
 
 requirements:

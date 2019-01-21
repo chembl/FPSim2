@@ -106,7 +106,7 @@ def test_validate_against_rdkit():
 
 def test_on_disk_search():
     fpe = FPSim2Engine('test/10mols.h5', in_memory_fps=False)
-    results = fpe.similarity(query_smi, 0.7, n_workers=1)
+    results = fpe.on_disk_similarity(query_smi, 0.7, chunk_size=100000, n_workers=2)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
