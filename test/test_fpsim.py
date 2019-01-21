@@ -84,7 +84,7 @@ def test_search():
     fpe = FPSim2Engine('test/10mols.h5')
     results = fpe.similarity(query_smi, 0.7, n_workers=1)['coeff']
     assert results.shape[0] == 4
-    assert list(results[0]) == [1, 1.0]
+    assert list(results) == [1, 1.0]
 
 
 def test_validate_against_rdkit():
@@ -99,6 +99,9 @@ def test_validate_against_rdkit():
 
     fpe = FPSim2Engine('test/10mols.h5')
     results = fpe.similarity(query_smi, 0.7, n_workers=1)['coeff']
+
+    print(rdresults)
+    print(results)
 
     for rds, fpss in zip(rdresults, results):
         assert True == math.isclose(rds, fpss, rel_tol=1e-7)
@@ -122,8 +125,8 @@ def test_append_fps():
     assert fps.fps.shape[0] == 13
 
 
-def test_sort_fp_file():
-    sort_fp_file('test/10mols.h5')
+def test_sort_db_file():
+    sort_db_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
     assert fps.fps[-1][-1] == 48
     assert fps.fps[0][-1] == 2
@@ -131,7 +134,7 @@ def test_sort_fp_file():
 
 def test_delete_fps():
     delete_fps('test/10mols.h5', [11, 12, 13])
-    sort_fp_file('test/10mols.h5')
+    sort_db_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
     assert fps.fps.shape[0] == 10
     assert fps.fps[-1][-1] == 48
