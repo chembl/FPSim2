@@ -184,7 +184,7 @@ def it_supplier(io_source, gen_ids, **kwargs):
                 except Exception as e:
                     raise Exception('FPSim only supports integer ids for molecules, '
                                     'cosinder setting gen_ids=True when running '
-                                    'create_db to autogenerate them.')
+                                    'create_db_file to autogenerate them.')
                 mol_string = mol[0].strip()
         rdmol = load_molecule(mol_string)
         if rdmol:
@@ -219,7 +219,7 @@ def smi_mol_supplier(io_source, gen_ids, **kwargs):
                     except Exception as e:
                         raise Exception('FPSim only supports integer ids for molecules, '
                                         'cosinder setting gen_ids=True when running '
-                                        'create_db to autogenerate them.')
+                                        'create_db_file to autogenerate them.')
                     smiles = mol[0].strip()
             rdmol = Chem.MolFromSmiles(smiles)
             if rdmol:
@@ -248,7 +248,7 @@ def sdf_mol_supplier(io_source, gen_ids, **kwargs):
             except Exception as e:
                 raise Exception('FPSim only supports integer ids for molecules, '
                                 'cosinder setting gen_ids=True when running '
-                                'create_db to autogenerate them.')
+                                'create_db_file to autogenerate them.')
             yield mol_id, rdmol
         else:
             continue
@@ -300,7 +300,7 @@ def get_mol_suplier(io_source):
     return supplier
 
 
-def create_db(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
+def create_db_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
     """ Create FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
     
     :param io_source: .smi or .sdf filename.
