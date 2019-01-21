@@ -32,16 +32,16 @@ class FPSim2DB:
         i_start = fp_range[0]
         i_end = fp_range[1]
         results = []
-        with executor(max_workers=n_workers) as tpe:
+        with executor(max_workers=n_workers) as exe:
             if not on_disk:
                 chunk_size = int((i_end - i_start) / n_workers)
             c_indexes = [[x, x + chunk_size] for x in range(i_start, i_end, chunk_size)]
             c_indexes[-1][1] = i_end
             if on_disk:
-                future_ss = {ppe.submit(search_func, query, self.fp_filename, indexes, threshold, S_INDEXS[s_index]): 
+                future_ss = {exe.submit(search_func, query, self.fp_filename, indexes, threshold, S_INDEXS[s_index]): 
                     c_id for c_id, indexes in enumerate(c_indexes)}
             else:
-                future_ss = {tpe.submit(search_func, query, self.fps.fps, threshold, chunk_idx[0], chunk_idx[1]): 
+                future_ss = {exe.submit(search_func, query, self.fps.fps, threshold, chunk_idx[0], chunk_idx[1]): 
                                 c_id for c_id, chunk_idx in enumerate(c_indexes)}
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]
