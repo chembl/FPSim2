@@ -89,11 +89,11 @@ class FPSim2DB:
     def similarity_search(self, query_string, theshold, n_workers=1):
         return self._base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
 
-    def on_disk_similarity_search(self, query_string, theshold, n_workers=1, chunk_size=250000):
-        return self._base_search(query_string, theshold, run_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, mp.cpu_count())
+    def on_disk_similarity_search(self, query_string, theshold, n_workers=mp.cpu_count(), chunk_size=250000):
+        return self._base_search(query_string, theshold, run_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, n_workers)
 
     def substructure_search(self, query_string, n_workers=1):
         return self._base_search(query_string, 1.0, _substructure_search, 0, 'substructure', False, cf.ThreadPoolExecutor, n_workers)
 
-    def on_disk_substructure_search(self, query_string, n_workers=1, chunk_size=250000):
-        return self._base_search(query_string, 1.0, run_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, mp.cpu_count())
+    def on_disk_substructure_search(self, query_string, n_workers=mp.cpu_count(), chunk_size=250000):
+        return self._base_search(query_string, 1.0, run_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, n_workers)
