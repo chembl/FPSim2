@@ -25,7 +25,7 @@ class FPSim2Engine:
     def load_fps(self, fps_sort=False):
         self.fps = load_fps(self.fp_filename, fps_sort)
 
-    def _preflight(self, query_string, count_ranges, threshold, s_index):
+    def _load_query_and_fp_range(self, query_string, count_ranges, threshold, s_index):
         query = load_query(query_string, self.fp_filename)
         fp_range = get_bounds_range(query, count_ranges, threshold, S_INDEXS[s_index])
         return query, fp_range
@@ -69,7 +69,7 @@ class FPSim2Engine:
         else:
             empty_np = np.ndarray((0,), dtype='<u8')
 
-        query, fp_range = self._preflight(query_string, count_ranges, threshold, s_index)
+        query, fp_range = self._load_query_and_fp_range(query_string, count_ranges, threshold, s_index)
         if fp_range:
             if n_workers == 1 and not on_disk:
                 np_res = search_func(query, self.fps.fps, threshold, fp_range[0], fp_range[1])
