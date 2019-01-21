@@ -20,7 +20,7 @@ SMILES_RE = r'^([^J][A-Za-z0-9@+\-\[\]\(\)\\=#$]+)$'
 INCHI_RE = r'^((InChI=)?[^J][0-9a-z+\-\(\)\\\/,]+)$'
 
 
-COEFFS = {
+S_INDEXS = {
     'tanimoto': 0,
     'substructure': 2
 }
@@ -184,7 +184,7 @@ def it_supplier(io_source, gen_ids, **kwargs):
                 except Exception as e:
                     raise Exception('FPSim only supports integer ids for molecules, '
                                     'cosinder setting gen_ids=True when running '
-                                    'create_fp_file to autogenerate them.')
+                                    'create_db_file to autogenerate them.')
                 mol_string = mol[0].strip()
         rdmol = load_molecule(mol_string)
         if rdmol:
@@ -219,7 +219,7 @@ def smi_mol_supplier(io_source, gen_ids, **kwargs):
                     except Exception as e:
                         raise Exception('FPSim only supports integer ids for molecules, '
                                         'cosinder setting gen_ids=True when running '
-                                        'create_fp_file to autogenerate them.')
+                                        'create_db_file to autogenerate them.')
                     smiles = mol[0].strip()
             rdmol = Chem.MolFromSmiles(smiles)
             if rdmol:
@@ -248,7 +248,7 @@ def sdf_mol_supplier(io_source, gen_ids, **kwargs):
             except Exception as e:
                 raise Exception('FPSim only supports integer ids for molecules, '
                                 'cosinder setting gen_ids=True when running '
-                                'create_fp_file to autogenerate them.')
+                                'create_db_file to autogenerate them.')
             yield mol_id, rdmol
         else:
             continue
@@ -300,7 +300,7 @@ def get_mol_suplier(io_source):
     return supplier
 
 
-def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
+def create_db_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
     """ Create FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
     
     :param io_source: .smi or .sdf filename.
@@ -369,7 +369,7 @@ def create_fp_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
         fps_table.cols.popcnt.create_index(kind='full')
 
     if sort_by_popcnt:
-        sort_fp_file(out_fname)
+        sort_db_file(out_fname)
     
 
 def append_fps(fp_filename, io_source, mol_id_prop='mol_id'):
@@ -419,7 +419,7 @@ def delete_fps(fp_filename, ids_list):
             fps_table.remove_row(to_delete[0])
 
 
-def sort_fp_file(fp_filename):
+def sort_db_file(fp_filename):
     """ Sort fp file.
 
     Sorts an existing fp file. 

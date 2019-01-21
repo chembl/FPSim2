@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-from FPSim2 import search, on_disk_search
+from FPSim2 import FPSim2Engine
 from FPSim2.FPSim2lib import py_popcount
 from rdkit import Chem, DataStructs
 from FPSim2.io import *
@@ -22,8 +22,8 @@ def test_rdmol_top_efp():
     assert rdmol_to_efp(rdmol, fp_type, fp_params) == ok
 
 
-def test_create_fp_file():
-    create_fp_file('test/10mols.smi', 'test/10mols.h5', fp_type, fp_params)
+def test_create_db_file():
+    create_db_file('test/10mols.smi', 'test/10mols.h5', fp_type, fp_params)
     with tb.open_file('test/10mols.h5', mode='r') as fp_file:
         config = fp_file.root.config
         assert config[0] == fp_type
@@ -32,8 +32,8 @@ def test_create_fp_file():
         assert fp_file.root.fps.shape[0] == 10
 
 
-def test_create_fp_file_sdf():
-    create_fp_file('test/10mols.sdf', 'test/10mols_sdf.h5', fp_type, fp_params, mol_id_prop='mol_id')
+def test_create_db_file_sdf():
+    create_db_file('test/10mols.sdf', 'test/10mols_sdf.h5', fp_type, fp_params, mol_id_prop='mol_id')
     with tb.open_file('test/10mols_sdf.h5', mode='r') as fp_file:
         config = fp_file.root.config
         assert config[0] == fp_type
@@ -42,8 +42,8 @@ def test_create_fp_file_sdf():
         assert fp_file.root.fps.shape[0] == 10
 
 
-def test_create_fp_file_list():
-    create_fp_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols_list.h5', fp_type, fp_params)
+def test_create_db_file_list():
+    create_db_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols_list.h5', fp_type, fp_params)
     with tb.open_file('test/10mols_list.h5', mode='r') as fp_file:
         config = fp_file.root.config
         assert config[0] == fp_type
@@ -52,13 +52,13 @@ def test_create_fp_file_list():
         assert fp_file.root.fps.shape[0] == 3
 
 
-def test_create_fp_file_sqla():
+def test_create_db_file_sqla():
     engine = create_engine('sqlite:///test/test.db')
     s = Session(engine)
     sql_query = "select mol_string, mol_id from structure"
     resprox = s.execute(sql_query)
 
-    create_fp_file(resprox, 'test/10mols_sqla.h5', fp_type, fp_params)
+    create_db_file(resprox, 'test/10mols_sqla.h5', fp_type, fp_params)
     with tb.open_file('test/10mols_sqla.h5', mode='r') as fp_file:
         config = fp_file.root.config
         assert config[0] == fp_type
@@ -81,9 +81,8 @@ def test_load_fps_sort():
 
 
 def test_search():
-    query = load_query(query_smi, 'test/10mols.h5')
-    fps = load_fps('test/10mols.h5')
-    results = search(query, fps, threshold=0.7, coeff='tanimoto',  n_threads=1)
+    fpe = FPSim2Engine('test/10mols.h5')
+    results = fpe.similarity(query_smi, 0.7, n_workers=1)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
@@ -98,16 +97,16 @@ def test_validate_against_rdkit():
                 radius=2, nBits=2048)
     rdresults = sorted([DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True)
 
-    fps = load_fps('test/10mols.h5')
-    query = load_query(query_smi, 'test/10mols.h5')
-    results = search(query, fps, threshold=0.0, coeff='tanimoto',  n_threads=1)['coeff']
+    fpe = FPSim2Engine('test/10mols.h5')
+    results = fpe.similarity(query_smi, 0.0, n_workers=1)['coeff']
 
     for rds, fpss in zip(rdresults, results):
         assert True == math.isclose(rds, fpss, rel_tol=1e-7)
 
 
 def test_on_disk_search():
-    results = on_disk_search(query_smi, 'test/10mols.h5', threshold=0.7, coeff='tanimoto', n_processes=1)
+    fpe = FPSim2Engine('test/10mols.h5', in_memory_fps=False)
+    results = fpe.on_disk_similarity(query_smi, 0.7, chunk_size=100000, n_workers=2)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
@@ -123,8 +122,8 @@ def test_append_fps():
     assert fps.fps.shape[0] == 13
 
 
-def test_sort_fp_file():
-    sort_fp_file('test/10mols.h5')
+def test_sort_db_file():
+    sort_db_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
     assert fps.fps[-1][-1] == 48
     assert fps.fps[0][-1] == 2
@@ -132,7 +131,7 @@ def test_sort_fp_file():
 
 def test_delete_fps():
     delete_fps('test/10mols.h5', [11, 12, 13])
-    sort_fp_file('test/10mols.h5')
+    sort_db_file('test/10mols.h5')
     fps = load_fps('test/10mols.h5')
     assert fps.fps.shape[0] == 10
     assert fps.fps[-1][-1] == 48
