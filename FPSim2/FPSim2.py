@@ -23,7 +23,7 @@ class FPSim2DB:
         if fps_load:
             self.fps = load_fps(self.fp_filename, fps_sort)        
 
-    def _prev(query_string, count_ranges, s_index='tanimoto'):
+    def _prev(query_string, count_ranges, s_index):
         query = load_query(query_string, self.fp_filename)
         fp_range = get_bounds_range(query, count_ranges, threshold, S_INDEXS[s_index])
         return query, fp_range
@@ -67,7 +67,7 @@ class FPSim2DB:
         else:
             empty_np = np.ndarray((0,), dtype='<u8')
 
-        query, fp_range = self._prev(query_string, count_ranges, s_index=s_index)
+        query, fp_range = self._prev(query_string, count_ranges, s_index)
         if fp_range:
             results = self._parallel_run(query, 
                                          search_func, 
