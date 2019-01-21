@@ -20,7 +20,7 @@ SMILES_RE = r'^([^J][A-Za-z0-9@+\-\[\]\(\)\\=#$]+)$'
 INCHI_RE = r'^((InChI=)?[^J][0-9a-z+\-\(\)\\\/,]+)$'
 
 
-COEFFS = {
+S_INDEXS = {
     'tanimoto': 0,
     'substructure': 2
 }

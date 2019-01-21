@@ -203,13 +203,13 @@ cpdef get_bounds_range(query, ranges, threshold, coeff):
     return range_to_keep
 
 
-def run_search(query, fp_filename, chunk_indexes, threshold, coeff):
+def run_search(query, fp_filename, chunk_indexes, threshold, s_index):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
     num_fields = len(fps[0])
     fps2 = fps.view('<u8')
     fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
-    if coeff == 2:
+    if s_index == 2:
         res = _substructure_search(query, fps3, threshold, 0, fps.shape[0])
     else:
         res = _similarity_search(query, fps3, threshold, 0, fps.shape[0])
