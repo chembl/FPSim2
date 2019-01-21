@@ -1,4 +1,3 @@
-import multiprocessing as mp
 import concurrent.futures as cf
 from .FPSim2lib import on_disk_search, _similarity_search, _substructure_search, get_bounds_range
 from .io import load_fps, load_query, S_INDEXS
@@ -21,7 +20,10 @@ class FPSim2DB:
             self.fp_params = fp_file.root.config[1]
             self.rdkit_ver = fp_file.root.config[2]
         if fps_load:
-            self.fps = load_fps(self.fp_filename, fps_sort)        
+            self.fps = self.load_fps(self.fp_filename, fps_sort)        
+
+    def load_fps(self.fp_filename, fps_sort):
+        self.fps = load_fps(self.fp_filename, fps_sort)
 
     def _preflight(self, query_string, count_ranges, threshold, s_index):
         query = load_query(query_string, self.fp_filename)
@@ -86,14 +88,18 @@ class FPSim2DB:
             np_res = empty_np
         return np_res
 
-    def similarity_s(self, query_string, theshold, n_workers=1):
+    def similarity(self, query_string, theshold, n_workers=1):
+        if not self.fps:
+            raise Exception('Load the fingerprints into memory before running a in memory search')
         return self._base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
 
-    def on_disk_similarity_s(self, query_string, theshold, n_workers=mp.cpu_count(), chunk_size=250000):
+    def on_disk_similarity(self, query_string, theshold, n_workers=1, chunk_size=250000):
         return self._base_search(query_string, theshold, on_disk_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, n_workers)
 
-    def substructure_s(self, query_string, n_workers=1):
+    def substructure(self, query_string, n_workers=1):
+        if not self.fps:
+            raise Exception('Load the fingerprints into memory before running a in memory search')
         return self._base_search(query_string, 1.0, _substructure_search, 0, 'substructure', False, cf.ThreadPoolExecutor, n_workers)
 
-    def on_disk_substructure_s(self, query_string, n_workers=mp.cpu_count(), chunk_size=250000):
+    def on_disk_substructure(self, query_string, n_workers=1, chunk_size=250000):
         return self._base_search(query_string, 1.0, on_disk_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, n_workers)
