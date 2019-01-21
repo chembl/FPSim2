@@ -22,7 +22,7 @@ class FPSim2DB:
         if fps_load:
             self.fps = self.load_fps(self.fp_filename, fps_sort)        
 
-    def load_fps(self, fp_filename, fps_sort):
+    def load_fps(self, fps_sort=False):
         self.fps = load_fps(self.fp_filename, fps_sort)
 
     def _preflight(self, query_string, count_ranges, threshold, s_index):
