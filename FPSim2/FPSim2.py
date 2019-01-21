@@ -20,7 +20,7 @@ class FPSim2DB:
             self.fp_params = fp_file.root.config[1]
             self.rdkit_ver = fp_file.root.config[2]
         if fps_load:
-            self.fps = self.load_fps(self.fp_filename, fps_sort)        
+            self.fps = self.load_fps(fps_sort)        
 
     def load_fps(self, fps_sort=False):
         self.fps = load_fps(self.fp_filename, fps_sort)
