@@ -67,17 +67,17 @@ class FPSim2DB:
         else:
             empty_np = np.ndarray((0,), dtype='<u8')
 
-        query, fp_range = _prev(query_string, count_ranges, s_index=s_index)
+        query, fp_range = self._prev(query_string, count_ranges, s_index=s_index)
         if fp_range:
-            results = _parallel_run(query, 
-                                    search_func, 
-                                    executor, 
-                                    fp_range,
-                                    n_workers,
-                                    threshold,
-                                    chunk_size,
-                                    s_index,
-                                    on_disk)
+            results = self._parallel_run(query, 
+                                         search_func, 
+                                         executor, 
+                                         fp_range,
+                                         n_workers,
+                                         threshold,
+                                         chunk_size,
+                                         s_index,
+                                         on_disk)
             if results:
                 np_res = np.concatenate(results)
             else:
@@ -87,13 +87,13 @@ class FPSim2DB:
         return np_res
 
     def similarity_search(self, query_string, theshold, n_workers=1):
-        return _base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
+        return self._base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
 
     def on_disk_similarity_search(self, query_string, theshold, n_workers=1, chunk_size=250000):
-        return _base_search(query_string, theshold, run_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, mp.cpu_count())
+        return self._base_search(query_string, theshold, run_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, mp.cpu_count())
 
     def substructure_search(self, query_string, n_workers=1):
-        return _base_search(query_string, 1.0, _substructure_search, 0, 'substructure', False, cf.ThreadPoolExecutor, n_workers)
+        return self._base_search(query_string, 1.0, _substructure_search, 0, 'substructure', False, cf.ThreadPoolExecutor, n_workers)
 
     def on_disk_substructure_search(self, query_string, n_workers=1, chunk_size=250000):
-        return _base_search(query_string, 1.0, run_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, mp.cpu_count())
+        return self._base_search(query_string, 1.0, run_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, mp.cpu_count())
