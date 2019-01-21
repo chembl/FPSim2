@@ -28,7 +28,7 @@ class FPSim2DB:
         fp_range = get_bounds_range(query, count_ranges, threshold, S_INDEXS[s_index])
         return query, fp_range
 
-    def _parallel_run(query, search_func, executor, fp_range, n_workers, threshold, chunk_size, s_index, on_disk):
+    def _parallel_run(self, query, search_func, executor, fp_range, n_workers, threshold, chunk_size, s_index, on_disk):
         i_start = fp_range[0]
         i_end = fp_range[1]
         results = []
