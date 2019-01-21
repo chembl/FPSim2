@@ -203,7 +203,7 @@ cpdef get_bounds_range(query, ranges, threshold, coeff):
     return range_to_keep
 
 
-def run_search(query, fp_filename, chunk_indexes, threshold, s_index):
+def on_disk_search(query, fp_filename, chunk_indexes, threshold, s_index):
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
     num_fields = len(fps[0])
