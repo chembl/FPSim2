@@ -57,7 +57,7 @@ class FPSim2DB:
 
     def _base_search(self, query_string, threshold, search_func, chunk_size, s_index, on_disk, executor, n_workers):
         if on_disk:
-            with tb.open_file(fp_filename, mode='r') as fp_file:
+            with tb.open_file(self.fp_filename, mode='r') as fp_file:
                 count_ranges = fp_file.root.config[3]
         else:
             count_ranges = self.fps.count_ranges
