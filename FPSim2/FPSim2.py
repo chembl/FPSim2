@@ -13,13 +13,13 @@ class FPSim2Engine:
     rdkit_ver = None
     fps = None
 
-    def __init__(self, fp_filename, fps_load=True, fps_sort=False):
+    def __init__(self, fp_filename, in_memory_fps=True, fps_sort=False):
         self.fp_filename = fp_filename
         with tb.open_file(fp_filename, mode='r') as fp_file:
             self.fp_type = fp_file.root.config[0]
             self.fp_params = fp_file.root.config[1]
             self.rdkit_ver = fp_file.root.config[2]
-        if fps_load:
+        if in_memory_fps:
             self.load_fps(fps_sort)        
 
     def load_fps(self, fps_sort=False):

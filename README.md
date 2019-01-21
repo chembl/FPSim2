@@ -36,16 +36,16 @@ conda install fpsim2 -c efelix -c conda-forge
 ### Create FP file
 
 ```python
-from FPSim2 import create_fp_file
+from FPSim2 import create_db_file
 
 # from .smi file
-create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+create_db_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 
 # from .sdf file, need to specify sdf property containing the molecule id
-create_fp_file('chembl.sdf', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, mol_id_prop='mol_id')
+create_db_file('chembl.sdf', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, mol_id_prop='mol_id')
 
 # from Python list
-create_fp_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+create_db_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 
 # from sqlalchemy ResulProxy
 from sqlalchemy.orm import Session
@@ -56,7 +56,7 @@ s = Session(engine)
 sql_query = "select mol_string, mol_id from structure"
 res_prox = s.execute(sql_query)
 
-create_fp_file(res_prox, 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
+create_db_file(res_prox, 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 ```
 
 FPSim2 will use RDKit default parameters for a fingerprint type in case no parameters are used. Available FP types and default parameters listed below.
@@ -79,7 +79,7 @@ All fingerprints are calculated using RDKit.
 Due to it's simplicity FPSim2 can only use integer ids for FPs, however it can generate new ids for the provided molecules using gen_ids flag.
 
 ```python
-create_fp_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, gen_ids=True)
+create_db_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}, gen_ids=True)
 ```
 
 In case RDKit is not able to load a molecule, the id assigned to the molecule will be also skipped so the nth molecule in the input file will have id=n.
@@ -87,15 +87,14 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 ### Run a in memory search
 
 ```python
-from FPSim2 import search
-from FPSim2.io import load_query, load_fps
+from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl.h5'
+fp_filename = 'chembl_24.h5'
+query = 'CC(=O)Oc1ccccc1C(=O)O'
 
-query = load_query('CC(=O)Oc1ccccc1C(=O)O', fp_filename)
-fps = load_fps(fp_filename)
+fpe = FPSim2Engine(fp_filename)
 
-results = search(query, fps, threshold=0.7, coeff='tanimoto', n_threads=1)
+results = fpe.similarity(aspirin, 0.7, n_workers=1)
 ```
 
 As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results and the number of threads used.
@@ -105,12 +104,14 @@ As GIL is most of the time released, searches can be speeded up using multiple t
 If you're searching against a huge dataset or you have small RAM, you can still run searches.
 
 ```python
-from FPSim2 import on_disk_search
+from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl.h5'
-query_string = 'CC(=O)Oc1ccccc1C(=O)O'
+fp_filename = 'chembl_24.h5'
+query = 'CC(=O)Oc1ccccc1C(=O)O'
 
-results = on_disk_search(query_string, fp_filename, threshold=0.7, coeff='tanimoto', chunk_size=1000000, n_processes=1)
+fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
+
+results = fpe.on_disk_similarity(aspirin, 0.7, chunk_size=250000, n_workers=1)
 ```
 
 In the on disk search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results, the chunk size and the number of processes used.
