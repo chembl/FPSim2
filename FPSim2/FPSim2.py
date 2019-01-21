@@ -71,7 +71,7 @@ class FPSim2Engine:
 
         query, fp_range = self._preflight(query_string, count_ranges, threshold, s_index)
         if fp_range:
-            if n_threads == 1:
+            if n_workers == 1 and not on_disk:
                 np_res = search_func(query, fps.fps, threshold, i_start, i_end)
                 if s_index != 'substructure':
                     np_res[::-1].sort(order='coeff')
