@@ -116,11 +116,6 @@ results = fpe.on_disk_similarity(aspirin, 0.7, chunk_size=250000, n_workers=1)
 
 In the on disk search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results, the chunk size and the number of processes used.
 
-### Available coefficients
-
-- tanimoto (aka [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index))
-- substructure ([Tversky](https://en.wikipedia.org/wiki/Tversky_index) with α=1, β=0). Use it altogether with RDKPatternFingerprint.
-
 ## Trying it online
 
 To try out FPSim2 interactively in your web browser, just click on the binder [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
