@@ -5,7 +5,7 @@ import tables as tb
 import numpy as np
 
 
-class FPSim2DB:
+class FPSim2Engine:
 
     fp_filename = None
     fp_type = None
