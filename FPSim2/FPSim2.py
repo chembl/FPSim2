@@ -65,9 +65,9 @@ class FPSim2Engine:
             count_ranges = self.fps.count_ranges
 
         if s_index == 'tanimoto':
-            empty_np = np.ndarray((0,), dtype=[('mol_id','u8'), ('coeff','f4')])
+            empty_np = np.ndarray((0,), dtype=[('mol_id','<u4'), ('coeff','<f4')])
         else:
-            empty_np = np.ndarray((0,), dtype='<u8')
+            empty_np = np.ndarray((0,), dtype='<u4')
 
         query, fp_range = self._load_query_and_fp_range(query_string, count_ranges, threshold, s_index)
         if fp_range:

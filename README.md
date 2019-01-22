@@ -1,12 +1,12 @@
 [![Build Status](https://travis-ci.org/chembl/FPSim2.svg?branch=master)](https://travis-ci.org/chembl/FPSim2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Anaconda-Server Badge](https://anaconda.org/efelix/fpsim2/badges/version.svg)](https://anaconda.org/efelix/fpsim2)
+[![Anaconda-Server Badge](https://anaconda.org/efelix/fpsim2/badges/platforms.svg)](https://anaconda.org/efelix/fpsim2)
 [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
 
 
 # FPSim2: Simple package for fast molecular similarity searches
 
-FPSim2 is designed to run fast compound similarity searches with big datasets and to be easily integrated with any Python web framework in order to expose similarity search services. FPSim2 works better using high search thresholds (>=0.7).
+FPSim2 is a small Python/Cython package to run fast compound similarity searches. FPSim2 works better using high search thresholds (>=0.7).
 
 Implementing: 
 
