@@ -4,8 +4,8 @@ matrix:
   include:
   - os: osx
     env: CONDA=3.6
-  # - os: osx
-  #   env: CONDA=3.7
+  - os: osx
+    env: CONDA=3.7
   - os: linux
     env: CONDA=3.6
   - os: linux
@@ -27,8 +27,6 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-
-  # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$CONDA cython pytables pytest rdkit sqlalchemy
   - source activate test-environment
   - python setup.py install

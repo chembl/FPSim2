@@ -24,8 +24,7 @@ Use a conda environment to install it. Builds available for:
     - Python 3.7
 - mac:
     - Python 3.6
-
-Python 3.7 for mac build will also be available once [RDKit #2207 issue](https://github.com/rdkit/rdkit/issues/2207) is solved
+    - Python 3.7
 
 ```
 conda install fpsim2 -c efelix -c conda-forge
@@ -94,7 +93,7 @@ query = 'CC(=O)Oc1ccccc1C(=O)O'
 
 fpe = FPSim2Engine(fp_filename)
 
-results = fpe.similarity(aspirin, 0.7, n_workers=1)
+results = fpe.similarity(query, 0.7, n_workers=1)
 ```
 
 As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results and the number of threads used.
@@ -111,7 +110,7 @@ query = 'CC(=O)Oc1ccccc1C(=O)O'
 
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
-results = fpe.on_disk_similarity(aspirin, 0.7, chunk_size=250000, n_workers=1)
+results = fpe.on_disk_similarity(query, 0.7, chunk_size=250000, n_workers=1)
 ```
 
 In the on disk search variant, parallelisation is achieved with processes. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results, the chunk size and the number of processes used.
