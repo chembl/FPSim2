@@ -1,6 +1,21 @@
 from setuptools import setup, Extension
 from Cython.Distutils import build_ext
-import numpy as np    
+import numpy as np
+import platform
+
+
+c_comp_args = ['-O3', '-msse4.2']
+
+if platform.system() == 'Darwin':
+    c_comp_args += ['-mmacosx-version-min=10.9']
+elif platform.system() == 'Linux':
+    pass
+elif platform.system() == 'Windows':
+    raise Exception('FPSim2 is not working in Windows platforms yet.')
+else:
+    # so it can be installed in any platform like raspberry pi
+    # via python setup.py install 
+    c_comp_args = ['-march=native']
 
 setup(
     name='FPSim2',
@@ -14,15 +29,15 @@ setup(
         'FPSim2',
         'FPSim2.io'
         ],
-    long_description=open('README.md').read(),
+    long_description=open('README.md', encoding='utf-8').read(),
     install_requires=[
         'tables>=3.4.4',
-        'numpy>=1.15.2'
+        'numpy>=1.14'
         ],
     ext_modules=[
         Extension('FPSim2.FPSim2lib',
                     sources=['FPSim2/FPSim2lib.pyx'],
-                    extra_compile_args=['-march=native'],
+                    extra_compile_args=c_comp_args,
                     language='c',
                     include_dirs=[np.get_include()]),
         ],

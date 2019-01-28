@@ -10,14 +10,14 @@ requirements:
   build:
     - python
     - setuptools
-    - cython
-    - numpy
-    - rdkit
+    - cython>=0.29
+    - numpy>=1.14
+    - rdkit>=2018.09
   run:
     - python
-    - pytables
-    - sqlalchemy
-    - rdkit
+    - pytables>=3.4.4
+    - sqlalchemy>=1.2
+    - rdkit>=2018.09
 
 test:
   imports:
