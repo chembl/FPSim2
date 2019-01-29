@@ -1,23 +1,23 @@
 package:
   name: fpsim2
-  version: "0.0.3"
+  version: "0.0.4"
 
 source:
-  git_rev: v0.0.3
+  git_rev: v0.0.4
   git_url: https://github.com/chembl/FPSim2
 
 requirements:
   build:
     - python
     - setuptools
-    - cython
-    - numpy
-    - rdkit
+    - cython>=0.29
+    - numpy>=1.14
+    - rdkit>=2018.09
   run:
     - python
-    - pytables
-    - sqlalchemy
-    - rdkit
+    - pytables>=3.4.4
+    - sqlalchemy>=1.2
+    - rdkit>=2018.09
 
 test:
   imports:
