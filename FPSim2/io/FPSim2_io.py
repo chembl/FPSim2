@@ -134,9 +134,9 @@ def load_query(mol_string, fp_filename):
         config = fp_file.root.config
         fp_func = config[0]
         fp_func_params = config[1]
-        if rdkit.__version__ != config[2]:
-            print('Warning, FPS were created with RDKit {}, now using {}'
-                .format(config[2], rdkit.__version__))
+        # if rdkit.__version__ != config[2]:
+        #     print('Warning, FPS were created with RDKit {}, now using {}'
+        #         .format(config[2], rdkit.__version__))
     # generate the fpe
     efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
     return np.array(efp, dtype=np.uint64)
