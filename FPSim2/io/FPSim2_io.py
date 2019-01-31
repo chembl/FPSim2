@@ -16,8 +16,8 @@ BATCH_WRITE_SIZE = 10000
 
 
 # SMILES and InChI regexes
-SMILES_RE = r'^([^J][A-Za-z0-9@+\-\[\]\(\)\\=#$]+)$'
-INCHI_RE = r'^((InChI=)?[^J][0-9a-z+\-\(\)\\\/,]+)$'
+SMILES_RE = r'^([A-IK-Za-ik-z0-9@+\-\[\]\(\)\\/=#%:.$]+)$'
+INCHI_RE = r'^((InChI=)(.*?)[^J][0-9a-z+\-\(\)\\\/,.?*;]+)$'
 
 
 S_INDEXS = {
@@ -112,10 +112,10 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
 
 
 def load_molecule(mol_string):
-    if re.match(SMILES_RE, mol_string, flags=0):
-        rdmol = Chem.MolFromSmiles(mol_string)
-    elif re.search(INCHI_RE, mol_string, flags=re.IGNORECASE):
+    if re.search(INCHI_RE, mol_string, flags=re.IGNORECASE):
         rdmol = Chem.MolFromInchi(mol_string)
+    elif re.match(SMILES_RE, mol_string, flags=0):
+        rdmol = Chem.MolFromSmiles(mol_string)
     else:
         rdmol = Chem.MolFromMolBlock(mol_string)
     return rdmol

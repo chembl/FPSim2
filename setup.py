@@ -19,7 +19,7 @@ else:
 
 setup(
     name='FPSim2',
-    version='0.0.4',
+    version='0.0.5',
     author='Eloy Félix',
     author_email='eloyfelix@gmail.com',
     description='Simple package for fast molecular similarity searching',
