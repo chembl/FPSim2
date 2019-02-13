@@ -24,11 +24,11 @@ else:
 
 setup(
     name='FPSim2',
-    version='0.0.5',
+    version='0.0.6',
     author='Eloy Félix',
     author_email='eloyfelix@gmail.com',
     description='Simple package for fast molecular similarity searching',
-    url='https://github.com/eloyfelix/FPSim2',
+    url='https://github.com/chembl/FPSim2',
     license='MIT',
     packages=[
         'FPSim2',
