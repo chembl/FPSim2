@@ -98,12 +98,14 @@ FP_FUNC_DEFAULTS = {
 
 
 def rdmol_to_efp(rdmol, fp_func, fp_func_params):
-    """ Converts rdkit mol in FPSim2 fp format.
+    """Converts rdkit mol in FPSim2 fp format.
 
-    :param rdmol: rdkit mol.
-    :param fp_func: Name of the function to generate fps.
-    :param fp_func_params: Parameters for the function to generate fps.
-    :return: efp
+    Args:
+        rdmol: rdkit mol
+        fp_func: String name of function to generate fps.
+        fp_func_params: Parameter dict for fp_func.
+    Returns:
+        efp.
     """
     fp = FP_FUNCS[fp_func](rdmol, **fp_func_params)
     splited = textwrap.wrap(fp.ToBitString(), 64)
@@ -112,10 +114,12 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
 
 
 def load_molecule(mol_string):
-    """ Reads SMILES, molblock or InChi and returns a rdkit mol.
+    """Reads SMILES, molblock or InChi and returns a rdkit mol.
 
-    :param mol_string: SMILES, molblock or InChi.
-    :return: rdkit mol object.
+    Args:
+        mol_string: SMILES, molblock or InChi.
+    Returns:
+        rdkit mol object.
     """
     if re.search(INCHI_RE, mol_string, flags=re.IGNORECASE):
         rdmol = Chem.MolFromInchi(mol_string)
@@ -127,11 +131,13 @@ def load_molecule(mol_string):
 
 
 def load_query(mol_string, fp_filename):
-    """ Load query molecule from SMILES, molblock or InChi.
+    """Load query molecule from SMILES, molblock or InChi.
 
-    :param query: SMILES, molblock or InChi.
-    :param fp_filename: FPs filename to use for the search.
-    :return: Query ready to use for search function.
+    Args:
+        query: SMILES, molblock or InChi.
+        fp_filename: FP filename to use in the search.
+    Returns:
+        Numpy array query molecule.
     """
     rdmol = load_molecule(mol_string)
     with tb.open_file(fp_filename, mode='r') as fp_file:
@@ -148,11 +154,15 @@ def load_query(mol_string, fp_filename):
 
 
 def get_fp_length(fp_func, fp_func_params):
-    """ Returns fp length given the name of a function and it's parameters
+    """Returns fp length given the name of a function and it's parameters
 
-    :param fp_func: Name of the function to generate fps.
-    :param fp_func_params: Parameters for the function to generate fps.
-    :return: fp length
+    Args:
+        fp_func: Name of the function to generate fps.
+        fp_func_params: Parameters dict for the function to generate fps.
+    Raises:
+        Exception: If can't find fp length for a given fp type.
+    Returns:
+        fp length for the given fp type
     """
     fp_length = None
     if 'nBits' in fp_func_params.keys():
@@ -167,12 +177,16 @@ def get_fp_length(fp_func, fp_func_params):
 
 
 def it_supplier(io_source, gen_ids, **kwargs):
-    """ Generator function that reads from a Python list or SQLA ResultProxy.
+    """Generator function that reads from a Python list or SQLA ResultProxy.
 
-    :param io_source: py list or sqla ResultProxy.
-    :param gen_ids: flag to generate new ids.
-    :param kwargs: keyword arguments. 
-    :return: Yields next id and rdkit mol tuple.
+    Args:
+        io_source: py list or sqla ResultProxy.
+        gen_ids: flag to generate new ids.
+        kwargs: keyword arguments.
+    Raises:
+        Exception: If tries to use non int values for id.
+    Returns:
+        Yields next id and rdkit mol tuple.
     """
     for new_mol_id, mol in enumerate(io_source, 1):
         if len(mol) == 1:
@@ -199,12 +213,16 @@ def it_supplier(io_source, gen_ids, **kwargs):
 
 
 def smi_mol_supplier(io_source, gen_ids, **kwargs):
-    """ Generator function that reads .smi files
+    """Generator function that reads .smi files.
 
-    :param io_source: input .smi file name.
-    :param gen_ids: flag to generate new ids.
-    :param kwargs: keyword arguments. 
-    :return: Yields next id and rdkit mol tuple.
+    Args:
+        io_source: input .smi file name.
+        gen_ids: flag to generate new ids.
+        kwargs: keyword arguments.
+    Raises:
+        Exception: If tries to use non int values for id.
+    Returns:
+        Yields next id and rdkit mol tuple.
     """
     with open(io_source, 'r') as f:
         for new_mol_id, mol in enumerate(f, 1):
@@ -234,12 +252,16 @@ def smi_mol_supplier(io_source, gen_ids, **kwargs):
 
 
 def sdf_mol_supplier(io_source, gen_ids, **kwargs):
-    """ Generator function that reads .sdf files
+    """Generator function that reads .sdf files.
 
-    :param io_source: .sdf filename.
-    :param gen_ids: flag to generate new ids.
-    :param kwargs: keyword arguments.
-    :return: Yields next id and rdkit mol tuple.
+    Args:
+        io_source: .sdf filename.
+        gen_ids: flag to generate new ids.
+        kwargs: keyword arguments.
+    Raises:
+        Exception: If tries to use non int values for id.
+    Returns:
+        Yields next id and rdkit mol tuple.
     """
     suppl = Chem.SDMolSupplier(io_source)
     for new_mol_id, rdmol in enumerate(suppl, 1):
@@ -260,11 +282,14 @@ def sdf_mol_supplier(io_source, gen_ids, **kwargs):
 
 
 def calc_count_ranges(fps, fp_length, in_memory=False):
-    """ Calc popcount bins  
+    """Calcs popcount bins.
 
-    :param fps_table: table storing fps.
-    :param fp_length: length of the fp.
-    :return: list with ranges.
+    Args:
+        fps_table: table storing fps.
+        fp_length: length of the fp.
+        kwargs: keyword arguments.
+    Returns:
+        list with popcnt ranges.
     """
     count_ranges = []
     if in_memory:
@@ -291,10 +316,13 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
 
 
 def get_mol_suplier(io_source):
-    """ Returns a mol supplier depending on the object type and file extension
+    """Returns a mol supplier depending on the object type and file extension.
 
-    :param io_source: source of molecules.
-    :return: molecule generator.
+    Args:
+        io_source: source of molecules, smi or sdf filenames, 
+                   SQLA ResultProxy or python list.
+    Returns:
+        molecule supplier generator.
     """
     supplier = None
     if isinstance(io_source, list) or isinstance(io_source, ResultProxy):
@@ -311,15 +339,18 @@ def get_mol_suplier(io_source):
 
 
 def create_db_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop='mol_id', gen_ids=False, sort_by_popcnt=True):
-    """ Create FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
+    """Creates FPSim2 fingerprints file from .smi, .sdf files, python lists or SQLA queries.
 
-    :param io_source: .smi or .sdf filename.
-    :param out_fname: FPs output filename.
-    :param fp_func: Name of fingerprint function to use to generate the fingerprints.
-    :param fp_func_params: Parameters for the fingerprint function.
-    :param mol_id_prop: Name of the .sdf property to read the molecule id.
-    :param gen_ids: Flag to auto-generate ids for the molecules.
-    :return: 
+    Args:
+        io_source: .smi, .sdf filename, ResultProxy or list.
+        out_fname: FPs output filename.
+        fp_func: Name of fingerprint function to use to generate the fingerprints.
+        fp_func_params: Parameters for the fingerprint function.
+        mol_id_prop: Name of the .sdf property to read the molecule id.
+        gen_ids: Flag to auto-generate ids for the molecules.
+        sort_by_popcnt: Flag to sort or not fps by popcnt.
+    Returns:
+        None
     """
     # if params dict is empty use defaults
     if not fp_func_params:
@@ -383,14 +414,13 @@ def create_db_file(io_source, out_fname, fp_func, fp_func_params={}, mol_id_prop
 
 
 def append_fps(fp_filename, io_source, mol_id_prop='mol_id'):
-    """ append molecules to a fp file.
+    """Appends molecules to a fp file.
 
-    Appends molecules to an existing fp file
-
-    :param fp_filename: FPs filename.
-    :param mol_iter: iterator with molecules.
-
-    :return: None.
+    Args:
+        fp_filename: FPs filename.
+        io_source: .smi or .sdf filename, ResultProxy or list.
+    Returns:
+        None
     """
     supplier = get_mol_suplier(io_source)
 
@@ -415,12 +445,13 @@ def append_fps(fp_filename, io_source, mol_id_prop='mol_id'):
 
 
 def delete_fps(fp_filename, ids_list):
-    """ Delete fps from fp file.
+    """Delete fps from fp file.
 
-    :param fp_filename: FPs filename.
-    :param fp_filename: ids to delete list.
-
-    :return: None.
+    Args:
+        fp_filename: FPs filename.
+        ids_list: ids to delete list.
+    Returns:
+        None
     """
     with tb.open_file(fp_filename, mode='a') as fp_file:
         fps_table = fp_file.root.fps
@@ -431,12 +462,14 @@ def delete_fps(fp_filename, ids_list):
 
 
 def sort_db_file(fp_filename):
-    """ Sort fp file.
+    """Sorts FP file.
 
     Sorts an existing fp file. 
 
-    :param fp_filename: FPs filename.
-    :return: None.
+    Args:
+        fp_filename: FPs filename.
+    Returns:
+        None
     """
     # rename not sorted filename
     tmp_filename = fp_filename + '_tmp'
@@ -474,10 +507,13 @@ def sort_db_file(fp_filename):
 
 
 def load_fps(fp_filename, sort=False):
-    """ Load FPs into memory.
+    """Sorts an existing FP file.
 
-    :param fp_filename: FPs filename.
-    :return: fingerprints.
+    Args:
+        fp_filename: FPs filename.
+        sort: Flag to sort or not after load the fps.
+    Returns:
+        namedtuple with fps and count ranges
     """
     with tb.open_file(fp_filename, mode='r') as fp_file:
         fps = fp_file.root.fps[:]

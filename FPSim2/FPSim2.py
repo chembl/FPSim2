@@ -1,12 +1,29 @@
 import concurrent.futures as cf
-from .FPSim2lib import on_disk_search, _similarity_search, _substructure_search, get_bounds_range
-from .io import load_fps, load_query, S_INDEXS
-import tables as tb
 import numpy as np
+import tables as tb
+from .io import S_INDEXS, load_fps, load_query
+from .FPSim2lib import (_similarity_search, _substructure_search,
+                        get_bounds_range, on_disk_search)
 
 
 class FPSim2Engine:
+    """Engine to run searches.
 
+    Can either run similarity seaches or substructure screenouts
+
+    Attributes:
+        fp_filename: Path to FP file.
+        fp_type: FP type used to generate the fingerprints.
+        fp_params: Parameters used in the fingerprint function
+        rdkit_ver: RDKit version used to generate the fingerprints.
+
+    Methods
+        similarity: Runs a on memory similarity search
+        on_disk_similarity: Runs a on disk similarity search
+        substructure: Runs a on memory substructure screenout
+        on_disk_substructure: Runs a on disk substructure screenout
+
+    """
     fp_filename = None
     fp_type = None
     fp_params = None
@@ -23,7 +40,70 @@ class FPSim2Engine:
             self.load_fps(fps_sort)        
 
     def load_fps(self, fps_sort=False):
+        """Loads fingerprints into memory.
+
+        Args:
+            fps_sort: Sort fps in memory after loading them.
+        Returns:
+            None.
+        """
         self.fps = load_fps(self.fp_filename, fps_sort)
+
+    def similarity(self, query_string, theshold, n_workers=1):
+        """Run a similarity search.
+
+        Args:
+            query_string: SMILES, InChi or molblock.
+            theshold: Similarities with a coeff above the threshold will be kept. 
+            n_workers: Number of threads used for the search.
+        Raises:
+            Exception: If fps are not loaded into memory.
+        Returns:
+            Numpy array with ids and similarities.
+        """
+        if not self.fps:
+            raise Exception('Load the fingerprints into memory before running a in memory search')
+        return self._base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
+
+    def on_disk_similarity(self, query_string, theshold, n_workers=1, chunk_size=250000):
+        """Run a on disk similarity search.
+
+        Args:
+            query_string: SMILES, InChi or molblock.
+            theshold: Similarities with a coeff above the threshold will be kept. 
+            n_workers: Number of threads used for the search.
+            chunk_size: Chunk size.
+        Returns:
+            Numpy array with ids and similarities.
+        """
+        return self._base_search(query_string, theshold, on_disk_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, n_workers)
+
+    def substructure(self, query_string, n_workers=1):
+        """Run a substructure screenout.
+
+        Args:
+            query_string: SMILES, InChi or molblock.
+            n_workers: Number of processes used for the search.
+        Raises:
+            Exception: If fps are not loaded into memory.
+        Returns:
+            Numpy array with ids.
+        """
+        if not self.fps:
+            raise Exception('Load the fingerprints into memory before running a in memory search')
+        return self._base_search(query_string, 1.0, _substructure_search, 0, 'substructure', False, cf.ThreadPoolExecutor, n_workers)
+
+    def on_disk_substructure(self, query_string, n_workers=1, chunk_size=250000):
+        """Run a on disk substructure screenout.
+
+        Args:
+            query_string: SMILES, InChi or molblock.
+            n_workers: Number of processes used for the search.
+            chunk_size: Chunk size.
+        Returns:
+            Numpy array with ids.
+        """
+        return self._base_search(query_string, 1.0, on_disk_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, n_workers)
 
     def _load_query_and_fp_range(self, query_string, count_ranges, threshold, s_index):
         query = load_query(query_string, self.fp_filename)
@@ -94,19 +174,3 @@ class FPSim2Engine:
         else:
             np_res = empty_np
         return np_res
-
-    def similarity(self, query_string, theshold, n_workers=1):
-        if not self.fps:
-            raise Exception('Load the fingerprints into memory before running a in memory search')
-        return self._base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
-
-    def on_disk_similarity(self, query_string, theshold, n_workers=1, chunk_size=250000):
-        return self._base_search(query_string, theshold, on_disk_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, n_workers)
-
-    def substructure(self, query_string, n_workers=1):
-        if not self.fps:
-            raise Exception('Load the fingerprints into memory before running a in memory search')
-        return self._base_search(query_string, 1.0, _substructure_search, 0, 'substructure', False, cf.ThreadPoolExecutor, n_workers)
-
-    def on_disk_substructure(self, query_string, n_workers=1, chunk_size=250000):
-        return self._base_search(query_string, 1.0, on_disk_search, chunk_size, 'substructure', True, cf.ProcessPoolExecutor, n_workers)
