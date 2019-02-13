@@ -31,6 +31,13 @@ class FPSim2Engine:
     fps = None
 
     def __init__(self, fp_filename, in_memory_fps=True, fps_sort=False):
+        """FPSim2Engine constructur.
+
+        Args:
+            fp_filename: FP file path.
+            in_memory_fps: Flat to load into memory or not the fps.
+            fps_sort: Flag to sort or not fps after loading into memory.
+        """
         self.fp_filename = fp_filename
         with tb.open_file(fp_filename, mode='r') as fp_file:
             self.fp_type = fp_file.root.config[0]
