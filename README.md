@@ -25,7 +25,7 @@ Use a conda environment to install it. Builds available for:
 - mac:
     - Python 3.6
 
-```
+```bash
 # install rdkit from rdkit channel
 conda install -c rdkit rdkit
 
