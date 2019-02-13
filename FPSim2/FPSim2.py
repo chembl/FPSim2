@@ -31,7 +31,7 @@ class FPSim2Engine:
     fps = None
 
     def __init__(self, fp_filename, in_memory_fps=True, fps_sort=False):
-        """FPSim2Engine constructur.
+        """FPSim2Engine constructor.
 
         Args:
             fp_filename: FP file path.
