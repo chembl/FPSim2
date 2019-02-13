@@ -9,7 +9,6 @@ import tables as tb
 
 
 # include CPU popcnt functions built in GCC for all posix systems
-# using -march=native GCC flag will use best CPU instruction available
 cdef extern int __builtin_popcountll(unsigned long long) nogil
 
 
