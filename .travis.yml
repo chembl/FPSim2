@@ -1,15 +1,15 @@
-# Don't use language: python; this gives us an unnecessary virtualenv
-language: c
+# Don't use language: python; this gives an unnecessary virtualenv
+language: generic
 matrix:
   include:
   - os: osx
     env: CONDA=3.6
-  # - os: osx
-  #   env: CONDA=3.7
+  - os: osx
+    env: CONDA=3.7
   - os: linux
     env: CONDA=3.6
-  # - os: linux
-  #   env: CONDA=3.7
+  - os: linux
+    env: CONDA=3.7
 
 install:
   # We do this conditionally because it saves us some downloading if the
