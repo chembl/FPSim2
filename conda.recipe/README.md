@@ -3,10 +3,10 @@
 To build the packages:
 
 ```
-conda build --py 3.6 conda_recipe/ -c rdkit
+conda build --py 3.6 --py 3.7 conda.recipe/ 
 ```
 
 To upload to conda cloud:
 ```
-anaconda upload ./.../fpsim2-0.16-py37_0.tar.bz2
+anaconda upload ./.../fpsim2-*.tar.bz2
 ```
