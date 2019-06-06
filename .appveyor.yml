@@ -1,7 +1,6 @@
 version: '{build}'
 image: Visual Studio 2015
 platform:
-- x86
 - x64
 environment:
   global:
@@ -29,10 +28,10 @@ build_script:
 - ps: |
     if ($env:PYTHON) {
       python setup.py sdist
-      pip install --verbose dist\pybind11sim-0.0.1.tar.gz
+      pip install --verbose dist\fpsim2-0.1.0.tar.gz
     } else {
       conda build conda.recipe
-      conda install --use-local pybind11sim
+      conda install --use-local fpsim2
     }
 test_script:
 - ps: pytest
