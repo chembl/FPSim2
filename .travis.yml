@@ -1,35 +1,51 @@
-# Don't use language: python; this gives an unnecessary virtualenv
-language: generic
+language: cpp
+dist: trusty
 matrix:
   include:
-  - os: osx
+  # - os: linux
+  #   env: PYTHON=3.6
+  - os: linux
     env: CONDA=3.6
-  - os: osx
+  - os: linux
     env: CONDA=3.7
-  - os: linux
+  # - os: osx
+  #   env: PYTHON=3.6
+  - os: osx
     env: CONDA=3.6
-  - os: linux
+  - os: osx
     env: CONDA=3.7
 
-install:
-  # We do this conditionally because it saves us some downloading if the
-  # version is the same.
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      sudo apt-get update && wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+before_install:
+- |
+  if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX=g++-4.8 CC=gcc-4.8; fi
+  if [ -n "$PYTHON" ]; then
+    if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "${PYTHON:0:1}" = "3" ]; then
+      brew update; brew install python3;
     fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels rdkit
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda create -q -n test-environment python=$CONDA pytest cython=>0.29 pytables>=3.4.4 rdkit>=2018.09 sqlalchemy>=1.2
-  - source activate test-environment
-  - python setup.py install
-
+    pip install --user --upgrade pip virtualenv
+    virtualenv -p python$PYTHON venv
+    source venv/bin/activate
+  elif [ -n "$CONDA" ]; then
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
+    wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA:0:1}-latest-$OS.sh
+    bash miniconda.sh -b -p $HOME/miniconda
+    export PATH="$HOME/miniconda/bin:$PATH"
+    conda config --set always_yes yes --set changeps1 no
+    conda config --add channels conda-forge
+    conda config --add channels rdkit
+    conda update -q conda
+    conda install -q conda-build
+    conda create -q -n test-environment python=$CONDA #pytest cython=>0.29 pytables>=3.4.4 rdkit>=2018.09 sqlalchemy>=1.2
+    source activate test-environment
+  fi
+install:
+- |
+  if [ -n "$PYTHON" ]; then
+    python setup.py sdist
+    pip install --verbose dist/*.tar.gz
+  elif [ -n "$CONDA" ]; then
+    conda build conda.recipe
+    conda install --use-local pybind11sim
+  fi
 script:
-  pytest
+- pytest
