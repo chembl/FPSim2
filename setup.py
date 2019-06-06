@@ -98,7 +98,7 @@ class BuildExt(build_ext):
 setup(
     name='FPSim2',
     version=__version__,
-    author='Eloy Félix',
+    author='Eloy Felix',
     author_email='eloyfelix@gmail.com',
     url='https://github.com/chembl/FPSim2',
     license='MIT',
