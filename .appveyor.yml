@@ -8,7 +8,7 @@ environment:
     MSSdk: 1
   matrix:
   - CONDA: 36
-  - CONDA: 37
+  # - CONDA: 37
 install:
 - cmd: '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 - ps: |
