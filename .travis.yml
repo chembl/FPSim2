@@ -35,7 +35,7 @@ before_install:
     conda config --add channels rdkit
     conda update -q conda
     conda install -q conda-build
-    conda create -q -n test-environment python=$CONDA #pytest cython=>0.29 pytables>=3.4.4 rdkit>=2018.09 sqlalchemy>=1.2
+    conda create -q -n test-environment python=$CONDA pytest
     source activate test-environment
   fi
 install:
