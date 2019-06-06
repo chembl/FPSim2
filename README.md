@@ -27,10 +27,8 @@ From source:
 From a conda environment. Builds available for:
 - linux:
     - Python 3.6
-    - Python 3.7
 - mac:
     - Python 3.6
-    - Python 3.7
 - windows:
     - coming soon
 
