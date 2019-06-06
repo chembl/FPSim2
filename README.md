@@ -19,7 +19,12 @@ Implementing:
 
 ## Installation 
 
-Use a conda environment to install it. Builds available for:
+From source:
+
+ - clone the repo
+ - `pip install ./fpsim2`
+
+From a conda environment. Builds available for:
 - linux:
     - Python 3.6
     - Python 3.7
@@ -27,14 +32,9 @@ Use a conda environment to install it. Builds available for:
     - Python 3.6
     - Python 3.7
 - windows:
-    - Python 3.6
-    - Python 3.7
+    - coming soon
 
 ```bash
-# install rdkit from rdkit channel
-conda install -c rdkit rdkit
-
-# install fpsim2
 conda install -c efelix fpsim2
 ```
 
