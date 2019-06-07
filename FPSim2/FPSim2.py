@@ -1,9 +1,21 @@
 import concurrent.futures as cf
 import numpy as np
 import tables as tb
-from .io import S_INDEXS, load_fps, load_query
-from .FPSim2lib import (_similarity_search, _substructure_search,
-                        get_bounds_range, on_disk_search)
+from .io import S_INDEXS, load_fps, load_query, get_bounds_range
+from .FPSim2lib import _similarity_search, _substructure_search
+
+
+def on_disk_search(query, fp_filename, chunk_indexes, threshold, s_index):
+    with tb.open_file(fp_filename, mode='r') as fp_file:
+        fps = fp_file.root.fps[chunk_indexes[0]:chunk_indexes[1]]
+    num_fields = len(fps[0])
+    fps = fps.view('<u8')
+    fps = fps.reshape(int(fps.size / num_fields), num_fields)
+    if s_index == 2:
+        res = _substructure_search(query, fps, threshold, 0, fps.shape[0])
+    else:
+        res = _similarity_search(query, fps, threshold, 0, fps.shape[0])
+    return res
 
 
 class FPSim2Engine:

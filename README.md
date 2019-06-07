@@ -7,11 +7,11 @@
 
 # FPSim2: Simple package for fast molecular similarity searches
 
-FPSim2 is a small Python/Cython package to run fast compound similarity searches. FPSim2 works better using high search thresholds (>=0.7).
+FPSim2 is a small Python/C++ package to run fast compound similarity searches. FPSim2 works better using high search thresholds (>=0.7).
 
 Implementing: 
 
-- Using fast population count algorithm(builtin-popcnt-unrolled) from https://github.com/WojciechMula/sse-popcount using SIMD instructions.
+- Using SIMD fast population count algorithm.
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/)
 - In memory and on disk search modes
@@ -19,17 +19,23 @@ Implementing:
 
 ## Installation 
 
-Use a conda environment to install it. Builds available for:
+From source:
+
+ - clone the repo
+ - `pip install ./fpsim2`
+
+From a conda environment. Builds available for:
 - linux:
     - Python 3.6
+    - Python 3.7
 - mac:
     - Python 3.6
+    - Python 3.7
+- windows:
+    - Python 3.6
+    - Python 3.7
 
 ```bash
-# install rdkit from rdkit channel
-conda install -c rdkit rdkit
-
-# install fpsim2
 conda install -c efelix fpsim2
 ```
 

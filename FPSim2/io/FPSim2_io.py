@@ -176,6 +176,26 @@ def get_fp_length(fp_func, fp_func_params):
     return fp_length
 
 
+def get_bounds_range(query, ranges, threshold, coeff):
+    query_count = py_popcount(query)
+    range_to_keep = []
+
+    for count, c_range in ranges:
+        # tanimoto
+        if coeff == 0:
+            max_sim = min(query_count, count) / max(query_count, count)
+        # substructure
+        elif coeff == 2:
+            max_sim = min(query_count, count) / query_count
+        else:
+            break
+        if max_sim >= threshold:
+            range_to_keep.append(c_range)
+    if range_to_keep:
+        range_to_keep = (range_to_keep[0][0], range_to_keep[len(range_to_keep)-1][1])
+    return range_to_keep
+
+
 def it_supplier(io_source, gen_ids, **kwargs):
     """Generator function that reads from a Python list or SQLA ResultProxy.
 
@@ -528,7 +548,7 @@ def load_fps(fp_filename, sort=False):
         else:
             count_ranges = fp_file.root.config[3]
     num_fields = len(fps[0])
-    fps2 = fps.view('<u8')
-    fps3 = fps2.reshape(int(fps2.size / num_fields), num_fields)
+    fps = fps.view('<u8')
+    fps = fps.reshape(int(fps.size / num_fields), num_fields)
     fps_t = namedtuple('fps', 'fps count_ranges')
-    return fps_t(fps=fps3, count_ranges=count_ranges)
+    return fps_t(fps=fps, count_ranges=count_ranges)
