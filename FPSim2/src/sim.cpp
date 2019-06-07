@@ -45,7 +45,7 @@ uint32_t py_popcount(py::array_t<unsigned long long> query)
     py::gil_scoped_release release;
 
     unsigned long long *qptr = (unsigned long long *)qbuff.ptr;
-    int qshape = qbuff.shape[0];
+    size_t qshape = qbuff.shape[0];
     uint32_t query_count = 0;
     for (size_t i = 0; i < qshape; i++)
             query_count += popcntll(qptr[i]);
@@ -73,8 +73,8 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> query
 
     // initial similarity result array size
     uint32_t simres_length = 256;
-    int dbshapeY = dbbuff.shape[1];
-    int qshape = qbuff.shape[0];
+    size_t dbshapeY = dbbuff.shape[1];
+    size_t qshape = qbuff.shape[0];
 
     uint32_t *results = (uint32_t *) malloc(simres_length * sizeof(uint32_t));
 
@@ -143,8 +143,8 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> query,
 
     // initial similarity result array size
     uint32_t simres_length = 256;
-    int dbshapeY = dbbuff.shape[1];
-    int qshape = qbuff.shape[0];
+    size_t dbshapeY = dbbuff.shape[1];
+    size_t qshape = qbuff.shape[0];
 
     // allocate number * sizeof(Result) bytes of memory
     Result *results = (Result *)malloc(simres_length * sizeof(Result));
