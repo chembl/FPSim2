@@ -21,10 +21,10 @@ requirements:
   run:
     - python
     - numpy>=1.14
-    - pytest
     - pytables>=3.4.4
     - sqlalchemy>=1.2
     - rdkit>=2018.09
+    - pytest
     - vs2015_runtime  # [win]
 
 test:

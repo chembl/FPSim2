@@ -110,10 +110,7 @@ setup(
     long_description=open('README.md', encoding='utf-8').read(),
     ext_modules=ext_modules,
     python_requires=">=3.6",
-    install_requires=['pybind11>=2.2',
-                      'tables>=3.4.4',
-                      'numpy>=1.14'],
-    extras_require={'sqlalchemy': ['sqlalchemy>=1.2']},
+    install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
     classifiers=[
