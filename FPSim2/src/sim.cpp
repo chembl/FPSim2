@@ -63,6 +63,8 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     uint32_t *results = (uint32_t *) malloc(subsres_length * sizeof(uint32_t));
 
     size_t qshape = query.shape(0);
+    uint8_t popcntidx = qshape - 1;
+
     uint32_t int_count = 0;
     uint32_t rel_co_count = 0;
     float coeff = 0.0;
@@ -71,10 +73,10 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     while (i_end > i)
     {
         // calc count for intersection and relative complement
-        for (size_t j = 0; j < qshape; j++)
+        for (size_t j = 1; j < popcntidx; j++)
         {
-            int_count += popcntll(query(j) & db(i, j + 1));
-            rel_co_count += popcntll(query(j) & ~db(i, j + 1));
+            int_count += popcntll(query(j) & db(i, j));
+            rel_co_count += popcntll(query(j) & ~db(i, j));
         }
         // calc tversky coeff
         coeff = substruct_coeff(rel_co_count, int_count);
@@ -119,11 +121,8 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     uint32_t simres_length = 256;
     Result *results = (Result *)malloc(simres_length * sizeof(Result));
 
-    // calc query molecule popcount
     size_t qshape = query.shape(0);
-    uint32_t qcount = 0;
-    for (size_t i = 0; i < qshape; i++)
-        qcount += popcntll(query(i));
+    uint8_t popcntidx = qshape - 1;
 
     uint32_t int_count = 0;
     uint32_t total_sims = 0;
@@ -131,9 +130,9 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     uint32_t i = i_start;
     while (i_end > i)
     {
-        for (size_t j = 0; j < qshape; j++)
-            int_count += popcntll(query(j) & db(i, j + 1));
-        coeff = tanimoto_coeff(int_count, qcount, db(i, qshape + 1));
+        for (size_t j = 1; j < popcntidx; j++)
+            int_count += popcntll(query(j) & db(i, j));
+        coeff = tanimoto_coeff(int_count, query(popcntidx), db(i, popcntidx));
 
         if (coeff >= threshold)
         {
