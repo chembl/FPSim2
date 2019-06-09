@@ -23,7 +23,7 @@ uint32_t py_popcount(py::array_t<unsigned long long> pyquery)
 {
     auto query = pyquery.unchecked<1>();
     uint32_t qcount = 0;
-    for (size_t i = 0; i < query.shape(0); i++)
+    for (ssize_t i = 0; i < query.shape(0); i++)
             qcount += popcntll(query(i));
     return qcount;
 }
