@@ -100,7 +100,16 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
 
     // acquire the GIL
     py::gil_scoped_acquire acquire;
-    auto subs = py::array_t<uint32_t>(total_subs, results);
+
+    // we can create a result numpy array
+    auto subs = py::array_t<uint32_t>(total_sims);
+    py::buffer_info bufsubs = subs.request();
+    uint32_t *ptrsubs = (uint32_t *)bufsubs.ptr;
+
+    for (size_t i = 0; i < total_sims; i++)
+        ptrsubs[i] = results[i];
+
+    free(results);
     return subs;
 }
 
@@ -151,8 +160,18 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         i++;
     }
 
+    auto sims = py::array_t<Result>(total_sims);
     // acquire the GIL
     py::gil_scoped_acquire acquire;
-    auto sims = py::array_t<Result>(total_sims, results);
+
+    py::buffer_info bufsims = sims.request();
+    Result *ptrsims = (Result *)bufsims.ptr;
+
+    for (size_t i = 0; i < total_sims; i++)
+    {
+        ptrsims[i].mol_id = results[i].mol_id;
+        ptrsims[i].coeff = results[i].coeff;
+    }
+    free(results);
     return sims;
 }
