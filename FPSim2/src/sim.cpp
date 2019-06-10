@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #include <nmmintrin.h>
 #endif
 #include "sim.hpp"
@@ -19,90 +19,78 @@ __inline long long popcntll(unsigned long long X)
 }
 #endif
 
-float tanimoto_coeff(uint32_t int_count, uint32_t count_query, uint32_t count_other)
+uint32_t py_popcount(py::array_t<unsigned long long> pyquery)
 {
-    float t_coeff = 0.0;
-    t_coeff = count_query + count_other - int_count;
-    if (t_coeff != 0.0)
-        t_coeff = int_count / t_coeff;
-    return t_coeff;
+    auto query = pyquery.unchecked<1>();
+    uint32_t qcount = 0;
+    for (ssize_t i = 0; i < query.shape(0); i++)
+            qcount += popcntll(query(i));
+    return qcount;
 }
 
-float substruct_coeff(uint32_t rel_co_count, uint32_t int_count)
+__inline float tanimoto_coeff(uint32_t int_count, uint32_t qcount, uint32_t ocount)
 {
-    float s_coeff = 0.0;
-    s_coeff = rel_co_count + int_count;
-    if (s_coeff != 0.0)
-        s_coeff = int_count / s_coeff;
-    return s_coeff;
+    float coeff = 0.0;
+    coeff = qcount + ocount - int_count;
+    if (coeff != 0.0)
+        coeff = int_count / coeff;
+    return coeff;
 }
 
-uint32_t py_popcount(py::array_t<unsigned long long> query)
+__inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count)
 {
-    auto qbuff = query.request();
-
-    // release the GIL
-    py::gil_scoped_release release;
-
-    unsigned long long *qptr = (unsigned long long *)qbuff.ptr;
-    size_t qshape = qbuff.shape[0];
-    uint32_t query_count = 0;
-    for (size_t i = 0; i < qshape; i++)
-            query_count += popcntll(qptr[i]);
-
-    // acquire the GIL
-    py::gil_scoped_acquire acquire;
-    return query_count;
+    float coeff = 0.0;
+    coeff = rel_co_count + int_count;
+    if (coeff != 0.0)
+        coeff = int_count / coeff;
+    return coeff;
 }
 
-py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> query,
-                                           py::array_t<unsigned long long> db,
+py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyquery,
+                                           py::array_t<unsigned long long> pydb,
                                            float threshold,
                                            uint32_t i_start,
                                            uint32_t i_end)
 {
-
-    auto dbbuff = db.request(), qbuff = query.request();
-
     // release the GIL
     py::gil_scoped_release release;
 
-    // pointers to buffers
-    unsigned long long *dbptr = (unsigned long long *)dbbuff.ptr,
-                       *qptr = (unsigned long long *)qbuff.ptr;
+    auto query = pyquery.unchecked<1>();
+    auto db = pydb.unchecked<2>();
 
-    // initial similarity result array size
-    uint32_t simres_length = 256;
-    size_t dbshapeY = dbbuff.shape[1];
-    size_t qshape = qbuff.shape[0];
+    // initial similarity result array size, allocate memory for results
+    uint32_t subsres_length = 256;
+    uint32_t *results = (uint32_t *) malloc(subsres_length * sizeof(uint32_t));
 
-    uint32_t *results = (uint32_t *) malloc(simres_length * sizeof(uint32_t));
+    size_t qshape = query.shape(0);
+    uint8_t popcntidx = qshape - 1;
 
     uint32_t int_count = 0;
     uint32_t rel_co_count = 0;
     float coeff = 0.0;
-    uint32_t total_sims = 0;
+    uint32_t total_subs = 0;
     uint32_t i = i_start;
     while (i_end > i)
     {
         // calc count for intersection and relative complement
-        for (size_t j = 0; j < qshape; j++)
-            int_count += popcntll(qptr[j] & dbptr[i * dbshapeY + j + 1]);
-        for (size_t j = 0; j < qshape; j++)
-            rel_co_count += popcntll(qptr[j] & ~dbptr[i * dbshapeY + j + 1]);
+        for (size_t j = 1; j < popcntidx; j++)
+        {
+            int_count += popcntll(query(j) & db(i, j));
+            rel_co_count += popcntll(query(j) & ~db(i, j));
+        }
         // calc tversky coeff
         coeff = substruct_coeff(rel_co_count, int_count);
 
         if (coeff == threshold)
         {
-            results[total_sims] = dbptr[i * dbshapeY];
-            total_sims += 1;
+            results[total_subs] = db(i, 0);
+            total_subs += 1;
         }
 
-        if (total_sims == simres_length)
+        if (total_subs == subsres_length)
         {
-            simres_length *= 2;
-            results = (uint32_t *) realloc(results, simres_length * sizeof(uint32_t));
+            subsres_length *= 2;
+            results = (uint32_t *) realloc(results, subsres_length * sizeof(uint32_t));
         }
         //  reset values for next fp
         int_count = 0;
@@ -114,45 +102,36 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> query
     py::gil_scoped_acquire acquire;
 
     // we can create a result numpy array
-    auto subs = py::array_t<uint32_t>(total_sims);
+    auto subs = py::array_t<uint32_t>(total_subs);
     py::buffer_info bufsubs = subs.request();
     uint32_t *ptrsubs = (uint32_t *)bufsubs.ptr;
 
-    for (size_t i = 0; i < total_sims; i++)
+    for (size_t i = 0; i < total_subs; i++)
         ptrsubs[i] = results[i];
 
     free(results);
     return subs;
 }
 
-py::array_t<Result> _similarity_search(py::array_t<unsigned long long> query,
-                                       py::array_t<unsigned long long> db,
+py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
+                                       py::array_t<unsigned long long> pydb,
                                        float threshold,
                                        uint32_t i_start,
                                        uint32_t i_end)
 {
-
-    auto dbbuff = db.request(), qbuff = query.request();
-
     // release the GIL
     py::gil_scoped_release release;
 
-    // pointers to buffers
-    unsigned long long *dbptr = (unsigned long long *)dbbuff.ptr,
-                       *qptr = (unsigned long long *)qbuff.ptr;
+    // direct access to np arrays without checks
+    auto query = pyquery.unchecked<1>();
+    auto db = pydb.unchecked<2>();
 
-    // initial similarity result array size
+    // initial similarity result array size, allocate memory for results
     uint32_t simres_length = 256;
-    size_t dbshapeY = dbbuff.shape[1];
-    size_t qshape = qbuff.shape[0];
-
-    // allocate number * sizeof(Result) bytes of memory
     Result *results = (Result *)malloc(simres_length * sizeof(Result));
 
-    // calc query molecule popcount
-    uint32_t qcount = 0;
-    for (size_t i = 0; i < qshape; i++)
-        qcount += popcntll(qptr[i]);
+    size_t qshape = query.shape(0);
+    uint8_t popcntidx = qshape - 1;
 
     uint32_t int_count = 0;
     uint32_t total_sims = 0;
@@ -160,31 +139,31 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> query,
     uint32_t i = i_start;
     while (i_end > i)
     {
-        for (size_t j = 0; j < qshape; j++)
-            int_count += popcntll(qptr[j] & dbptr[i * dbshapeY + j + 1]);
-        coeff = tanimoto_coeff(int_count, qcount, dbptr[i * dbshapeY + qshape + 1]);
+        for (size_t j = 1; j < popcntidx; j++)
+            int_count += popcntll(query(j) & db(i, j));
+        coeff = tanimoto_coeff(int_count, query(popcntidx), db(i, popcntidx));
 
         if (coeff >= threshold)
         {
-            results[total_sims].mol_id = dbptr[i * dbshapeY];
+            results[total_sims].mol_id = db(i, 0);
             results[total_sims].coeff = coeff;
             total_sims += 1;
         }
 
         if (total_sims == simres_length)
         {
+            // reallocate memory
             simres_length *= 2;
-            // reallocating memory
             results = (Result *)realloc(results, simres_length * sizeof(Result));
         }
         int_count = 0;
         i++;
     }
 
+    auto sims = py::array_t<Result>(total_sims);
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    auto sims = py::array_t<Result>(total_sims);
     py::buffer_info bufsims = sims.request();
     Result *ptrsims = (Result *)bufsims.ptr;
 

@@ -150,6 +150,8 @@ def load_query(mol_string, fp_filename):
         #         .format(config[2], rdkit.__version__))
     # generate the fpe
     efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
+    efp.append(py_popcount(np.array(efp, dtype=np.uint64)))
+    efp.insert(0, 0)
     return np.array(efp, dtype=np.uint64)
 
 

@@ -3,7 +3,7 @@ from setuptools.command.build_ext import build_ext
 import platform
 import sys
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 class get_pybind_include(object):
@@ -109,11 +109,12 @@ setup(
     description='Simple package for fast molecular similarity searching',
     long_description=open('README.md', encoding='utf-8').read(),
     ext_modules=ext_modules,
+    python_requires=">=3.6",
     install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
