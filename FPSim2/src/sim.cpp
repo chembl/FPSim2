@@ -102,11 +102,11 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     py::gil_scoped_acquire acquire;
 
     // we can create a result numpy array
-    auto subs = py::array_t<uint32_t>(total_sims);
+    auto subs = py::array_t<uint32_t>(total_subs);
     py::buffer_info bufsubs = subs.request();
     uint32_t *ptrsubs = (uint32_t *)bufsubs.ptr;
 
-    for (size_t i = 0; i < total_sims; i++)
+    for (size_t i = 0; i < total_subs; i++)
         ptrsubs[i] = results[i];
 
     free(results);
