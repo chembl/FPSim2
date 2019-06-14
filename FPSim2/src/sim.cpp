@@ -67,7 +67,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     float coeff = 0.0;
     uint32_t total_subs = 0;
     uint32_t i = i_start;
-    while (i_end >= i)
+    while (i_end > i)
     {
         // calc count for intersection and relative complement
         for (size_t j = 1; j < popcntidx; j++)
