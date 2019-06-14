@@ -52,9 +52,6 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
                                            uint32_t i_start,
                                            uint32_t i_end)
 {
-    // release the GIL
-    py::gil_scoped_release release;
-
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
 
@@ -70,7 +67,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     float coeff = 0.0;
     uint32_t total_subs = 0;
     uint32_t i = i_start;
-    while (i_end >= i)
+    while (i_end > i)
     {
         // calc count for intersection and relative complement
         for (size_t j = 1; j < popcntidx; j++)
@@ -98,19 +95,15 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
         i++;
     }
 
-    // acquire the GIL
-    py::gil_scoped_acquire acquire;
-
     // we can create a result numpy array
-    auto subs = py::array_t<uint32_t>(total_subs);
-    py::buffer_info bufsubs = subs.request();
-    uint32_t *ptrsubs = (uint32_t *)bufsubs.ptr;
+    auto subsarr = py::array_t<uint32_t>(total_subs);
+    auto subs = subsarr.mutable_unchecked<1>();
 
-    for (size_t i = 0; i < total_subs; i++)
-        ptrsubs[i] = results[i];
-
+    for (size_t i = 0; i < total_subs; i++){
+        subs(i) = results[i];
+    }
     free(results);
-    return subs;
+    return subsarr;
 }
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
@@ -119,9 +112,6 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        uint32_t i_start,
                                        uint32_t i_end)
 {
-    // release the GIL
-    py::gil_scoped_release release;
-
     // direct access to np arrays without checks
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
@@ -137,7 +127,7 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     uint32_t total_sims = 0;
     float coeff = 0.0;
     uint32_t i = i_start;
-    while (i_end >= i)
+    while (i_end > i)
     {
         for (size_t j = 1; j < popcntidx; j++)
             int_count += popcntll(query(j) & db(i, j));
@@ -160,18 +150,13 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         i++;
     }
 
-    auto sims = py::array_t<Result>(total_sims);
-    // acquire the GIL
-    py::gil_scoped_acquire acquire;
+    auto simsarr = py::array_t<Result>(total_sims);
+    auto sims = simsarr.mutable_unchecked<1>();
 
-    py::buffer_info bufsims = sims.request();
-    Result *ptrsims = (Result *)bufsims.ptr;
-
-    for (size_t i = 0; i < total_sims; i++)
-    {
-        ptrsims[i].mol_id = results[i].mol_id;
-        ptrsims[i].coeff = results[i].coeff;
+    for (size_t i = 0; i < total_sims; i++){
+        sims(i).mol_id = results[i].mol_id;
+        sims(i).coeff = results[i].coeff;
     }
     free(results);
-    return sims;
+    return simsarr;
 }

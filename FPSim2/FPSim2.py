@@ -175,15 +175,15 @@ class FPSim2Engine:
                 if s_index != 'substructure':
                     np_res[::-1].sort(order='coeff')
             else:
-                results = self._parallel_run(query, 
-                                            search_func, 
-                                            executor, 
-                                            fp_range,
-                                            n_workers,
-                                            threshold,
-                                            chunk_size,
-                                            s_index,
-                                            on_disk)
+                results = self._parallel_run(query,
+                                             search_func,
+                                             executor,
+                                             fp_range,
+                                             n_workers,
+                                             threshold,
+                                             chunk_size,
+                                             s_index,
+                                             on_disk)
                 if results:
                     np_res = np.concatenate(results)
                     if s_index != 'substructure':
