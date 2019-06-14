@@ -30,7 +30,7 @@ build_script:
       python setup.py sdist
       pip install --verbose dist\fpsim2-0.1.1.tar.gz
     } else {
-      conda build conda.recipe
+      conda build --py $env:CONDA conda.recipe
       conda install --use-local fpsim2
     }
 test_script:
