@@ -109,7 +109,6 @@ setup(
     description='Simple package for fast molecular similarity searching',
     long_description=open('README.md', encoding='utf-8').read(),
     ext_modules=ext_modules,
-    python_requires=">=3.6",
     install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
