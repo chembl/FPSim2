@@ -39,7 +39,7 @@ install:
     python setup.py sdist
     pip install --verbose dist/*.tar.gz
   elif [ -n "$CONDA" ]; then
-    conda build conda.recipe
+    conda build --py $CONDA conda.recipe
     conda install --use-local fpsim2
   fi
 script:
