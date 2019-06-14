@@ -160,9 +160,10 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         i++;
     }
 
-    auto sims = py::array_t<Result>(total_sims);
     // acquire the GIL
     py::gil_scoped_acquire acquire;
+
+    auto sims = py::array_t<Result>(total_sims);
 
     py::buffer_info bufsims = sims.request();
     Result *ptrsims = (Result *)bufsims.ptr;
