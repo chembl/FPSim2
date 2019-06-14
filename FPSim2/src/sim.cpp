@@ -127,7 +127,7 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     uint32_t total_sims = 0;
     float coeff = 0.0;
     uint32_t i = i_start;
-    while (i_end >= i)
+    while (i_end > i)
     {
         for (size_t j = 1; j < popcntidx; j++)
             int_count += popcntll(query(j) & db(i, j));

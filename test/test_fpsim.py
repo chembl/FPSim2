@@ -103,7 +103,6 @@ def test_validate_against_rdkit():
 
     fpe = FPSim2Engine('test/10mols.h5')
     results = fpe.similarity(query_smi, 0.0, n_workers=1)['coeff']
-
     for rds, fpss in zip(rdresults, results):
         assert True == math.isclose(rds, fpss, rel_tol=1e-7)
 
