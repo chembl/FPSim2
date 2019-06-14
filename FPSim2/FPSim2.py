@@ -68,12 +68,12 @@ class FPSim2Engine:
         """
         self.fps = load_fps(self.fp_filename, fps_sort)
 
-    def similarity(self, query_string, theshold, n_workers=1):
+    def similarity(self, query_string, threshold, n_workers=1):
         """Run a similarity search.
 
         Args:
             query_string: SMILES, InChi or molblock.
-            theshold: Similarities with a coeff above the threshold will be kept. 
+            threshold: Similarities with a coeff above the threshold will be kept. 
             n_workers: Number of threads used for the search.
         Raises:
             Exception: If fps are not loaded into memory.
@@ -82,20 +82,20 @@ class FPSim2Engine:
         """
         if not self.fps:
             raise Exception('Load the fingerprints into memory before running a in memory search')
-        return self._base_search(query_string, theshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
+        return self._base_search(query_string, threshold, _similarity_search, 0, 'tanimoto', False, cf.ThreadPoolExecutor, n_workers)
 
-    def on_disk_similarity(self, query_string, theshold, n_workers=1, chunk_size=250000):
+    def on_disk_similarity(self, query_string, threshold, n_workers=1, chunk_size=250000):
         """Run a on disk similarity search.
 
         Args:
             query_string: SMILES, InChi or molblock.
-            theshold: Similarities with a coeff above the threshold will be kept. 
+            threshold: Similarities with a coeff above the threshold will be kept. 
             n_workers: Number of threads used for the search.
             chunk_size: Chunk size.
         Returns:
             Numpy array with ids and similarities.
         """
-        return self._base_search(query_string, theshold, on_disk_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, n_workers)
+        return self._base_search(query_string, threshold, on_disk_search, chunk_size, 'tanimoto', True, cf.ProcessPoolExecutor, n_workers)
 
     def substructure(self, query_string, n_workers=1):
         """Run a substructure screenout.
