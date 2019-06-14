@@ -119,9 +119,6 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        uint32_t i_start,
                                        uint32_t i_end)
 {
-    // release the GIL
-    py::gil_scoped_release release;
-
     // direct access to np arrays without checks
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
@@ -160,18 +157,13 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         i++;
     }
 
-    auto sims = py::array_t<Result>(total_sims);
-    // acquire the GIL
-    py::gil_scoped_acquire acquire;
+    auto simsarr = py::array_t<Result>(total_sims);
+    auto sims = simsarr.mutable_unchecked<1>();
 
-    py::buffer_info bufsims = sims.request();
-    Result *ptrsims = (Result *)bufsims.ptr;
-
-    for (size_t i = 0; i < total_sims; i++)
-    {
-        ptrsims[i].mol_id = results[i].mol_id;
-        ptrsims[i].coeff = results[i].coeff;
+    for (size_t i = 0; i < total_sims; i++){
+        sims(i).mol_id = results[i].mol_id;
+        sims(i).coeff = results[i].coeff;
     }
     free(results);
-    return sims;
+    return simsarr;
 }
