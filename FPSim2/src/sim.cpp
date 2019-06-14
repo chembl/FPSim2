@@ -52,9 +52,6 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
                                            uint32_t i_start,
                                            uint32_t i_end)
 {
-    // release the GIL
-    py::gil_scoped_release release;
-
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
 
@@ -98,19 +95,15 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
         i++;
     }
 
-    // acquire the GIL
-    py::gil_scoped_acquire acquire;
-
     // we can create a result numpy array
-    auto subs = py::array_t<uint32_t>(total_subs);
-    py::buffer_info bufsubs = subs.request();
-    uint32_t *ptrsubs = (uint32_t *)bufsubs.ptr;
+    auto subsarr = py::array_t<uint32_t>(total_subs);
+    auto subs = subsarr.mutable_unchecked<1>();
 
-    for (size_t i = 0; i < total_subs; i++)
-        ptrsubs[i] = results[i];
-
+    for (size_t i = 0; i < total_subs; i++){
+        subs(i) = results[i];
+    }
     free(results);
-    return subs;
+    return subsarr;
 }
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
