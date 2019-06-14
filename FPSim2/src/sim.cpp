@@ -52,6 +52,9 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
                                            uint32_t i_start,
                                            uint32_t i_end)
 {
+    // release the GIL
+    py::gil_scoped_release release;
+
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
 
@@ -95,15 +98,19 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
         i++;
     }
 
-    // we can create a result numpy array
-    auto subsarr = py::array_t<uint32_t>(total_subs);
-    auto subs = subsarr.mutable_unchecked<1>();
+    // acquire the GIL
+    py::gil_scoped_acquire acquire;
 
-    for (size_t i = 0; i < total_subs; i++){
-        subs(i) = results[i];
-    }
+    // we can create a result numpy array
+    auto subs = py::array_t<uint32_t>(total_subs);
+    py::buffer_info bufsubs = subs.request();
+    uint32_t *ptrsubs = (uint32_t *)bufsubs.ptr;
+
+    for (size_t i = 0; i < total_subs; i++)
+        ptrsubs[i] = results[i];
+
     free(results);
-    return subsarr;
+    return subs;
 }
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
@@ -112,6 +119,9 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        uint32_t i_start,
                                        uint32_t i_end)
 {
+    // release the GIL
+    py::gil_scoped_release release;
+
     // direct access to np arrays without checks
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
@@ -150,13 +160,18 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         i++;
     }
 
-    auto simsarr = py::array_t<Result>(total_sims);
-    auto sims = simsarr.mutable_unchecked<1>();
+    auto sims = py::array_t<Result>(total_sims);
+    // acquire the GIL
+    py::gil_scoped_acquire acquire;
 
-    for (size_t i = 0; i < total_sims; i++){
-        sims(i).mol_id = results[i].mol_id;
-        sims(i).coeff = results[i].coeff;
+    py::buffer_info bufsims = sims.request();
+    Result *ptrsims = (Result *)bufsims.ptr;
+
+    for (size_t i = 0; i < total_sims; i++)
+    {
+        ptrsims[i].mol_id = results[i].mol_id;
+        ptrsims[i].coeff = results[i].coeff;
     }
     free(results);
-    return simsarr;
+    return sims;
 }
