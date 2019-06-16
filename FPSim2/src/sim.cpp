@@ -86,7 +86,6 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
             results[total_subs] = db(i, 0);
             total_subs += 1;
         }
-
         if (total_subs == subsres_length)
         {
             subsres_length *= 2;
@@ -144,7 +143,6 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
             results[total_sims].coeff = coeff;
             total_sims += 1;
         }
-
         if (total_sims == simres_length)
         {
             // reallocate memory
