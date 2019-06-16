@@ -88,7 +88,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
         }
         if (total_subs == subsres_length)
         {
-            subsres_length *= 2;
+            subsres_length *= 1.12;
             results = (uint32_t *) realloc(results, subsres_length * sizeof(uint32_t));
         }
         //  reset values for next fp
@@ -146,7 +146,7 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         if (total_sims == simres_length)
         {
             // reallocate memory
-            simres_length *= 2;
+            simres_length *= 1.12;
             results = (Result *)realloc(results, simres_length * sizeof(Result));
         }
         int_count = 0;
