@@ -86,10 +86,9 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
             results[total_subs] = db(i, 0);
             total_subs += 1;
         }
-
         if (total_subs == subsres_length)
         {
-            subsres_length *= 2;
+            subsres_length *= 1.12;
             results = (uint32_t *) realloc(results, subsres_length * sizeof(uint32_t));
         }
         //  reset values for next fp
@@ -101,15 +100,11 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    // we can create a result numpy array
-    auto subsarr = py::array_t<uint32_t>(total_subs);
-    auto subs = subsarr.mutable_unchecked<1>();
-
-    for (size_t i = 0; i < total_subs; i++){
-        subs(i) = results[i];
-    }
-    free(results);
-    return subsarr;
+    py::capsule capsule(results, [](void *f) {
+        uint32_t *results = reinterpret_cast<uint32_t *>(f);
+        free(results);
+    });
+    return py::array_t<uint32_t>(total_subs, results, capsule);
 }
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
@@ -148,11 +143,10 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
             results[total_sims].coeff = coeff;
             total_sims += 1;
         }
-
         if (total_sims == simres_length)
         {
             // reallocate memory
-            simres_length *= 2;
+            simres_length *= 1.12;
             results = (Result *)realloc(results, simres_length * sizeof(Result));
         }
         int_count = 0;
@@ -162,13 +156,9 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    auto simsarr = py::array_t<Result>(total_sims);
-    auto sims = simsarr.mutable_unchecked<1>();
-
-    for (size_t i = 0; i < total_sims; i++){
-        sims(i).mol_id = results[i].mol_id;
-        sims(i).coeff = results[i].coeff;
-    }
-    free(results);
-    return simsarr;
+    py::capsule capsule(results, [](void *f) {
+        Result *results = reinterpret_cast<Result *>(f);
+        free(results);
+    });
+    return py::array_t<Result>(total_sims, results, capsule);
 }
