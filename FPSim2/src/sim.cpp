@@ -101,15 +101,11 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    // we can create a result numpy array
-    auto subsarr = py::array_t<uint32_t>(total_subs);
-    auto subs = subsarr.mutable_unchecked<1>();
-
-    for (size_t i = 0; i < total_subs; i++){
-        subs(i) = results[i];
-    }
-    free(results);
-    return subsarr;
+    py::capsule capsule(results, [](void *f) {
+        uint32_t *results = reinterpret_cast<uint32_t *>(f);
+        free(results);
+    });
+    return py::array_t<uint32_t>(total_subs, results, capsule);
 }
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
@@ -162,13 +158,9 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    auto simsarr = py::array_t<Result>(total_sims);
-    auto sims = simsarr.mutable_unchecked<1>();
-
-    for (size_t i = 0; i < total_sims; i++){
-        sims(i).mol_id = results[i].mol_id;
-        sims(i).coeff = results[i].coeff;
-    }
-    free(results);
-    return simsarr;
+    py::capsule capsule(results, [](void *f) {
+        Result *results = reinterpret_cast<Result *>(f);
+        free(results);
+    });
+    return py::array_t<Result>(total_sims, results, capsule);
 }
