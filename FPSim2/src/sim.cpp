@@ -103,7 +103,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
 
     // python object that will free the memory when destroyed
     auto capsule = py::capsule(results, [](void *results) {
-        delete reinterpret_cast<std::vector<Result> *>(results);
+        delete reinterpret_cast<std::vector<uint32_t> *>(results);
     });
     return py::array_t<uint32_t>(results->size(), results->data(), capsule);
 }
