@@ -24,7 +24,7 @@ uint32_t py_popcount(py::array_t<unsigned long long> pyquery)
     auto query = pyquery.unchecked<1>();
     uint32_t qcount = 0;
     for (ssize_t i = 0; i < query.shape(0); i++)
-            qcount += popcntll(query(i));
+        qcount += popcntll(query(i));
     return qcount;
 }
 
@@ -60,7 +60,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
 
     // initial similarity result array size, allocate memory for results
     uint32_t subsres_length = 256;
-    uint32_t *results = (uint32_t *) malloc(subsres_length * sizeof(uint32_t));
+    auto results = new std::vector<uint32_t>(subsres_length);
 
     size_t qshape = query.shape(0);
     uint8_t popcntidx = qshape - 1;
@@ -83,28 +83,29 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
 
         if (coeff == threshold)
         {
-            results[total_subs] = db(i, 0);
+            (*results)[total_subs] = db(i, 0);
             total_subs += 1;
         }
         if (total_subs == subsres_length)
         {
             subsres_length *= 1.12;
-            results = (uint32_t *) realloc(results, subsres_length * sizeof(uint32_t));
+            results->resize(subsres_length);
         }
         //  reset values for next fp
         int_count = 0;
         rel_co_count = 0;
         i++;
     }
+    results->resize(total_subs);
 
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    py::capsule capsule(results, [](void *f) {
-        uint32_t *results = reinterpret_cast<uint32_t *>(f);
-        free(results);
+    // python object that will free the memory when destroyed
+    auto capsule = py::capsule(results, [](void *results) {
+        delete reinterpret_cast<std::vector<Result> *>(results);
     });
-    return py::array_t<uint32_t>(total_subs, results, capsule);
+    return py::array_t<uint32_t>(results->size(), results->data(), capsule);
 }
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
@@ -122,7 +123,7 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
 
     // initial similarity result array size, allocate memory for results
     uint32_t simres_length = 256;
-    Result *results = (Result *)malloc(simres_length * sizeof(Result));
+    auto results = new std::vector<Result>(simres_length);
 
     size_t qshape = query.shape(0);
     uint8_t popcntidx = qshape - 1;
@@ -139,26 +140,27 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
 
         if (coeff >= threshold)
         {
-            results[total_sims].mol_id = db(i, 0);
-            results[total_sims].coeff = coeff;
+            (*results)[total_sims].mol_id = db(i, 0);
+            (*results)[total_sims].coeff = coeff;
             total_sims += 1;
         }
         if (total_sims == simres_length)
         {
             // reallocate memory
             simres_length *= 1.12;
-            results = (Result *)realloc(results, simres_length * sizeof(Result));
+            results->resize(simres_length);
         }
         int_count = 0;
         i++;
     }
+    results->resize(total_sims);
 
     // acquire the GIL
     py::gil_scoped_acquire acquire;
 
-    py::capsule capsule(results, [](void *f) {
-        Result *results = reinterpret_cast<Result *>(f);
-        free(results);
+    // python object that will free the memory when destroyed
+    auto capsule = py::capsule(results, [](void *results) {
+        delete reinterpret_cast<std::vector<Result> *>(results);
     });
-    return py::array_t<Result>(total_sims, results, capsule);
+    return py::array_t<Result>(results->size(), results->data(), capsule);
 }
