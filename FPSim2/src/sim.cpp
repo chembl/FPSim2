@@ -108,6 +108,15 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     return py::array_t<uint32_t>(results->size(), results->data(), capsule);
 }
 
+bool cmp(const Result &l, const Result &r) { return l.coeff > r.coeff; }
+
+void sort_results(py::array_t<Result> pyres)
+{
+    py::buffer_info buf = pyres.request();
+    Result *ptr = (Result *) buf.ptr;
+    std::sort(&ptr[0], &ptr[buf.shape[0]], cmp);
+}
+
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        py::array_t<unsigned long long> pydb,
                                        float threshold,
@@ -153,7 +162,9 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
         int_count = 0;
         i++;
     }
+    // set final size and sort
     results->resize(total_sims);
+    std::sort(results->begin(), results->end(), cmp);
 
     // acquire the GIL
     py::gil_scoped_acquire acquire;

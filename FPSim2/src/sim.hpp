@@ -17,6 +17,8 @@ __inline float tanimoto_coeff(uint32_t int_count,
 
 uint32_t py_popcount(py::array_t<unsigned long long> pyquery);
 
+void sort_results(py::array_t<Result> pyres);
+
 py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyquery,
                                            py::array_t<unsigned long long> pydb,
                                            float threshold,
