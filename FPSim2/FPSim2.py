@@ -2,7 +2,7 @@ import concurrent.futures as cf
 import numpy as np
 import tables as tb
 from .io import S_INDEXS, load_fps, load_query, get_bounds_range
-from .FPSim2lib import _similarity_search, _substructure_search
+from .FPSim2lib import _similarity_search, _substructure_search, sort_results
 
 
 def on_disk_search(query, fp_filename, chunk_indexes, threshold, s_index):
@@ -172,8 +172,6 @@ class FPSim2Engine:
         if fp_range:
             if n_workers == 1 and not on_disk:
                 np_res = search_func(query, self.fps.fps, threshold, fp_range[0], fp_range[1])
-                if s_index != 'substructure':
-                    np_res[::-1].sort(order='coeff')
             else:
                 results = self._parallel_run(query,
                                              search_func,
@@ -187,7 +185,7 @@ class FPSim2Engine:
                 if results:
                     np_res = np.concatenate(results)
                     if s_index != 'substructure':
-                        np_res[::-1].sort(order='coeff')
+                        sort_results(np_res)
                 else:
                     np_res = empty_np
         else:
