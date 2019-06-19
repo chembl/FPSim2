@@ -226,7 +226,7 @@ def it_supplier(io_source, gen_ids, **kwargs):
                     raise Exception('FPSim only supports integer ids for molecules, '
                                     'cosinder setting gen_ids=True when running '
                                     'create_db_file to autogenerate them.')
-                mol_string = mol[0].strip()
+                mol_string = mol[0]
         rdmol = load_molecule(mol_string)
         if rdmol:
             yield mol_id, rdmol

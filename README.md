@@ -44,7 +44,7 @@ conda install -c efelix fpsim2
 ### Create FP file
 
 ```python
-from FPSim2 import create_db_file
+from FPSim2.io import create_db_file
 
 # from .smi file
 create_db_file('chembl.smi', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
@@ -97,7 +97,7 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 ```python
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_24.h5'
+fp_filename = 'chembl_25.h5'
 query = 'CC(=O)Oc1ccccc1C(=O)O'
 
 fpe = FPSim2Engine(fp_filename)
@@ -114,7 +114,7 @@ If you're searching against a huge dataset or you have small RAM, you can still 
 ```python
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_24.h5'
+fp_filename = 'chembl_25.h5'
 query = 'CC(=O)Oc1ccccc1C(=O)O'
 
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
