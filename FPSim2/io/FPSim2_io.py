@@ -91,8 +91,7 @@ FP_FUNC_DEFAULTS = {
 
 
 def rdmol_to_efp(rdmol, fp_func, fp_func_params):
-    """
-    Converts rdkit mol in FPSim2 fp format.
+    """Converts rdkit mol in FPSim2 fp format.
 
     Args:
         rdmol: rdkit mol.
@@ -108,8 +107,7 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
 
 
 def load_molecule(mol_string):
-    """
-    Reads SMILES, molblock or InChi and returns a rdkit mol.
+    """Reads SMILES, molblock or InChi and returns a rdkit mol.
 
     Args:
         mol_string: SMILES, molblock or InChi.
@@ -126,8 +124,7 @@ def load_molecule(mol_string):
 
 
 def load_query(mol_string, fp_filename):
-    """
-    Load query molecule from SMILES, molblock or InChi.
+    """Load query molecule from SMILES, molblock or InChi.
 
     Args:
         query: SMILES, molblock or InChi.
@@ -152,8 +149,7 @@ def load_query(mol_string, fp_filename):
 
 
 def get_fp_length(fp_func, fp_func_params):
-    """
-    Returns fp length given the name of a function and it's parameters.
+    """Returns fp length given the name of a function and it's parameters.
 
     Args:
         fp_func: Name of the function to generate fps.
@@ -196,8 +192,7 @@ def get_bounds_range(query, ranges, threshold, coeff):
 
 
 def it_supplier(io_source, gen_ids, **kwargs):
-    """
-    Generator function that reads from iterators.
+    """Generator function that reads from iterators.
 
     Args:
         io_source: py list or sqla ResultProxy.
@@ -235,8 +230,7 @@ def it_supplier(io_source, gen_ids, **kwargs):
 
 
 def smi_mol_supplier(io_source, gen_ids, **kwargs):
-    """
-    Generator function that reads .smi files.
+    """Generator function that reads .smi files.
 
     Args:
         io_source: input .smi file name.
@@ -277,8 +271,7 @@ def smi_mol_supplier(io_source, gen_ids, **kwargs):
 
 
 def sdf_mol_supplier(io_source, gen_ids, **kwargs):
-    """
-    Generator function that reads .sdf files.
+    """Generator function that reads .sdf files.
 
     Args:
         io_source: .sdf filename.
@@ -310,8 +303,7 @@ def sdf_mol_supplier(io_source, gen_ids, **kwargs):
 
 
 def calc_count_ranges(fps, fp_length, in_memory=False):
-    """
-    Calcs popcount bins.
+    """Calcs popcount bins.
 
     Args:
         fps_table: table storing fps.
@@ -344,8 +336,7 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
 
 
 def get_mol_suplier(io_source):
-    """
-    Returns a mol supplier depending on the object type and file extension.
+    """Returns a mol supplier depending on the object type and file extension.
 
     Args:
         io_source: source of molecules, smi or sdf filenames, 
@@ -376,8 +367,7 @@ def create_db_file(
     gen_ids=False,
     sort_by_popcnt=True,
 ):
-    """
-    Creates FPSim2 fingerprints file from .smi, .sdf files, 
+    """Creates FPSim2 fingerprints file from .smi, .sdf files, 
     python lists or SQLA queries.
 
     Args:
@@ -452,8 +442,7 @@ def create_db_file(
 
 
 def append_fps(fp_filename, io_source, mol_id_prop="mol_id"):
-    """
-    Appends molecules to a FP db file.
+    """Appends fps to a FP db file.
 
     Args:
         fp_filename: FP db filename.
@@ -484,8 +473,7 @@ def append_fps(fp_filename, io_source, mol_id_prop="mol_id"):
 
 
 def delete_fps(fp_filename, ids_list):
-    """
-    Delete fps from FP db file.
+    """Delete fps from FP db file.
 
     Args:
         fp_filename: FP db filename.
@@ -503,8 +491,7 @@ def delete_fps(fp_filename, ids_list):
 
 
 def sort_db_file(fp_filename):
-    """
-    Sorts an existing FP db file.
+    """Sorts an existing FP db file.
 
     Args:
         fp_filename: FP db filename.
@@ -563,8 +550,7 @@ def sort_db_file(fp_filename):
 
 
 def load_fps(fp_filename, sort=False):
-    """
-    Loads FP db file into memory.
+    """Loads FP db file into memory.
 
     Args:
         fp_filename: FPs filename.

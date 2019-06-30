@@ -7,8 +7,7 @@ __version__ = "0.1.4"
 
 
 class get_pybind_include(object):
-    """
-    Helper class to determine the pybind11 include path
+    """Helper class to determine the pybind11 include path
 
     The purpose of this class is to postpone importing pybind11
     until it is actually installed, so that the ``get_include()``
@@ -56,8 +55,7 @@ def has_flag(compiler, flagname):
 
 
 def cpp_flag(compiler):
-    """
-    Return the -std=c++[11/14/17] compiler flag.
+    """Return the -std=c++[11/14/17] compiler flag.
     The newer version is prefered over c++11 (when it is available).
     """
     flags = ["-std=c++17", "-std=c++14", "-std=c++11"]
