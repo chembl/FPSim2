@@ -8,7 +8,7 @@ environment:
     MSSdk: 1
   matrix:
   - CONDA: 36
-  - CONDA: 37 #bug https://github.com/conda/conda/issues/7024
+  # - CONDA: 37 #bug https://github.com/conda/conda/issues/7024
 install:
 - cmd: '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 - ps: |
