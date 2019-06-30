@@ -5,6 +5,7 @@ platform:
 environment:
   global:
     DISTUTILS_USE_SDK: 1
+    PYTHONWARNINGS: ignore:DEPRECATION
     MSSdk: 1
   matrix:
   - CONDA: 36
@@ -15,7 +16,7 @@ install:
     if ($env:PYTHON) {
       if ($env:PLATFORM -eq "x64") { $env:PYTHON = "$env:PYTHON-x64" }
       $env:PATH = "C:\Python$env:PYTHON\;C:\Python$env:PYTHON\Scripts\;$env:PATH"
-      pip install --disable-pip-version-check --user --upgrade pip setuptools
+      python -m pip install --disable-pip-version-check --user --upgrade pip setuptools
     } elseif ($env:CONDA) {
       if ($env:PLATFORM -eq "x64") { $env:CONDA = "$env:CONDA-x64" }
       $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
@@ -28,9 +29,14 @@ build_script:
 - ps: |
     if ($env:PYTHON) {
       python setup.py sdist
-      pip install --verbose dist\fpsim2-0.1.1.tar.gz
+      python -m pip install 'pybind11>=2.2'
+      cd dist
+      python -m pip install --verbose fpsim2-0.1.4.tar.gz
+      cd ..
     } else {
+      echo "conda build conda.recipe"
       conda build conda.recipe
+      echo "conda install --use-local fpsim2"
       conda install --use-local fpsim2
     }
 test_script:
