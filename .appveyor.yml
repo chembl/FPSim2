@@ -8,7 +8,7 @@ environment:
     MSSdk: 1
   matrix:
   - CONDA: 36
-  # - CONDA: 37 bug https://github.com/conda/conda/issues/7024
+  - CONDA: 37 #bug https://github.com/conda/conda/issues/7024
 install:
 - cmd: '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 - ps: |
@@ -31,7 +31,7 @@ build_script:
       pip install --verbose dist\fpsim2-0.1.1.tar.gz
     } else {
       conda build conda.recipe
-      conda install --use-local fpsim2
+      conda install -c C:\Miniconda$env:CONDA\conda-bld\ fpsim2
     }
 test_script:
 - ps: pytest
