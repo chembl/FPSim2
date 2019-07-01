@@ -23,6 +23,7 @@ install:
       conda config --add channels conda-forge
       conda update -q conda
       conda install -q conda-build pytest
+      conda update -q conda-build
     }
 build_script:
 - ps: |
