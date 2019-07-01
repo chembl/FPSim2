@@ -9,7 +9,7 @@ environment:
     MSSdk: 1
   matrix:
   - CONDA: 36
-  - CONDA: 37 #bug https://github.com/conda/conda/issues/7024
+  # - CONDA: 37
 install:
 - cmd: '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 - ps: |
@@ -23,16 +23,16 @@ install:
       conda config --set always_yes yes --set changeps1 no
       conda config --add channels conda-forge
       conda update -q conda
-      conda install -q conda-build
+      conda install -q conda-build pytest
     }
 build_script:
 - ps: |
     if ($env:PYTHON) {
       python setup.py sdist
-      pip install --verbose dist\fpsim2-0.1.1.tar.gz
+      pip install --verbose dist\fpsim2-0.1.4.tar.gz
     } else {
       conda build conda.recipe
-      conda install fpsim2 -c conda-forge -c local
+      conda install --use-local fpsim2
     }
 test_script:
 - ps: pytest
