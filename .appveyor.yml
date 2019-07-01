@@ -31,7 +31,7 @@ build_script:
       pip install --verbose dist\fpsim2-0.1.4.tar.gz
     } else {
       conda build conda.recipe
-      conda install --use-local fpsim2
+      conda install fpsim2 -c local -c conda-forge
     }
 test_script:
 - ps: pytest
