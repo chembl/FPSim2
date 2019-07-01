@@ -55,7 +55,7 @@ def has_flag(compiler, flagname):
 
 
 def cpp_flag(compiler):
-    """Return the -std=c++[11/14/17] compiler flag.
+    """Return the -std=c++[11/14] compiler flag.
     The newer version is prefered over c++11 (when it is available).
     """
     flags = ["-std=c++14", "-std=c++11"]
@@ -113,6 +113,7 @@ setup(
     long_description=open("README.md", encoding="utf-8").read(),
     ext_modules=ext_modules,
     install_requires=["pybind11>=2.2"],
+    setup_requires=["pybind11>=2.2"],
     cmdclass={"build_ext": BuildExt},
     zip_safe=False,
     classifiers=[
