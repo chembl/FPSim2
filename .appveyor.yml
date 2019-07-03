@@ -20,8 +20,8 @@ install:
       if ($env:PLATFORM -eq "x64") { $env:CONDA = "$env:CONDA-x64" }
       $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
       conda config --set always_yes yes --set changeps1 no
+      conda install -q conda-build
       conda config --add channels conda-forge
-      conda install -q conda-build==3.18.5
     }
 build_script:
 - ps: |
