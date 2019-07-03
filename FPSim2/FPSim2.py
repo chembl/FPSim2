@@ -11,9 +11,11 @@ def on_disk_search(query, fp_filename, chunk_indexes, threshold, s_index):
         Args:
             query: Preprocessed NumPy query array
             fp_filename: Flat to load into memory or not the fps
-            chunk_indexes: List containing the start and the end of the chunk to search.
+            chunk_indexes: List with the start and the end of the chunk to search.
             threshold: Search threshold.
             s_index: Type of search.
+        Returns:
+            Numpy array with results.
     """
     with tb.open_file(fp_filename, mode="r") as fp_file:
         fps = fp_file.root.fps[chunk_indexes[0] : chunk_indexes[1]]
