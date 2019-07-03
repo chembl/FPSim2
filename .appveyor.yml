@@ -19,7 +19,6 @@ install:
     } elseif ($env:CONDA) {
       if ($env:PLATFORM -eq "x64") { $env:CONDA = "$env:CONDA-x64" }
       $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
-      "C:\Miniconda$env:CONDA\Scripts\activate.bat"
       conda config --set always_yes yes --set changeps1 no
       conda config --add channels conda-forge
       conda update -q --all
