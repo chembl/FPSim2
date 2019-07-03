@@ -12,8 +12,8 @@ struct Result
 __inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count);
 
 __inline float tanimoto_coeff(uint32_t int_count,
-                     uint32_t qcount,
-                     uint32_t ocount);
+                              uint32_t qcount,
+                              uint32_t ocount);
 
 uint32_t py_popcount(py::array_t<unsigned long long> pyquery);
 

@@ -5,10 +5,10 @@ platform:
 environment:
   global:
     DISTUTILS_USE_SDK: 1
+    PYTHONWARNINGS: ignore:DEPRECATION
     MSSdk: 1
   matrix:
   - CONDA: 36
-  # - CONDA: 37 bug https://github.com/conda/conda/issues/7024
 install:
 - cmd: '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 - ps: |
@@ -21,17 +21,17 @@ install:
       $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
       conda config --set always_yes yes --set changeps1 no
       conda config --add channels conda-forge
-      conda update -q conda
-      conda install -q conda-build pytest
+      conda update -q --all
+      conda install -q conda-build
     }
 build_script:
 - ps: |
     if ($env:PYTHON) {
       python setup.py sdist
-      pip install --verbose dist\fpsim2-0.1.1.tar.gz
+      pip install --verbose dist\fpsim2-0.1.4.tar.gz
     } else {
       conda build conda.recipe
       conda install --use-local fpsim2
     }
 test_script:
-- ps: pytest
+- cmd: python test\test_fpsim.py
