@@ -35,4 +35,3 @@ build_script:
     }
 test_script:
 - ps: python test/test_fpsim.py
-
