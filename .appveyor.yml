@@ -34,4 +34,4 @@ build_script:
       conda install --use-local fpsim2
     }
 test_script:
-- ps: python test\test_fpsim.py
+- cmd: python test\test_fpsim.py
