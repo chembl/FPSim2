@@ -23,7 +23,7 @@ install:
       conda config --set always_yes yes --set changeps1 no
       conda config --add channels conda-forge
       conda update -q --all
-      conda install -q conda-build pytest
+      conda install -q conda-build
     }
 build_script:
 - ps: |
@@ -35,4 +35,5 @@ build_script:
       conda install --use-local fpsim2
     }
 test_script:
-- ps: pytest
+- ps: python test/test_fpsim.py
+
