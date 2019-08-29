@@ -25,12 +25,7 @@ install:
     }
 build_script:
 - ps: |
-    if ($env:PYTHON) {
-      python setup.py sdist
-      pip install --verbose dist\fpsim2-0.1.4.tar.gz
-    } else {
       conda build conda.recipe
       conda install --use-local fpsim2
-    }
 test_script:
 - cmd: python test\test_fpsim.py

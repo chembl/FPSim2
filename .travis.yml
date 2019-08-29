@@ -35,12 +35,7 @@ before_install:
   fi
 install:
 - |
-  if [ -n "$PYTHON" ]; then
-    python setup.py sdist
-    pip install --verbose dist/*.tar.gz
-  elif [ -n "$CONDA" ]; then
-    conda build --py $CONDA conda.recipe
-    conda install --use-local fpsim2
-  fi
+  conda build --py $CONDA conda.recipe
+  conda install --use-local fpsim2
 script:
 - python test/test_fpsim.py
