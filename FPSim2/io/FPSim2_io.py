@@ -172,7 +172,7 @@ def get_fp_length(fp_func, fp_func_params):
 
 
 def get_bounds_range(query, ranges, threshold, coeff):
-    query_count = py_popcount(query)
+    query_count = query[-1]
     range_to_keep = []
 
     for count, c_range in ranges:

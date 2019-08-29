@@ -18,7 +18,7 @@ def on_disk_search(query, fp_filename, chunk_indexes, threshold, s_index):
             Numpy array with results.
     """
     with tb.open_file(fp_filename, mode="r") as fp_file:
-        fps = fp_file.root.fps[chunk_indexes[0] : chunk_indexes[1]]
+        fps = fp_file.root.fps[slice(*chunk_indexes)]
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
