@@ -8,18 +8,18 @@
 namespace py = pybind11;
 
 #ifdef _WIN64
-__inline uint64_t popcntll(uint64_t X)
+__inline long long popcntll(unsigned long long X)
 {
     return _mm_popcnt_u64(X);
 }
 #else
-__inline uint64_t popcntll(uint64_t X)
+__inline long long popcntll(unsigned long long X)
 {
     return __builtin_popcountll(X);
 }
 #endif
 
-uint32_t py_popcount(py::array_t<uint64_t> pyquery)
+uint32_t py_popcount(py::array_t<unsigned long long> pyquery)
 {
     auto query = pyquery.unchecked<1>();
     uint32_t qcount = 0;
@@ -46,8 +46,8 @@ __inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count)
     return coeff;
 }
 
-py::array_t<uint32_t> _substructure_search(py::array_t<uint64_t> pyquery,
-                                           py::array_t<uint64_t> pydb,
+py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyquery,
+                                           py::array_t<unsigned long long> pydb,
                                            float threshold,
                                            uint32_t i_start,
                                            uint32_t i_end)
@@ -117,8 +117,8 @@ void sort_results(py::array_t<Result> pyres)
     std::sort(&ptr[0], &ptr[buf.shape[0]], cmp);
 }
 
-py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
-                                       py::array_t<uint64_t> pydb,
+py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
+                                       py::array_t<unsigned long long> pydb,
                                        float threshold,
                                        uint32_t i_start,
                                        uint32_t i_end)
