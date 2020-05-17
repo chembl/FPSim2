@@ -3,7 +3,7 @@ from setuptools.command.build_ext import build_ext
 import platform
 import sys
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 
 class get_pybind_include(object):
@@ -121,6 +121,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering :: Chemistry",
     ],
 )

@@ -24,16 +24,7 @@ From source:
  - clone the repo
  - `pip install ./FPSim2`
 
-From a conda environment. Builds available for:
-- linux:
-    - Python 3.6
-    - Python 3.7
-- mac:
-    - Python 3.6
-    - Python 3.7
-- windows:
-    - Python 3.6
-    - Python 3.7
+From a conda environment:
 
 ```bash
 conda install -c efelix fpsim2
@@ -55,7 +46,7 @@ create_db_file('chembl.sdf', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}
 # from Python list
 create_db_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 
-# from sqlalchemy ResulProxy
+# or any other iterable like sqlalchemy ResultProxy 
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
@@ -97,7 +88,7 @@ In case RDKit is not able to load a molecule, the id assigned to the molecule wi
 ```python
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_25.h5'
+fp_filename = 'chembl_27.h5'
 query = 'CC(=O)Oc1ccccc1C(=O)O'
 
 fpe = FPSim2Engine(fp_filename)
@@ -114,7 +105,7 @@ If you're searching against a huge dataset or you have small RAM, you can still 
 ```python
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_25.h5'
+fp_filename = 'chembl_27.h5'
 query = 'CC(=O)Oc1ccccc1C(=O)O'
 
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
