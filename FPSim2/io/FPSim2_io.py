@@ -342,15 +342,15 @@ def get_mol_suplier(io_source):
         molecule supplier generator.
     """
     supplier = None
-    if isinstance(io_source, Iterable):
-        supplier = it_supplier
-    else:
+    if isinstance(io_source, str):
         input_type = io_source.split(".")[-1]
         if input_type == "smi":
             supplier = smi_mol_supplier
         elif input_type == "sdf":
             supplier = sdf_mol_supplier
-    if not supplier:
+    elif isinstance(io_source, Iterable):
+        supplier = it_supplier
+    else:
         raise Exception("No valid input molecules input.")
     return supplier
 
