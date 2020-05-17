@@ -5,6 +5,7 @@ from FPSim2.FPSim2lib import py_popcount
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
 from collections import namedtuple
+from collections.abc import Iterable
 import tables as tb
 import numpy as np
 import textwrap
@@ -336,13 +337,13 @@ def get_mol_suplier(io_source):
     """Returns a mol supplier depending on the object type and file extension.
 
     Args:
-        io_source: source of molecules, smi or sdf filenames, 
-                   SQLA ResultProxy or python list.
+        io_source: source of molecules; smi or sdf filenames, 
+                   or any iterable object.
     Returns:
         molecule supplier generator.
     """
     supplier = None
-    if isinstance(io_source, list) or isinstance(io_source, ResultProxy):
+    if isinstance(io_source, Iterable):
         supplier = it_supplier
     else:
         input_type = io_source.split(".")[-1]
