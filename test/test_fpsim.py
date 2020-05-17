@@ -12,8 +12,6 @@ from FPSim2.io import (
     sort_db_file,
 )
 from rdkit import Chem, DataStructs
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 import unittest
 import os
 
@@ -99,22 +97,6 @@ class TestFPSim2(unittest.TestCase):
             assert config[1]["radius"] == fp_params["radius"]
             assert config[1]["nBits"] == fp_params["nBits"]
             assert fp_file.root.fps.shape[0] == 3
-
-    def test_e_create_db_file_sqla(self):
-        in_file = os.path.join(TESTS_DIR, 'data/test.db')
-        out_file = os.path.join(TESTS_DIR, 'data/10mols_sqla.h5')
-        engine = create_engine("sqlite:///{}".format(in_file))
-        s = Session(engine)
-        sql_query = "select mol_string, mol_id from structure"
-        resprox = s.execute(sql_query)
-
-        create_db_file(resprox, out_file, fp_type, fp_params)
-        with tb.open_file(out_file, mode="r") as fp_file:
-            config = fp_file.root.config
-            assert config[0] == fp_type
-            assert config[1]["radius"] == fp_params["radius"]
-            assert config[1]["nBits"] == fp_params["nBits"]
-            assert fp_file.root.fps.shape[0] == 10
 
     def test_f_load_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')

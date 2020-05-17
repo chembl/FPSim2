@@ -1,6 +1,5 @@
 import rdkit
 from rdkit import Chem
-from sqlalchemy.engine.result import ResultProxy
 from FPSim2.FPSim2lib import py_popcount
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
