@@ -8,6 +8,7 @@ from collections.abc import Iterable
 import tables as tb
 import numpy as np
 import textwrap
+import math
 import re
 import os
 
@@ -400,7 +401,7 @@ def create_db_file(
         columns = {}
         pos = 1
         columns["fp_id"] = tb.Int64Col(pos=pos)
-        for i in range(1, int(fp_length / 64) + 1):
+        for i in range(1, math.ceil(fp_length / 64) + 1):
             pos += 1
             columns["f" + str(i)] = tb.UInt64Col(pos=pos)
         columns["popcnt"] = tb.Int64Col(pos=pos + 1)
