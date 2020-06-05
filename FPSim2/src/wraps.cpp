@@ -30,12 +30,12 @@ PYBIND11_MODULE(FPSim2lib, m)
         Sorts the NumPy array containing the results.
     )pbdoc");
 
-    m.def("_substructure_search", &_substructure_search, R"pbdoc(
+    m.def("_substructure_search", &_substructure_search, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Substructure search
         Runs a substructure search.
     )pbdoc");
 
-    m.def("_similarity_search", &_similarity_search, R"pbdoc(
+    m.def("_similarity_search", &_similarity_search, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Similarity search
         Runs a similarity search.
     )pbdoc");
