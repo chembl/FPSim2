@@ -21,7 +21,7 @@ SMILES_RE = r"^([A-IK-Za-ik-z0-9@+\-\[\]\(\)\\/=#%:.$]+)$"
 INCHI_RE = r"^((InChI=)(.*?)[^J][0-9a-z+\-\(\)\\\/,.?*;]+)$"
 
 
-S_INDEXS = {"tanimoto": 0, "substructure": 2}
+SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
 
 
 FP_FUNCS = {
@@ -169,16 +169,19 @@ def get_fp_length(fp_func, fp_func_params):
     return fp_length
 
 
-def get_bounds_range(query, ranges, threshold, coeff):
+def get_bounds_range(query, ranges, threshold, search_type, a, b):
     query_count = query[-1]
     range_to_keep = []
 
     for count, c_range in ranges:
-        # tanimoto
-        if coeff == 0:
+        if search_type == "tanimoto":
             max_sim = min(query_count, count) / max(query_count, count)
-        # substructure
-        elif coeff == 2:
+        elif search_type == "tversky":
+            max_sim = min(query_count, count) / (
+                a * query_count + b * count + (1 - a - b) * min(query_count, count)
+            )
+        # substructure (simplified tversky with a=1, b=0)
+        elif search_type == "substructure":
             max_sim = min(query_count, count) / query_count
         else:
             break

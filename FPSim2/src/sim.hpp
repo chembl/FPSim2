@@ -15,6 +15,12 @@ __inline float tanimoto_coeff(uint32_t int_count,
                               uint32_t qcount,
                               uint32_t ocount);
 
+__inline float tversky_coeff(uint32_t int_count,
+                             uint32_t rel_co_count,
+                             uint32_t rel_co_count2,
+                             float a,
+                             float b);
+
 uint32_t py_popcount(py::array_t<unsigned long long> pyquery);
 
 void sort_results(py::array_t<Result> pyres);
@@ -22,11 +28,17 @@ void sort_results(py::array_t<Result> pyres);
 py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyquery,
                                            py::array_t<unsigned long long> pydb,
                                            float threshold,
+                                           float a,
+                                           float b,
+                                           uint8_t sim_type,
                                            uint32_t i_start,
                                            uint32_t i_end);
 
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        py::array_t<unsigned long long> pydb,
                                        float threshold,
+                                       float a,
+                                       float b,
+                                       uint8_t sim_type,
                                        uint32_t i_start,
                                        uint32_t i_end);

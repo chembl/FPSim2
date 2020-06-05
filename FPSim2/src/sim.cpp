@@ -37,6 +37,15 @@ __inline float tanimoto_coeff(uint32_t int_count, uint32_t qcount, uint32_t ocou
     return coeff;
 }
 
+__inline float tversky_coeff(uint32_t int_count, uint32_t rel_co_count, uint32_t rel_co_count2, float a, float b)
+{
+    float coeff = 0.0;
+    coeff = int_count + a * rel_co_count + b * rel_co_count2;
+    if (coeff != 0.0)
+        coeff = int_count / coeff;
+    return coeff;
+}
+
 __inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count)
 {
     float coeff = 0.0;
@@ -49,6 +58,9 @@ __inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count)
 py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyquery,
                                            py::array_t<unsigned long long> pydb,
                                            float threshold,
+                                           float a,
+                                           float b,
+                                           uint8_t sim_type,
                                            uint32_t i_start,
                                            uint32_t i_end)
 {
@@ -78,7 +90,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
             int_count += popcntll(query(j) & db(i, j));
             rel_co_count += popcntll(query(j) & ~db(i, j));
         }
-        // calc tversky coeff
+        // calc optimised tversky with a=1, b=0
         coeff = substruct_coeff(rel_co_count, int_count);
 
         if (coeff == threshold)
@@ -120,6 +132,9 @@ void sort_results(py::array_t<Result> pyres)
 py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        py::array_t<unsigned long long> pydb,
                                        float threshold,
+                                       float a,
+                                       float b,
+                                       uint8_t sim_type,
                                        uint32_t i_start,
                                        uint32_t i_end)
 {
@@ -138,14 +153,33 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     uint8_t popcntidx = qshape - 1;
 
     uint32_t int_count = 0;
+    uint32_t rel_co_count = 0;
+    uint32_t rel_co_count2 = 0;
     uint32_t total_sims = 0;
     float coeff = 0.0;
     uint32_t i = i_start;
     while (i_end > i)
     {
         for (size_t j = 1; j < popcntidx; j++)
+        {
             int_count += popcntll(query(j) & db(i, j));
-        coeff = tanimoto_coeff(int_count, query(popcntidx), db(i, popcntidx));
+        }
+
+        if (sim_type == 1) // tversky
+        {
+            for (size_t j = 1; j < popcntidx; j++)
+            {
+                rel_co_count += popcntll(query(j) & ~db(i, j));
+                rel_co_count2 += popcntll(db(i, j) & ~query(j));
+            }
+            coeff = tversky_coeff(int_count, rel_co_count, rel_co_count2, a, b);
+            rel_co_count = 0;
+            rel_co_count2 = 0;
+        }
+        else
+        {
+            coeff = tanimoto_coeff(int_count, query(popcntidx), db(i, popcntidx));
+        }
 
         if (coeff >= threshold)
         {
