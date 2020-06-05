@@ -263,6 +263,7 @@ class FPSim2Engine:
         with executor(max_workers=n_workers) as exe:
             if not on_disk:
                 chunk_size = int((i_end - i_start) / n_workers)
+                chunk_size = 1 if chunk_size == 0 else chunk_size
             chunks_ranges = [
                 [x, x + chunk_size] for x in range(i_start, i_end, chunk_size)
             ]
