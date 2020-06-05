@@ -64,9 +64,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
                                            uint32_t i_start,
                                            uint32_t i_end)
 {
-    // release the GIL
-    py::gil_scoped_release release;
-
+    // direct access to np arrays without checks
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
 
@@ -110,7 +108,7 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     }
     results->resize(total_subs);
 
-    // acquire the GIL
+    // acquire the GIL before calling Python code
     py::gil_scoped_acquire acquire;
 
     // python object that will free the memory when destroyed
@@ -138,9 +136,6 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
                                        uint32_t i_start,
                                        uint32_t i_end)
 {
-    // release the GIL
-    py::gil_scoped_release release;
-
     // direct access to np arrays without checks
     auto query = pyquery.unchecked<1>();
     auto db = pydb.unchecked<2>();
@@ -200,7 +195,7 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     results->resize(total_sims);
     std::sort(results->begin(), results->end(), cmp);
 
-    // acquire the GIL
+    // acquire the GIL before calling Python code
     py::gil_scoped_acquire acquire;
 
     // python object that will free the memory when destroyed
