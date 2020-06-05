@@ -336,17 +336,28 @@ class FPSim2Engine:
             query_string, count_ranges, threshold, a, b, search_type
         )
         if fp_range:
-            if n_workers == 1 and not on_disk:
-                np_res = search_func(
-                    query,
-                    self.fps.fps,
-                    threshold,
-                    a,
-                    b,
-                    SEARCH_TYPES[search_type],
-                    fp_range[0],
-                    fp_range[1],
-                )
+            if n_workers == 1:
+                if on_disk:
+                    np_res = search_func(
+                        query,
+                        self.fp_filename,
+                        threshold,
+                        a,
+                        b,
+                        SEARCH_TYPES[search_type],
+                        fp_range
+                    )
+                else:
+                    np_res = search_func(
+                        query,
+                        self.fps.fps,
+                        threshold,
+                        a,
+                        b,
+                        SEARCH_TYPES[search_type],
+                        fp_range[0],
+                        fp_range[1],
+                    )
             else:
                 results = self._parallel_run(
                     query,
