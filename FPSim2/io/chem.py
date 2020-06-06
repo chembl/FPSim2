@@ -3,7 +3,6 @@ from rdkit import Chem
 from FPSim2.FPSim2lib import py_popcount
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
-from collections import namedtuple
 from collections.abc import Iterable
 import tables as tb
 import numpy as np
@@ -13,15 +12,9 @@ import re
 import os
 
 
-BATCH_WRITE_SIZE = 10000
-
-
 # SMILES and InChI regexes
 SMILES_RE = r"^([A-IK-Za-ik-z0-9@+\-\[\]\(\)\\/=#%:.$]+)$"
 INCHI_RE = r"^((InChI=)(.*?)[^J][0-9a-z+\-\(\)\\\/,.?*;]+)$"
-
-
-SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
 
 
 FP_FUNCS = {
@@ -124,28 +117,6 @@ def load_molecule(mol_string):
     return rdmol
 
 
-def load_query(mol_string, fp_filename):
-    """Load query molecule from SMILES, molblock or InChi.
-
-    Args:
-        query: SMILES, molblock or InChi.
-        fp_filename: FP filename to use in the search.
-    Returns:
-        Numpy array query molecule.
-    """
-    rdmol = load_molecule(mol_string)
-    with tb.open_file(fp_filename, mode="r") as fp_file:
-        # retrieve config from fps file
-        config = fp_file.root.config
-        fp_func = config[0]
-        fp_func_params = config[1]
-    # generate the efp
-    efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-    efp.append(py_popcount(np.array(efp, dtype=np.uint64)))
-    efp.insert(0, 0)
-    return np.array(efp, dtype=np.uint64)
-
-
 def get_fp_length(fp_func, fp_func_params):
     """Returns fp length given the name of a function and it's parameters.
 
@@ -169,7 +140,7 @@ def get_fp_length(fp_func, fp_func_params):
     return fp_length
 
 
-def get_bounds_range(query, ranges, threshold, search_type, a, b):
+def get_bounds_range(query, threshold, a, b, ranges, search_type):
     query_count = query[-1]
     range_to_keep = []
 
@@ -357,222 +328,3 @@ def get_mol_suplier(io_source):
     else:
         raise Exception("No valid input molecules input.")
     return supplier
-
-
-def create_db_file(
-    io_source,
-    out_fname,
-    fp_func,
-    fp_func_params={},
-    mol_id_prop="mol_id",
-    gen_ids=False,
-    sort_by_popcnt=True,
-):
-    """Creates FPSim2 fingerprints file from .smi, .sdf files, 
-    python lists or SQLA queries.
-
-    Args:
-        io_source: .smi, .sdf filename, ResultProxy or list.
-        out_fname: FPs output filename.
-        fp_func: Name of fingerprint function to use to generate fingerprints.
-        fp_func_params: Parameters for the fingerprint function.
-        mol_id_prop: Name of the .sdf property to read the molecule id.
-        gen_ids: Flag to auto-generate ids for the molecules.
-        sort_by_popcnt: Flag to sort or not fps by popcnt.
-    Returns:
-        None.
-    """
-    # if params dict is empty use defaults
-    if not fp_func_params:
-        fp_func_params = FP_FUNC_DEFAULTS[fp_func]
-
-    # get mol supplier
-    supplier = get_mol_suplier(io_source)
-
-    fp_length = get_fp_length(fp_func, fp_func_params)
-
-    # set compression
-    filters = tb.Filters(complib="blosc", complevel=5)
-
-    # set the output file and fps table
-    with tb.open_file(out_fname, mode="w") as fp_file:
-
-        class Particle(tb.IsDescription):
-            pass
-
-        # hacky...
-        columns = {}
-        pos = 1
-        columns["fp_id"] = tb.Int64Col(pos=pos)
-        for i in range(1, math.ceil(fp_length / 64) + 1):
-            pos += 1
-            columns["f" + str(i)] = tb.UInt64Col(pos=pos)
-        columns["popcnt"] = tb.Int64Col(pos=pos + 1)
-        Particle.columns = columns
-
-        fps_table = fp_file.create_table(
-            fp_file.root, "fps", Particle, "Table storing fps", filters=filters
-        )
-
-        # set config table; used fp function, parameters and rdkit version
-        param_table = fp_file.create_vlarray(
-            fp_file.root, "config", atom=tb.ObjectAtom()
-        )
-        param_table.append(fp_func)
-        param_table.append(fp_func_params)
-        param_table.append(rdkit.__version__)
-
-        fps = []
-        for mol_id, rdmol in supplier(io_source, gen_ids, mol_id_prop=mol_id_prop):
-            efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-            popcnt = py_popcount(np.array(efp, dtype=np.uint64))
-            efp.insert(0, mol_id)
-            efp.append(popcnt)
-            fps.append(tuple(efp))
-            if len(fps) == BATCH_WRITE_SIZE:
-                fps_table.append(fps)
-                fps = []
-        # append last batch < 10k
-        fps_table.append(fps)
-
-        # create index so table can be sorted
-        fps_table.cols.popcnt.create_index(kind="full")
-
-    if sort_by_popcnt:
-        sort_db_file(out_fname)
-
-
-def append_fps(fp_filename, io_source, mol_id_prop="mol_id"):
-    """Appends fps to a FP db file.
-
-    Args:
-        fp_filename: FP db filename.
-        io_source: .smi or .sdf filename, ResultProxy or list.
-    Returns:
-        None.
-    """
-    supplier = get_mol_suplier(io_source)
-
-    with tb.open_file(fp_filename, mode="a") as fp_file:
-        fp_func = fp_file.root.config[0]
-        fp_func_params = fp_file.root.config[1]
-        fps_table = fp_file.root.fps
-        new_mols = []
-        for mol_id, rdmol in supplier(io_source, False, mol_id_prop=mol_id_prop):
-            if not rdmol:
-                continue
-            efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
-            popcnt = py_popcount(np.array(efp, dtype=np.uint64))
-            efp.insert(0, mol_id)
-            efp.append(popcnt)
-            new_mols.append(tuple(efp))
-            if len(new_mols) == BATCH_WRITE_SIZE:
-                # append last batch < 10k
-                fps_table.append(new_mols)
-                new_mols = []
-        fps_table.append(new_mols)
-
-
-def delete_fps(fp_filename, ids_list):
-    """Delete fps from FP db file.
-
-    Args:
-        fp_filename: FP db filename.
-        ids_list: ids to delete list.
-    Returns:
-        None.
-    """
-    with tb.open_file(fp_filename, mode="a") as fp_file:
-        fps_table = fp_file.root.fps
-        for fp_id in ids_list:
-            to_delete = [
-                row.nrow for row in fps_table.where("fp_id == {}".format(str(fp_id)))
-            ]
-            fps_table.remove_row(to_delete[0])
-
-
-def sort_db_file(fp_filename):
-    """Sorts an existing FP db file.
-
-    Args:
-        fp_filename: FP db filename.
-    Returns:
-        None.
-    """
-    # rename not sorted filename
-    tmp_filename = fp_filename + "_tmp"
-    os.rename(fp_filename, tmp_filename)
-    filters = tb.Filters(complib="blosc", complevel=5)
-
-    # copy sorted fps and config to a new file
-    with tb.open_file(tmp_filename, mode="r") as fp_file:
-        with tb.open_file(fp_filename, mode="w") as sorted_fp_file:
-            fp_func = fp_file.root.config[0]
-            fp_func_params = fp_file.root.config[1]
-            fp_length = get_fp_length(fp_func, fp_func_params)
-
-            # create a sorted copy of the fps table
-            dst_fps = fp_file.root.fps.copy(
-                sorted_fp_file.root,
-                "fps",
-                filters=filters,
-                copyuserattrs=True,
-                overwrite=True,
-                stats={
-                    "groups": 0,
-                    "leaves": 0,
-                    "links": 0,
-                    "bytes": 0,
-                    "hardlinks": 0,
-                },
-                start=None,
-                stop=None,
-                step=None,
-                chunkshape="keep",
-                sortby="popcnt",
-                check_CSI=True,
-                propindexes=True,
-            )
-
-            # set config table; used fp function, parameters and rdkit version
-            param_table = sorted_fp_file.create_vlarray(
-                sorted_fp_file.root, "config", atom=tb.ObjectAtom()
-            )
-            param_table.append(fp_func)
-            param_table.append(fp_func_params)
-            param_table.append(rdkit.__version__)
-
-            # update count ranges
-            count_ranges = calc_count_ranges(dst_fps, fp_length)
-            param_table.append(count_ranges)
-
-    # remove not sorted file
-    os.remove(tmp_filename)
-
-
-def load_fps(fp_filename, sort=False):
-    """Loads FP db file into memory.
-
-    Args:
-        fp_filename: FPs filename.
-        sort: Flag to sort or not after load the fps.
-    Returns:
-        namedtuple with fps and count ranges.
-    """
-    with tb.open_file(fp_filename, mode="r") as fp_file:
-        fps = fp_file.root.fps[:]
-        # files should be sorted but if the file is updated without sorting it
-        # can be also in memory sorted
-        if sort:
-            fps.sort(order="popcnt")
-            fp_func = fp_file.root.config[0]
-            fp_func_params = fp_file.root.config[1]
-            fp_length = get_fp_length(fp_func, fp_func_params)
-            count_ranges = calc_count_ranges(fps, fp_length, in_memory=True)
-        else:
-            count_ranges = fp_file.root.config[3]
-    num_fields = len(fps[0])
-    fps = fps.view("<u8")
-    fps = fps.reshape(int(fps.size / num_fields), num_fields)
-    fps_t = namedtuple("fps", "fps count_ranges")
-    return fps_t(fps=fps, count_ranges=count_ranges)

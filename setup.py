@@ -1,5 +1,6 @@
 from setuptools import setup, Extension, distutils
 from setuptools.command.build_ext import build_ext
+import setuptools
 import platform
 import sys
 
@@ -29,6 +30,7 @@ ext_modules = [
         language="c++",
     )
 ]
+
 
 # As of Python 3.6, CCompiler has a `has_flag` method.
 # cf http://bugs.python.org/issue26689
@@ -109,7 +111,7 @@ setup(
     author_email="eloyfelix@gmail.com",
     url="https://github.com/chembl/FPSim2",
     license="MIT",
-    packages=["FPSim2", "FPSim2.io"],
+    packages=["FPSim2", "FPSim2.io", "FPSim2.io.backends"],
     description="Simple package for fast molecular similarity searching",
     long_description=open("README.md", encoding="utf-8").read(),
     ext_modules=ext_modules,
