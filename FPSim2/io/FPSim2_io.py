@@ -192,11 +192,11 @@ def get_bounds_range(query, ranges, threshold, search_type, a, b):
     return range_to_keep
 
 
-def it_supplier(io_source, gen_ids, **kwargs):
+def it_supplier(iterator, gen_ids, **kwargs):
     """Generator function that reads from iterators.
 
     Args:
-        io_source: py list or sqla ResultProxy.
+        iterator: py list or sqla ResultProxy.
         gen_ids: flag to generate new ids.
         kwargs: keyword arguments.
     Raises:
@@ -204,7 +204,7 @@ def it_supplier(io_source, gen_ids, **kwargs):
     Returns:
         Yields next id and rdkit mol tuple.
     """
-    for new_mol_id, mol in enumerate(io_source, 1):
+    for new_mol_id, mol in enumerate(iterator, 1):
         if len(mol) == 1:
             mol_string = mol[0]
             mol_id = new_mol_id
@@ -230,11 +230,11 @@ def it_supplier(io_source, gen_ids, **kwargs):
             continue
 
 
-def smi_mol_supplier(io_source, gen_ids, **kwargs):
+def smi_mol_supplier(filename, gen_ids, **kwargs):
     """Generator function that reads .smi files.
 
     Args:
-        io_source: input .smi file name.
+        filename: input .smi file name.
         gen_ids: flag to generate new ids.
         kwargs: keyword arguments.
     Raises:
@@ -242,7 +242,7 @@ def smi_mol_supplier(io_source, gen_ids, **kwargs):
     Returns:
         Yields next id and rdkit mol tuple.
     """
-    with open(io_source, "r") as f:
+    with open(filename, "r") as f:
         for new_mol_id, mol in enumerate(f, 1):
             # if .smi with single smiles column just add the id
             mol = mol.split()
@@ -271,11 +271,11 @@ def smi_mol_supplier(io_source, gen_ids, **kwargs):
                 continue
 
 
-def sdf_mol_supplier(io_source, gen_ids, **kwargs):
+def sdf_mol_supplier(filename, gen_ids, **kwargs):
     """Generator function that reads .sdf files.
 
     Args:
-        io_source: .sdf filename.
+        filename: .sdf filename.
         gen_ids: flag to generate new ids.
         kwargs: keyword arguments.
     Raises:
@@ -283,7 +283,7 @@ def sdf_mol_supplier(io_source, gen_ids, **kwargs):
     Returns:
         Yields next id and rdkit mol tuple.
     """
-    suppl = Chem.SDMolSupplier(io_source)
+    suppl = Chem.SDMolSupplier(filename)
     for new_mol_id, rdmol in enumerate(suppl, 1):
         if rdmol:
             if gen_ids:
