@@ -197,7 +197,7 @@ class TestFPSim2(unittest.TestCase):
         sort_db_file(in_file)
         fpe = FPSim2Engine(in_file)
         self.assertEqual(fpe.fps.fps[-1][-1], 48)
-        self.assertEqual(fpe.fps.fps[0][-1], 2)  
+        self.assertEqual(fpe.fps.fps[0][-1], 2)
 
     def test_n_delete_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')

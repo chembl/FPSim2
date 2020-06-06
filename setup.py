@@ -1,6 +1,5 @@
 from setuptools import setup, Extension, distutils
 from setuptools.command.build_ext import build_ext
-import setuptools
 import platform
 import sys
 
@@ -46,7 +45,7 @@ def has_flag(compiler, flagname):
         fname = f.name
     try:
         compiler.compile([fname], extra_postargs=[flagname])
-    except setuptools.distutils.errors.CompileError:
+    except distutils.errors.CompileError:
         return False
     finally:
         try:
