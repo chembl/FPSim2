@@ -1,11 +1,19 @@
 import concurrent.futures as cf
 import numpy as np
-import tables as tb
-from .io import SEARCH_TYPES, load_fps, load_query, get_bounds_range
-from .FPSim2lib import _similarity_search, _substructure_search, sort_results
+from .io.chem import load_molecule, rdmol_to_efp, get_bounds_range
+from .io.backends import PyTablesStorageBackend
+from .FPSim2lib import (
+    _similarity_search,
+    _substructure_search,
+    sort_results,
+    py_popcount,
+)
 
 
-def on_disk_search(query, fp_filename, threshold, a, b, st, chunk_range):
+SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
+
+
+def on_disk_search(query, storage, threshold, a, b, st, chunk_range):
     """Run a on disk search.
 
         Args:
@@ -19,8 +27,7 @@ def on_disk_search(query, fp_filename, threshold, a, b, st, chunk_range):
         Returns:
             Numpy array with results.
     """
-    with tb.open_file(fp_filename, mode="r") as fp_file:
-        fps = fp_file.root.fps[slice(*chunk_range)]
+    fps = storage.get_fps_chunk(chunk_range)
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
@@ -51,25 +58,41 @@ class FPSim2Engine:
     fp_params = None
     rdkit_ver = None
     fps = None
+    storage = None
 
-    def __init__(self, fp_filename, in_memory_fps=True, fps_sort=False):
+    def __init__(
+        self,
+        fp_filename,
+        storage_backend="pytables",
+        in_memory_fps=True,
+        fps_sort=False,
+    ):
+
         self.fp_filename = fp_filename
-        with tb.open_file(fp_filename, mode="r") as fp_file:
-            self.fp_type = fp_file.root.config[0]
-            self.fp_params = fp_file.root.config[1]
-            self.rdkit_ver = fp_file.root.config[2]
-        if in_memory_fps:
-            self.load_fps(fps_sort)
+        if storage_backend == "pytables":
+            self.storage = PyTablesStorageBackend(
+                fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
+            )
 
-    def load_fps(self, fps_sort=False):
-        """Loads FP db file into memory.
+        self.fp_type, self.fp_params, self.rdkit_ver = self.storage.read_parameters()
+
+        if in_memory_fps:
+            self.fps = self.storage.load_fps()
+
+    def load_query(self, query_string):
+        """Load query molecule from SMILES, molblock or InChi.
 
         Args:
-            fps_sort: Sort fps in memory after loading them.
+            query_string: SMILES, molblock or InChi.
         Returns:
-            None.
+            Numpy array query molecule.
         """
-        self.fps = load_fps(self.fp_filename, fps_sort)
+        rdmol = load_molecule(query_string)
+        # generate the efp
+        efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
+        efp.append(py_popcount(np.array(efp, dtype=np.uint64)))
+        efp.insert(0, 0)
+        return np.array(efp, dtype=np.uint64)
 
     def similarity(self, query_string, threshold, n_workers=1):
         """Run a tanimoto search
@@ -236,13 +259,6 @@ class FPSim2Engine:
             n_workers=n_workers,
         )
 
-    def _load_query_and_fp_range(
-        self, query_string, count_ranges, threshold, a, b, search_type
-    ):
-        query = load_query(query_string, self.fp_filename)
-        fp_range = get_bounds_range(query, count_ranges, threshold, search_type, a, b)
-        return query, fp_range
-
     def _parallel_run(
         self,
         query,
@@ -273,7 +289,7 @@ class FPSim2Engine:
                     exe.submit(
                         search_func,
                         query,
-                        self.fp_filename,
+                        self.storage,
                         threshold,
                         a,
                         b,
@@ -323,30 +339,29 @@ class FPSim2Engine:
         n_workers,
     ):
         if on_disk:
-            with tb.open_file(self.fp_filename, mode="r") as fp_file:
-                count_ranges = fp_file.root.config[3]
+            count_ranges = self.storage.get_count_ranges()
         else:
             count_ranges = self.fps.count_ranges
 
-        if search_type == "tanimoto":
-            empty_np = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
-        else:
+        if search_type == "substructure":
             empty_np = np.ndarray((0,), dtype="<u4")
+        else:
+            empty_np = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
 
-        query, fp_range = self._load_query_and_fp_range(
-            query_string, count_ranges, threshold, a, b, search_type
-        )
+        query = self.load_query(query_string)
+        fp_range = get_bounds_range(query, threshold, a, b, count_ranges, search_type)
+
         if fp_range:
             if n_workers == 1:
                 if on_disk:
                     np_res = search_func(
                         query,
-                        self.fp_filename,
+                        self.storage,
                         threshold,
                         a,
                         b,
                         SEARCH_TYPES[search_type],
-                        fp_range
+                        fp_range,
                     )
                 else:
                     np_res = search_func(
