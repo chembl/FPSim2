@@ -17,6 +17,20 @@ import os
 BATCH_WRITE_SIZE = 10000
 
 
+def create_schema(fp_length):
+    class Particle(tb.IsDescription):
+        pass
+    columns = {}
+    pos = 1
+    columns["fp_id"] = tb.Int64Col(pos=pos)
+    for i in range(1, math.ceil(fp_length / 64) + 1):
+        pos += 1
+        columns["f" + str(i)] = tb.UInt64Col(pos=pos)
+    columns["popcnt"] = tb.Int64Col(pos=pos + 1)
+    Particle.columns = columns
+    return Particle
+
+
 def create_db_file(
     mols_source,
     filename,
@@ -49,22 +63,9 @@ def create_db_file(
 
     # set the output file and fps table
     with tb.open_file(filename, mode="w") as fp_file:
-
-        class Particle(tb.IsDescription):
-            pass
-
-        # hacky...
-        columns = {}
-        pos = 1
-        columns["fp_id"] = tb.Int64Col(pos=pos)
-        for i in range(1, math.ceil(fp_length / 64) + 1):
-            pos += 1
-            columns["f" + str(i)] = tb.UInt64Col(pos=pos)
-        columns["popcnt"] = tb.Int64Col(pos=pos + 1)
-        Particle.columns = columns
-
+        particle = create_schema(fp_length)
         fps_table = fp_file.create_table(
-            fp_file.root, "fps", Particle, "Table storing fps", filters=filters
+            fp_file.root, "fps", particle, "Table storing fps", filters=filters
         )
 
         # set config table; used fp function, parameters and rdkit version
