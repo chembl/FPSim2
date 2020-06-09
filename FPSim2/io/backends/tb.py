@@ -4,7 +4,7 @@ from ..chem import (
     get_mol_suplier,
     get_fp_length,
     rdmol_to_efp,
-    calc_count_ranges,
+    calc_popcnt_bins,
     FP_FUNC_DEFAULTS,
 )
 from collections import namedtuple
@@ -142,8 +142,8 @@ def sort_db_file(filename):
             param_table.append(rdkit.__version__)
 
             # update count ranges
-            count_ranges = calc_count_ranges(dst_fps, fp_length)
-            param_table.append(count_ranges)
+            popcnt_bins = calc_popcnt_bins(dst_fps, fp_length)
+            param_table.append(popcnt_bins)
 
     # remove not sorted file
     os.remove(tmp_filename)
@@ -163,10 +163,10 @@ class PyTablesStorageBackend(BaseStorageBackend):
             rdkit_ver = fp_file.root.config[2]
         return fp_type, fp_params, rdkit_ver
 
-    def get_count_ranges(self):
+    def get_popcnt_bins(self):
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
-            count_ranges = fp_file.root.config[3]
-        return count_ranges
+            popcnt_bins = fp_file.root.config[3]
+        return popcnt_bins
 
     def get_fps_chunk(self, chunk_range):
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
@@ -188,14 +188,14 @@ class PyTablesStorageBackend(BaseStorageBackend):
             if self.fps_sort:
                 fps.sort(order="popcnt")
                 fp_length = get_fp_length(fp_type, fp_params)
-                count_ranges = calc_count_ranges(fps, fp_length, self.in_memory_fps)
+                popcnt_bins = calc_popcnt_bins(fps, fp_length, self.in_memory_fps)
             else:
-                count_ranges = fp_file.root.config[3]
+                popcnt_bins = fp_file.root.config[3]
         num_fields = len(fps[0])
         fps = fps.view("<u8")
         fps = fps.reshape(int(fps.size / num_fields), num_fields)
-        fps_t = namedtuple("fps", "fps count_ranges")
-        return fps_t(fps=fps, count_ranges=count_ranges)
+        fps_t = namedtuple("fps", "fps popcnt_bins")
+        return fps_t(fps=fps, popcnt_bins=popcnt_bins)
 
     def delete_fps(self, ids_list):
         """Delete fps from FP db file.

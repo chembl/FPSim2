@@ -98,13 +98,13 @@ class TestFPSim2(unittest.TestCase):
         fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
         self.assertEqual(fpe.fps.fps.shape[0], 10)
         self.assertEqual(fpe.fps.fps.shape[1], 34)
-        self.assertTrue(fpe.fps.count_ranges != [])
+        self.assertTrue(fpe.fps.popcnt_bins != [])
 
     def test_g_load_fps_sort(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         fpe = FPSim2Engine(in_file)
         fpe2 = FPSim2Engine(in_file, fps_sort=True)
-        self.assertEqual(fpe.fps.count_ranges, fpe2.fps.count_ranges)
+        self.assertEqual(fpe.fps.popcnt_bins, fpe2.fps.popcnt_bins)
 
     def test_h_search(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')

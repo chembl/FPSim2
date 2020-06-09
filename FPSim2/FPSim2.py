@@ -339,9 +339,9 @@ class FPSim2Engine:
         n_workers,
     ):
         if on_disk:
-            count_ranges = self.storage.get_count_ranges()
+            popcnt_bins = self.storage.get_popcnt_bins()
         else:
-            count_ranges = self.fps.count_ranges
+            popcnt_bins = self.fps.popcnt_bins
 
         if search_type == "substructure":
             empty_np = np.ndarray((0,), dtype="<u4")
@@ -349,7 +349,7 @@ class FPSim2Engine:
             empty_np = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
 
         query = self.load_query(query_string)
-        fp_range = get_bounds_range(query, threshold, a, b, count_ranges, search_type)
+        fp_range = get_bounds_range(query, threshold, a, b, popcnt_bins, search_type)
 
         if fp_range:
             if n_workers == 1:

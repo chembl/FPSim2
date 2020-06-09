@@ -11,7 +11,7 @@ class BaseStorageBackend:
         """Reads file info"""
         pass
 
-    def get_count_ranges(self):
+    def get_popcnt_bins(self):
         pass
 
     def get_fps_chunk(self, chunk_range):

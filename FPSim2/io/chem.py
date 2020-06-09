@@ -269,7 +269,7 @@ def sdf_mol_supplier(filename, gen_ids, **kwargs):
             continue
 
 
-def calc_count_ranges(fps, fp_length, in_memory=False):
+def calc_popcnt_bins(fps, fp_length, in_memory=False):
     """Calcs popcount bins.
 
     Args:
@@ -279,14 +279,14 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
     Returns:
         list with popcnt ranges.
     """
-    count_ranges = []
+    popcnt_bins = []
     if in_memory:
         idx = np.unique(fps["popcnt"], return_index=True)
         for i, k in enumerate(zip(*idx)):
             if k[0] == idx[0][-1]:
-                count_ranges.append((k[0], (k[1], fps.shape[0])))
+                popcnt_bins.append((k[0], (k[1], fps.shape[0])))
             else:
-                count_ranges.append((k[0], (k[1], idx[1][int(i + 1)])))
+                popcnt_bins.append((k[0], (k[1], idx[1][int(i + 1)])))
     else:
         for i in range(0, fp_length + 1):
             idx_gen = (row.nrow for row in fps.where("popcnt == {}".format(str(i))))
@@ -298,8 +298,8 @@ def calc_count_ranges(fps, fp_length, in_memory=False):
             for j in idx_gen:
                 pass
             cnt_idxs = (first_id, j + 1)
-            count_ranges.append((i, cnt_idxs))
-    return count_ranges
+            popcnt_bins.append((i, cnt_idxs))
+    return popcnt_bins
 
 
 def get_mol_suplier(io_source):
