@@ -182,7 +182,7 @@ def it_supplier(iterator, gen_ids, **kwargs):
                 try:
                     mol_string = mol[0]
                     mol_id = int(mol[1])
-                except Exception as e:
+                except ValueError:
                     raise Exception(
                         "FPSim only supports integer ids for molecules, "
                         "cosinder setting gen_ids=True when running "
@@ -223,7 +223,7 @@ def smi_mol_supplier(filename, gen_ids, **kwargs):
                     try:
                         smiles = mol[0]
                         mol_id = int(mol[1])
-                    except Exception as e:
+                    except ValueError:
                         raise Exception(
                             "FPSim only supports integer ids for molecules, "
                             "cosinder setting gen_ids=True when running "
@@ -258,7 +258,7 @@ def sdf_mol_supplier(filename, gen_ids, **kwargs):
                 mol_id = rdmol.GetProp(kwargs["mol_id_prop"])
             try:
                 int(mol_id)
-            except Exception as e:
+            except ValueError:
                 raise Exception(
                     "FPSim only supports integer ids for molecules, "
                     "cosinder setting gen_ids=True when running "
