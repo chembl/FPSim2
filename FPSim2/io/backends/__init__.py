@@ -1,1 +1,1 @@
-from .tb import PyTablesStorageBackend
+from .pytables import PyTablesStorageBackend
