@@ -1,7 +1,7 @@
 from FPSim2 import FPSim2Engine
 from FPSim2.FPSim2lib import py_popcount
 from FPSim2.io.chem import rdmol_to_efp
-from FPSim2.io.backends.tb import create_db_file, sort_db_file
+from FPSim2.io.backends.pytables import create_db_file, sort_db_file
 from rdkit import Chem, DataStructs
 import numpy as np
 import math
