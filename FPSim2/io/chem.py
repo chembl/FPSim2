@@ -145,7 +145,7 @@ def get_bounds_range(
     b: float,
     ranges: list,
     search_type: str,
-) -> Union[Tuple[int, int], list[Any]]:
+) -> Union[Tuple[int, int], list]:
     query_count = query[-1]
     range_to_keep = []
 
