@@ -2,6 +2,7 @@ import concurrent.futures as cf
 import numpy as np
 from .io.chem import load_molecule, rdmol_to_efp, get_bounds_range
 from .io.backends import PyTablesStorageBackend
+from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
     _similarity_search,
     _substructure_search,
@@ -13,7 +14,15 @@ from .FPSim2lib import (
 SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
 
 
-def on_disk_search(query, storage, threshold, a, b, st, chunk_range):
+def on_disk_search(
+    query: np.array,
+    storage: any,
+    threshold: float,
+    a: float,
+    b: float,
+    st: str,
+    chunk_range: Tuple[int, int],
+) -> np.ndarray:
     """Run a on disk search.
 
         Args:
@@ -54,19 +63,17 @@ class FPSim2Engine:
     """
 
     fp_filename = None
-    fp_type = None
-    fp_params = None
     rdkit_ver = None
     fps = None
     storage = None
 
     def __init__(
         self,
-        fp_filename,
-        storage_backend="pytables",
-        in_memory_fps=True,
-        fps_sort=False,
-    ):
+        fp_filename: str,
+        storage_backend: str = "pytables",
+        in_memory_fps: bool = True,
+        fps_sort: bool = False,
+    ) -> None:
 
         self.fp_filename = fp_filename
         if storage_backend == "pytables":
@@ -79,7 +86,7 @@ class FPSim2Engine:
         if in_memory_fps:
             self.fps = self.storage.load_fps()
 
-    def load_query(self, query_string):
+    def load_query(self, query_string: str) -> np.ndarray:
         """Load query molecule from SMILES, molblock or InChi.
 
         Args:
@@ -94,7 +101,9 @@ class FPSim2Engine:
         efp.insert(0, 0)
         return np.array(efp, dtype=np.uint64)
 
-    def similarity(self, query_string, threshold, n_workers=1):
+    def similarity(
+        self, query_string: str, threshold: float, n_workers=1
+    ) -> np.ndarray:
         """Run a tanimoto search
 
         Args:
@@ -124,8 +133,12 @@ class FPSim2Engine:
         )
 
     def on_disk_similarity(
-        self, query_string, threshold, n_workers=1, chunk_size=250000
-    ):
+        self,
+        query_string: str,
+        threshold: float,
+        n_workers: int = 1,
+        chunk_size: int = 250000,
+    ) -> np.ndarray:
         """Run a on disk tanimoto search.
 
         Args:
@@ -149,7 +162,14 @@ class FPSim2Engine:
             n_workers=n_workers,
         )
 
-    def tversky(self, query_string, threshold, a, b, n_workers=1):
+    def tversky(
+        self,
+        query_string: str,
+        threshold: float,
+        a: float,
+        b: float,
+        n_workers: int = 1,
+    ) -> np.ndarray:
         """Run a tversky search
 
         Args:
@@ -181,8 +201,14 @@ class FPSim2Engine:
         )
 
     def on_disk_tversky(
-        self, query_string, threshold, a, b, n_workers=1, chunk_size=250000
-    ):
+        self,
+        query_string: str,
+        threshold: float,
+        a: float,
+        b: float,
+        n_workers: int = 1,
+        chunk_size: int = 250000,
+    ) -> np.ndarray:
         """Run a on disk tversky search.
 
         Args:
@@ -208,7 +234,7 @@ class FPSim2Engine:
             n_workers=n_workers,
         )
 
-    def substructure(self, query_string, n_workers=1):
+    def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
         """Run a substructure screenout using an optimised calculation of tversky wiht a=1, b=0
 
         Args:
@@ -236,7 +262,9 @@ class FPSim2Engine:
             n_workers=n_workers,
         )
 
-    def on_disk_substructure(self, query_string, n_workers=1, chunk_size=250000):
+    def on_disk_substructure(
+        self, query_string: str, n_workers: int = 1, chunk_size: int = 250000
+    ) -> np.ndarray:
         """Run a on disk substructure screenout.
 
         Args:
@@ -261,18 +289,18 @@ class FPSim2Engine:
 
     def _parallel_run(
         self,
-        query,
-        search_func,
-        executor,
-        fp_range,
-        n_workers,
-        threshold,
-        a,
-        b,
-        search_type,
-        chunk_size,
-        on_disk,
-    ):
+        query: np.ndarray,
+        search_func: Callable[..., np.ndarray],
+        executor: Callable[..., Any],
+        fp_range: Union[Tuple[int, int], list],
+        n_workers: int,
+        threshold: float,
+        a: float,
+        b: float,
+        search_type: str,
+        chunk_size: int,
+        on_disk: bool,
+    ) -> np.ndarray:
         i_start = fp_range[0]
         i_end = fp_range[1]
         results = []
@@ -327,17 +355,17 @@ class FPSim2Engine:
 
     def _base_search(
         self,
-        query_string,
-        threshold,
-        a,
-        b,
-        search_func,
-        chunk_size,
-        search_type,
-        on_disk,
-        executor,
-        n_workers,
-    ):
+        query_string: str,
+        threshold: float,
+        a: float,
+        b: float,
+        search_func: Callable[..., np.ndarray],
+        chunk_size: int,
+        search_type: str,
+        on_disk: bool,
+        executor: Callable[..., Any],
+        n_workers: int,
+    ) -> np.ndarray:
         if on_disk:
             popcnt_bins = self.storage.get_popcnt_bins()
         else:
