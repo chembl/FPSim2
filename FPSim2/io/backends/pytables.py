@@ -156,7 +156,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
             fp_filename, in_memory_fps, fps_sort
         )
 
-    def read_parameters(self) -> Tuple[str, Dict[str, dict[str, dict]], str]:
+    def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             fp_type = fp_file.root.config[0]
