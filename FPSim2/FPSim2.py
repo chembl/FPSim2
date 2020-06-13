@@ -16,7 +16,7 @@ SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
 
 def on_disk_search(
     query: np.array,
-    storage: any,
+    storage: Any,
     threshold: float,
     a: float,
     b: float,
