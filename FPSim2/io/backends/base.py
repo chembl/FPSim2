@@ -2,7 +2,7 @@
 
 class BaseStorageBackend:
 
-    def __init__(self, fp_filename, in_memory_fps=True, fps_sort=False):
+    def __init__(self, fp_filename, in_memory_fps, fps_sort):
         self.fp_filename = fp_filename
         self.in_memory_fps = in_memory_fps
         self.fps_sort = fps_sort
@@ -37,7 +37,7 @@ class BaseStorageBackend:
         """Appends fps to a FP db file.
 
         Args:
-            io_source: .smi or .sdf filename, ResultProxy or list.
+            mols_source: .smi or .sdf filename or iterable.
             mol_id_prop: name of the property storing the id in sdf files.
         Returns:
             None.

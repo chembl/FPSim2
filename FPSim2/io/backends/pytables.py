@@ -1,3 +1,4 @@
+from typing import Any, Iterable as IterableType, Dict, List, Tuple, Union
 from .base import BaseStorageBackend
 from FPSim2.FPSim2lib import py_popcount
 from ..chem import (
@@ -17,7 +18,7 @@ import os
 BATCH_WRITE_SIZE = 10000
 
 
-def create_schema(fp_length):
+def create_schema(fp_length: int) -> Any:
     class Particle(tb.IsDescription):
         pass
     columns = {}
@@ -32,15 +33,15 @@ def create_schema(fp_length):
 
 
 def create_db_file(
-    mols_source,
-    filename,
-    fp_func,
-    fp_func_params={},
-    mol_id_prop="mol_id",
-    gen_ids=False,
-    sort_by_popcnt=True,
-):
-    """Creates FPSim2 FPs db file from .smi, .sdf files or from any iterable.
+    mols_source: Union[str, IterableType],
+    filename: str,
+    fp_func: str,
+    fp_func_params: dict = {},
+    mol_id_prop: str = "mol_id",
+    gen_ids: bool = False,
+    sort_by_popcnt: bool = True,
+) -> None:
+    """Creates FPSim2 FPs db file from .smi, .sdf files or from an iterable.
 
     Args:
         mols_source: .smi, .sdf filename or iterable.
@@ -96,7 +97,7 @@ def create_db_file(
         sort_db_file(filename)
 
 
-def sort_db_file(filename):
+def sort_db_file(filename: str) -> None:
     """Sorts the FPs db file."""
     # rename not sorted filename
     tmp_filename = filename + "_tmp"
@@ -150,12 +151,12 @@ def sort_db_file(filename):
 
 
 class PyTablesStorageBackend(BaseStorageBackend):
-    def __init__(self, fp_filename, in_memory_fps=True, fps_sort=False):
+    def __init__(self, fp_filename: str, in_memory_fps: bool = True, fps_sort: bool = False) -> None:
         super(PyTablesStorageBackend, self).__init__(
             fp_filename, in_memory_fps, fps_sort
         )
 
-    def read_parameters(self):
+    def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             fp_type = fp_file.root.config[0]
@@ -163,17 +164,17 @@ class PyTablesStorageBackend(BaseStorageBackend):
             rdkit_ver = fp_file.root.config[2]
         return fp_type, fp_params, rdkit_ver
 
-    def get_popcnt_bins(self):
+    def get_popcnt_bins(self) -> List[Tuple[int, int]]:
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             popcnt_bins = fp_file.root.config[3]
         return popcnt_bins
 
-    def get_fps_chunk(self, chunk_range):
+    def get_fps_chunk(self, chunk_range: Tuple[int, int]) -> np.asarray:
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             fps = fp_file.root.fps[slice(*chunk_range)]
         return fps
 
-    def load_fps(self):
+    def load_fps(self) -> Any:
         """Loads FP db file into memory.
 
         Args:
@@ -197,7 +198,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
         fps_t = namedtuple("fps", "fps popcnt_bins")
         return fps_t(fps=fps, popcnt_bins=popcnt_bins)
 
-    def delete_fps(self, ids_list):
+    def delete_fps(self, ids_list: List[int]) -> None:
         """Delete fps from FP db file.
 
         Args:
@@ -214,16 +215,16 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 ]
                 fps_table.remove_row(to_delete[0])
 
-    def append_fps(self, mols_source, mol_id_prop="mol_id"):
+    def append_fps(self, mols_source: Union[str, IterableType], mol_id_prop: str = "mol_id") -> None:
         """Appends fps to a FP db file.
 
         Args:
-            mols_source: .smi or .sdf filename, ResultProxy or list.
+            mols_source: .smi or .sdf filename or iterable.
         Returns:
             None.
         """
         supplier = get_mol_suplier(mols_source)
-        fp_type, fp_params, rdkit_ver = self.read_parameters()
+        fp_type, fp_params, _ = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
             new_mols = []

@@ -2,6 +2,7 @@ from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
 from collections.abc import Iterable
+from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, Union
 import numpy as np
 import textwrap
 import re
@@ -79,7 +80,9 @@ FP_FUNC_DEFAULTS = {
 }
 
 
-def rdmol_to_efp(rdmol, fp_func, fp_func_params):
+def rdmol_to_efp(
+    rdmol: Chem.Mol, fp_func: str, fp_func_params: Dict[str, dict]
+) -> List[int]:
     """Converts rdkit mol in FPSim2 fp format.
 
     Args:
@@ -95,7 +98,7 @@ def rdmol_to_efp(rdmol, fp_func, fp_func_params):
     return efp
 
 
-def load_molecule(mol_string):
+def load_molecule(mol_string: str) -> Chem.Mol:
     """Reads SMILES, molblock or InChi and returns a rdkit mol.
 
     Args:
@@ -112,7 +115,7 @@ def load_molecule(mol_string):
     return rdmol
 
 
-def get_fp_length(fp_func, fp_func_params):
+def get_fp_length(fp_func: str, fp_func_params: Dict[str, Any]) -> int:
     """Returns fp length given the name of a function and it's parameters.
 
     Args:
@@ -135,7 +138,14 @@ def get_fp_length(fp_func, fp_func_params):
     return fp_length
 
 
-def get_bounds_range(query, threshold, a, b, ranges, search_type):
+def get_bounds_range(
+    query: np.ndarray,
+    threshold: float,
+    a: float,
+    b: float,
+    ranges: list,
+    search_type: str,
+) -> Union[Tuple[int, int], list]:
     query_count = query[-1]
     range_to_keep = []
 
@@ -158,11 +168,13 @@ def get_bounds_range(query, threshold, a, b, ranges, search_type):
     return range_to_keep
 
 
-def it_supplier(iterator, gen_ids, **kwargs):
-    """Generator function that reads from iterators.
+def it_supplier(
+    iterable: IterableType, gen_ids: bool, **kwargs
+) -> IterableType[Tuple[int, Chem.Mol]]:
+    """Generator function that reads from iterables.
 
     Args:
-        iterator: py list or sqla ResultProxy.
+        iterable: Python iterable storing molecules.
         gen_ids: flag to generate new ids.
         kwargs: keyword arguments.
     Raises:
@@ -170,7 +182,7 @@ def it_supplier(iterator, gen_ids, **kwargs):
     Returns:
         Yields next id and rdkit mol tuple.
     """
-    for new_mol_id, mol in enumerate(iterator, 1):
+    for new_mol_id, mol in enumerate(iterable, 1):
         if len(mol) == 1:
             mol_string = mol[0]
             mol_id = new_mol_id
@@ -196,7 +208,9 @@ def it_supplier(iterator, gen_ids, **kwargs):
             continue
 
 
-def smi_mol_supplier(filename, gen_ids, **kwargs):
+def smi_mol_supplier(
+    filename: str, gen_ids: bool, **kwargs
+) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads .smi files.
 
     Args:
@@ -237,7 +251,9 @@ def smi_mol_supplier(filename, gen_ids, **kwargs):
                 continue
 
 
-def sdf_mol_supplier(filename, gen_ids, **kwargs):
+def sdf_mol_supplier(
+    filename: str, gen_ids: bool, **kwargs
+) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads .sdf files.
 
     Args:
@@ -269,7 +285,7 @@ def sdf_mol_supplier(filename, gen_ids, **kwargs):
             continue
 
 
-def calc_popcnt_bins(fps, fp_length, in_memory=False):
+def calc_popcnt_bins(fps: Any, fp_length: int, in_memory: bool = False) -> list:
     """Calcs popcount bins.
 
     Args:
@@ -302,7 +318,7 @@ def calc_popcnt_bins(fps, fp_length, in_memory=False):
     return popcnt_bins
 
 
-def get_mol_suplier(io_source):
+def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[int, Chem.Mol]]], None]:
     """Returns a mol supplier depending on the object type and file extension.
 
     Args:
