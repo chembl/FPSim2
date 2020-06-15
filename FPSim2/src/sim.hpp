@@ -9,15 +9,15 @@ struct Result
     float coeff;
 };
 
-__inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count);
+__inline float substruct_coeff(uint64_t rel_co_count, uint64_t int_count);
 
-__inline float tanimoto_coeff(uint32_t int_count,
+__inline float tanimoto_coeff(uint64_t int_count,
                               uint32_t qcount,
                               uint32_t ocount);
 
-__inline float tversky_coeff(uint32_t int_count,
-                             uint32_t rel_co_count,
-                             uint32_t rel_co_count2,
+__inline float tversky_coeff(uint64_t int_count,
+                             uint64_t rel_co_count,
+                             uint64_t rel_co_count2,
                              float a,
                              float b);
 
