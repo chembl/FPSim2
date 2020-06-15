@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/chembl/FPSim2.svg?branch=master)](https://travis-ci.org/chembl/FPSim2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Anaconda-Server Badge](https://anaconda.org/efelix/fpsim2/badges/platforms.svg)](https://anaconda.org/efelix/fpsim2)
-[![Lines of Code](https://tokei.rs/b1/github/chembl/FPSim2)](https://github.com/chembl/FPSim2)
 [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
 
 
