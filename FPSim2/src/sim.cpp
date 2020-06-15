@@ -8,9 +8,7 @@ namespace py = pybind11;
 uint64_t py_popcount(py::array_t<uint64_t> pyquery)
 {
     auto query = pyquery.unchecked<1>();
-    uint64_t qcount = 0;
-    for (ssize_t i = 0; i < query.shape(0); i++)
-        qcount += popcnt64(query(i));
+    uint64_t qcount = popcount64_unrolled(query.data(0), query.shape(0));
     return qcount;
 }
 
@@ -141,6 +139,7 @@ py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
     uint32_t i = i_start;
     while (i_end > i)
     {
+        // popcnt of the intersection
         for (size_t j = 1; j < popcntidx; j++)
         {
             int_count += popcnt64(query(j) & db(i, j));
@@ -150,6 +149,7 @@ py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
         {
             for (size_t j = 1; j < popcntidx; j++)
             {
+                // popcnts of both relative complements
                 rel_co_count += popcnt64(query(j) & ~db(i, j));
                 rel_co_count2 += popcnt64(db(i, j) & ~query(j));
             }
