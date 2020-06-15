@@ -1,34 +1,20 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#ifdef _MSC_VER
-#include <nmmintrin.h>
-#endif
+#include "libpopcnt.h"
 #include "sim.hpp"
 
 namespace py = pybind11;
 
-#ifdef _WIN64
-__inline long long popcntll(unsigned long long X)
-{
-    return _mm_popcnt_u64(X);
-}
-#else
-__inline long long popcntll(unsigned long long X)
-{
-    return __builtin_popcountll(X);
-}
-#endif
-
 uint32_t py_popcount(py::array_t<unsigned long long> pyquery)
 {
     auto query = pyquery.unchecked<1>();
-    uint32_t qcount = 0;
+    uint64_t qcount = 0;
     for (ssize_t i = 0; i < query.shape(0); i++)
-        qcount += popcntll(query(i));
+        qcount += popcnt64(query(i));
     return qcount;
 }
 
-__inline float tanimoto_coeff(uint32_t int_count, uint32_t qcount, uint32_t ocount)
+__inline float tanimoto_coeff(uint64_t int_count, uint32_t qcount, uint32_t ocount)
 {
     float coeff = 0.0;
     coeff = qcount + ocount - int_count;
@@ -37,7 +23,7 @@ __inline float tanimoto_coeff(uint32_t int_count, uint32_t qcount, uint32_t ocou
     return coeff;
 }
 
-__inline float tversky_coeff(uint32_t int_count, uint32_t rel_co_count, uint32_t rel_co_count2, float a, float b)
+__inline float tversky_coeff(uint64_t int_count, uint64_t rel_co_count, uint64_t rel_co_count2, float a, float b)
 {
     float coeff = 0.0;
     coeff = int_count + a * rel_co_count + b * rel_co_count2;
@@ -46,7 +32,7 @@ __inline float tversky_coeff(uint32_t int_count, uint32_t rel_co_count, uint32_t
     return coeff;
 }
 
-__inline float substruct_coeff(uint32_t rel_co_count, uint32_t int_count)
+__inline float substruct_coeff(uint64_t rel_co_count, uint64_t int_count)
 {
     float coeff = 0.0;
     coeff = rel_co_count + int_count;
@@ -75,8 +61,8 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
     size_t qshape = query.shape(0);
     uint8_t popcntidx = qshape - 1;
 
-    uint32_t int_count = 0;
-    uint32_t rel_co_count = 0;
+    uint64_t int_count = 0;
+    uint64_t rel_co_count = 0;
     float coeff = 0.0;
     uint32_t total_subs = 0;
     uint32_t i = i_start;
@@ -85,8 +71,8 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
         // calc count for intersection and relative complement
         for (size_t j = 1; j < popcntidx; j++)
         {
-            int_count += popcntll(query(j) & db(i, j));
-            rel_co_count += popcntll(query(j) & ~db(i, j));
+            int_count += popcnt64(query(j) & db(i, j));
+            rel_co_count += popcnt64(query(j) & ~db(i, j));
         }
         // calc optimised tversky with a=1, b=0
         coeff = substruct_coeff(rel_co_count, int_count);
@@ -147,9 +133,9 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     size_t qshape = query.shape(0);
     uint8_t popcntidx = qshape - 1;
 
-    uint32_t int_count = 0;
-    uint32_t rel_co_count = 0;
-    uint32_t rel_co_count2 = 0;
+    uint64_t int_count = 0;
+    uint64_t rel_co_count = 0;
+    uint64_t rel_co_count2 = 0;
     uint32_t total_sims = 0;
     float coeff = 0.0;
     uint32_t i = i_start;
@@ -157,15 +143,15 @@ py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
     {
         for (size_t j = 1; j < popcntidx; j++)
         {
-            int_count += popcntll(query(j) & db(i, j));
+            int_count += popcnt64(query(j) & db(i, j));
         }
 
         if (sim_type == 1) // tversky
         {
             for (size_t j = 1; j < popcntidx; j++)
             {
-                rel_co_count += popcntll(query(j) & ~db(i, j));
-                rel_co_count2 += popcntll(db(i, j) & ~query(j));
+                rel_co_count += popcnt64(query(j) & ~db(i, j));
+                rel_co_count2 += popcnt64(db(i, j) & ~query(j));
             }
             coeff = tversky_coeff(int_count, rel_co_count, rel_co_count2, a, b);
             rel_co_count = 0;

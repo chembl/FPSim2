@@ -11,7 +11,7 @@ FPSim2 is a small Python/C++ package to run fast compound similarity searches. F
 
 Implementing: 
 
-- A fast population count algorithm (builtin-popcnt) from https://github.com/WojciechMula/sse-popcount using SIMD instructions
+- A fast population count algorithm using [libpopcnt](https://github.com/kimwalisch/libpopcnt)
 - Bounds for sublinear speedups from https://pubs.acs.org/doi/abs/10.1021/ci600358f
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/)
 - In memory and on disk search modes
