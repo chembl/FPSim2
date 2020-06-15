@@ -21,12 +21,12 @@ __inline float tversky_coeff(uint64_t int_count,
                              float a,
                              float b);
 
-uint32_t py_popcount(py::array_t<unsigned long long> pyquery);
+uint64_t py_popcount(py::array_t<uint64_t> pyquery);
 
 void sort_results(py::array_t<Result> pyres);
 
-py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyquery,
-                                           py::array_t<unsigned long long> pydb,
+py::array_t<uint32_t> _substructure_search(py::array_t<uint64_t> pyquery,
+                                           py::array_t<uint64_t> pydb,
                                            float threshold,
                                            float a,
                                            float b,
@@ -34,8 +34,8 @@ py::array_t<uint32_t> _substructure_search(py::array_t<unsigned long long> pyque
                                            uint32_t i_start,
                                            uint32_t i_end);
 
-py::array_t<Result> _similarity_search(py::array_t<unsigned long long> pyquery,
-                                       py::array_t<unsigned long long> pydb,
+py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
+                                       py::array_t<uint64_t> pydb,
                                        float threshold,
                                        float a,
                                        float b,
