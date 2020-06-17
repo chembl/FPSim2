@@ -120,7 +120,7 @@ jobs:
   - script: |
       call activate testenv
       conda install -c file:///$(CONDA_PREFIX)/conda-bld/ fpsim2
-    displayName: Build and install conda package
+    displayName: Install the conda package
 
   - script: |
       call activate testenv
