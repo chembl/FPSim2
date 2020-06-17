@@ -81,7 +81,7 @@ FP_FUNC_DEFAULTS = {
 
 
 def rdmol_to_efp(
-    rdmol: Chem.Mol, fp_func: str, fp_func_params: Dict[str, dict]
+    rdmol: Chem.Mol, fp_func: str, fp_func_params: Dict[str, Any]
 ) -> List[int]:
     """Converts rdkit mol in FPSim2 fp format.
 
@@ -297,7 +297,7 @@ def calc_popcnt_bins(fps: Any, fp_length: int, in_memory: bool = False) -> list:
     """
     popcnt_bins = []
     if in_memory:
-        idx = np.unique(fps["popcnt"], return_index=True)
+        idx = np.unique(fps[:, -1], return_index=True)
         for i, k in enumerate(zip(*idx)):
             if k[0] == idx[0][-1]:
                 popcnt_bins.append((k[0], (k[1], fps.shape[0])))

@@ -2,16 +2,14 @@
 
 class BaseStorageBackend:
 
-    def __init__(self, fp_filename, in_memory_fps, fps_sort):
+    def __init__(self, fp_filename):
         self.fp_filename = fp_filename
-        self.in_memory_fps = in_memory_fps
-        self.fps_sort = fps_sort
 
     def read_parameters(self):
         """Reads file info"""
         pass
 
-    def get_popcnt_bins(self):
+    def load_popcnt_bins(self):
         pass
 
     def get_fps_chunk(self, chunk_range):

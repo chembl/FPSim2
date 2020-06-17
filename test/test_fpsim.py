@@ -61,11 +61,11 @@ class TestFPSim2(unittest.TestCase):
         create_db_file(in_file, out_file, FP_TYPE, FP_PARAMS)
 
         fpe = FPSim2Engine(out_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
+        fp_type, fp_params, _ = fpe.storage.read_parameters()
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
+        self.assertEqual(fpe.fps.shape[0], 10)
 
     def test_c_create_db_file_sdf(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.sdf')
@@ -74,11 +74,11 @@ class TestFPSim2(unittest.TestCase):
             in_file, out_file, FP_TYPE, FP_PARAMS, mol_id_prop="mol_id"
         )
         fpe = FPSim2Engine(out_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
+        fp_type, fp_params, _ = fpe.storage.read_parameters()
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
+        self.assertEqual(fpe.fps.shape[0], 10)
 
     def test_d_create_db_file_list(self):
         out_file = os.path.join(TESTS_DIR, 'data/10mols_list.h5')
@@ -86,25 +86,24 @@ class TestFPSim2(unittest.TestCase):
             [["CC", 1], ["CCC", 2], ["CCCC", 3]], out_file, FP_TYPE, FP_PARAMS
         )
         fpe = FPSim2Engine(out_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
+        fp_type, fp_params, _ = fpe.storage.read_parameters()
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
-        self.assertEqual(fpe.fps.fps.shape[0], 3)
+        self.assertEqual(fpe.fps.shape[0], 3)
 
     def test_f_load_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         fpe = FPSim2Engine(in_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
-        self.assertEqual(fpe.fps.fps.shape[1], 34)
-        self.assertTrue(fpe.fps.popcnt_bins != [])
+        self.assertEqual(fpe.fps.shape[0], 10)
+        self.assertEqual(fpe.fps.shape[1], 34)
+        self.assertTrue(fpe.popcnt_bins != [])
 
     def test_g_load_fps_sort(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         fpe = FPSim2Engine(in_file)
         fpe2 = FPSim2Engine(in_file, fps_sort=True)
-        self.assertEqual(fpe.fps.popcnt_bins, fpe2.fps.popcnt_bins)
+        self.assertEqual(fpe.popcnt_bins, fpe2.popcnt_bins)
 
     def test_h_search(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
@@ -190,14 +189,14 @@ class TestFPSim2(unittest.TestCase):
         fpe = FPSim2Engine(in_file, in_memory_fps=False)
         fpe.storage.append_fps([["CC", 11], ["CCC", 12], ["CCCC", 13]])
         fpe = FPSim2Engine(in_file, in_memory_fps=True)
-        self.assertEqual(fpe.fps.fps.shape[0], 13)
+        self.assertEqual(fpe.fps.shape[0], 13)
 
     def test_m_sort_db_file(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         sort_db_file(in_file)
         fpe = FPSim2Engine(in_file)
-        self.assertEqual(fpe.fps.fps[-1][-1], 48)
-        self.assertEqual(fpe.fps.fps[0][-1], 2)
+        self.assertEqual(fpe.fps[-1][-1], 48)
+        self.assertEqual(fpe.fps[0][-1], 2)
 
     def test_n_delete_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
@@ -205,9 +204,9 @@ class TestFPSim2(unittest.TestCase):
         fpe.storage.delete_fps([11, 12, 13])
         sort_db_file(in_file)
         fpe = FPSim2Engine(in_file)
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
-        self.assertEqual(fpe.fps.fps[-1][-1], 48)
-        self.assertEqual(fpe.fps.fps[0][-1], 35)
+        self.assertEqual(fpe.fps.shape[0], 10)
+        self.assertEqual(fpe.fps[-1][-1], 48)
+        self.assertEqual(fpe.fps[0][-1], 35)
 
 
 if __name__ == "__main__":
