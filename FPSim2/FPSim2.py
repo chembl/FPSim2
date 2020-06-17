@@ -63,8 +63,6 @@ class FPSim2Engine:
     """
 
     fp_filename = None
-    rdkit_ver = None
-    fps = None
     storage = None
 
     def __init__(
@@ -81,10 +79,25 @@ class FPSim2Engine:
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
             )
 
-        self.fp_type, self.fp_params, self.rdkit_ver = self.storage.read_parameters()
+    @property
+    def fps(self):
+        return self.storage.fps
 
-        if in_memory_fps:
-            self.fps = self.storage.load_fps()
+    @property
+    def popcnt_bins(self):
+        return self.storage.popcnt_bins
+
+    @property
+    def fp_type(self):
+        return self.storage.fp_type
+
+    @property
+    def fp_params(self):
+        return self.storage.fp_params
+
+    @property
+    def rdkit_ver(self):
+        return self.storage.rdkit_ver
 
     def load_query(self, query_string: str) -> np.ndarray:
         """Load query molecule from SMILES, molblock or InChi.
@@ -366,18 +379,13 @@ class FPSim2Engine:
         executor: Callable[..., Any],
         n_workers: int,
     ) -> np.ndarray:
-        if on_disk:
-            popcnt_bins = self.storage.get_popcnt_bins()
-        else:
-            popcnt_bins = self.fps.popcnt_bins
-
         if search_type == "substructure":
             empty_np = np.ndarray((0,), dtype="<u4")
         else:
             empty_np = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
 
         query = self.load_query(query_string)
-        fp_range = get_bounds_range(query, threshold, a, b, popcnt_bins, search_type)
+        fp_range = get_bounds_range(query, threshold, a, b, self.popcnt_bins, search_type)
 
         if fp_range:
             if n_workers == 1:

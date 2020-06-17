@@ -61,7 +61,7 @@ class TestFPSim2(unittest.TestCase):
         create_db_file(in_file, out_file, FP_TYPE, FP_PARAMS)
 
         fpe = FPSim2Engine(out_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
+        fp_type, fp_params, _ = fpe.storage.read_parameters()
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
@@ -74,7 +74,7 @@ class TestFPSim2(unittest.TestCase):
             in_file, out_file, FP_TYPE, FP_PARAMS, mol_id_prop="mol_id"
         )
         fpe = FPSim2Engine(out_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
+        fp_type, fp_params, _ = fpe.storage.read_parameters()
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
@@ -86,7 +86,7 @@ class TestFPSim2(unittest.TestCase):
             [["CC", 1], ["CCC", 2], ["CCCC", 3]], out_file, FP_TYPE, FP_PARAMS
         )
         fpe = FPSim2Engine(out_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
+        fp_type, fp_params, _ = fpe.storage.read_parameters()
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
@@ -95,7 +95,6 @@ class TestFPSim2(unittest.TestCase):
     def test_f_load_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         fpe = FPSim2Engine(in_file)
-        fp_type, fp_params, rdkit_ver = fpe.storage.read_parameters()
         self.assertEqual(fpe.fps.fps.shape[0], 10)
         self.assertEqual(fpe.fps.fps.shape[1], 34)
         self.assertTrue(fpe.fps.popcnt_bins != [])

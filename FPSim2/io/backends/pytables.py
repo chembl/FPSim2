@@ -152,9 +152,11 @@ def sort_db_file(filename: str) -> None:
 
 class PyTablesStorageBackend(BaseStorageBackend):
     def __init__(self, fp_filename: str, in_memory_fps: bool = True, fps_sort: bool = False) -> None:
-        super(PyTablesStorageBackend, self).__init__(
-            fp_filename, in_memory_fps, fps_sort
-        )
+        super(PyTablesStorageBackend, self).__init__(fp_filename)
+        self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
+        if in_memory_fps:
+            self.fps = self.load_fps(in_memory_fps, fps_sort)
+        self.popcnt_bins = self.load_popcnt_bins(in_memory_fps, fps_sort)
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
@@ -164,39 +166,37 @@ class PyTablesStorageBackend(BaseStorageBackend):
             rdkit_ver = fp_file.root.config[2]
         return fp_type, fp_params, rdkit_ver
 
-    def get_popcnt_bins(self) -> List[Tuple[int, int]]:
-        with tb.open_file(self.fp_filename, mode="r") as fp_file:
-            popcnt_bins = fp_file.root.config[3]
-        return popcnt_bins
-
     def get_fps_chunk(self, chunk_range: Tuple[int, int]) -> np.asarray:
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             fps = fp_file.root.fps[slice(*chunk_range)]
         return fps
 
-    def load_fps(self) -> Any:
+    def load_popcnt_bins(self, in_memory_fps, fps_sort) -> None:
+        if fps_sort:
+            fp_length = get_fp_length(self.fp_type, self.fp_params)
+            popcnt_bins = calc_popcnt_bins(self.fps, fp_length, in_memory_fps)
+        else:
+            with tb.open_file(self.fp_filename, mode="r") as fp_file:
+                popcnt_bins = fp_file.root.config[3]
+        self.popcnt_bins = popcnt_bins
+
+    def load_fps(self, in_memory_fps, fps_sort) -> None:
         """Loads FP db file into memory.
 
         Args:
         Returns:
             namedtuple with fps and count ranges.
         """
-        fp_type, fp_params, rdkit_ver = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             fps = fp_file.root.fps[:]
             # files should be sorted but if the file is updated without sorting it
             # can be also in memory sorted
-            if self.fps_sort:
+            if fps_sort:
                 fps.sort(order="popcnt")
-                fp_length = get_fp_length(fp_type, fp_params)
-                popcnt_bins = calc_popcnt_bins(fps, fp_length, self.in_memory_fps)
-            else:
-                popcnt_bins = fp_file.root.config[3]
         num_fields = len(fps[0])
         fps = fps.view("<u8")
         fps = fps.reshape(int(fps.size / num_fields), num_fields)
-        fps_t = namedtuple("fps", "fps popcnt_bins")
-        return fps_t(fps=fps, popcnt_bins=popcnt_bins)
+        self.fps = fps
 
     def delete_fps(self, ids_list: List[int]) -> None:
         """Delete fps from FP db file.

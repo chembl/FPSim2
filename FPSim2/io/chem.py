@@ -81,7 +81,7 @@ FP_FUNC_DEFAULTS = {
 
 
 def rdmol_to_efp(
-    rdmol: Chem.Mol, fp_func: str, fp_func_params: Dict[str, dict]
+    rdmol: Chem.Mol, fp_func: str, fp_func_params: Dict[str, Any]
 ) -> List[int]:
     """Converts rdkit mol in FPSim2 fp format.
 
