@@ -119,7 +119,7 @@ jobs:
   - script: |
       call activate testenv
       python setup.py install
-    displayName: Install the conda package
+    displayName: build and install the package
 
   - script: |
       call activate testenv
