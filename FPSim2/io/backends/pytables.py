@@ -155,8 +155,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
         super(PyTablesStorageBackend, self).__init__(fp_filename)
         self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         if in_memory_fps:
-            self.fps = self.load_fps(in_memory_fps, fps_sort)
-        self.popcnt_bins = self.load_popcnt_bins(in_memory_fps, fps_sort)
+            self.load_fps(in_memory_fps, fps_sort)
+        self.load_popcnt_bins(in_memory_fps, fps_sort)
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
