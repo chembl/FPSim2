@@ -1,0 +1,111 @@
+jobs:
+
+- job:
+  displayName: ubuntu-18.04
+  pool:
+    vmImage: 'ubuntu-18.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: conda create --yes --quiet --name testenv
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate testenv
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate testenv
+      conda build --py $CONDA conda.recipe
+      conda install --use-local fpsim2
+    displayName: Build and install conda package
+
+  - bash: |
+      source activate testenv
+      python test/test_fpsim.py
+    displayName: tests
+
+
+- job:
+  displayName: macOS-10.15
+  pool:
+    vmImage: 'macOS-10.15'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: conda create --yes --quiet --name testenv
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate testenv
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate testenv
+      conda build --py $CONDA conda.recipe
+      conda install --use-local fpsim2
+    displayName: Build and install conda package
+
+  - bash: |
+      source activate testenv
+      python test/test_fpsim.py
+    displayName: tests
+
+
+- job:
+  displayName: vs2017-win2016
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
+  - script: conda create --yes --quiet --name test
+    displayName: Create Anaconda environment
+
+  - script: |
+      call activate test
+      conda install --yes --quiet --name test python=%PYTHON_VERSION%
+    displayName: Install Anaconda packages
+
+  - script: |
+      source activate testenv
+      conda build --py $CONDA conda.recipe
+      conda install --use-local fpsim2
+    displayName: Build and install conda package
+
+  - script: |
+      call activate test
+      python test/test_fpsim.py
+    displayName: tests
