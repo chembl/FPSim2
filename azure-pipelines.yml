@@ -17,7 +17,7 @@ jobs:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
       conda config --add channels conda-forge
-      conda install -q conda-build
+      conda install --yes --quiet conda-build
     displayName: Add conda to PATH, add conda-forge channel and install conda-build
 
   - bash: |
@@ -64,7 +64,7 @@ jobs:
 
   - bash: | 
       conda config --add channels conda-forge
-      conda install -q conda-build
+      conda install --yes --quiet conda-build
       conda create --yes --quiet --name testenv
     displayName: Add conda to PATH, add conda-forge channel and install conda-build
 
@@ -115,7 +115,7 @@ jobs:
   - script: |
       call activate testenv
       python setup.py install
-    displayName: build and install the package
+    displayName: Build and install the package
 
   - script: |
       call activate testenv
