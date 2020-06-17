@@ -128,7 +128,7 @@ class FPSim2Engine:
         Returns:
             Numpy array with ids and similarities.
         """
-        if not self.fps:
+        if self.fps is None:
             raise Exception(
                 "Load the fingerprints into memory before running a in memory search"
             )
