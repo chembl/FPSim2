@@ -113,10 +113,6 @@ jobs:
     displayName: Install Anaconda packages
 
   - script: |
-      conda build --py %PYTHON_VERSION% conda.recipe
-    displayName: Build the conda package
-
-  - script: |
       call activate testenv
       python setup.py install
     displayName: build and install the package
