@@ -18,7 +18,7 @@ jobs:
       echo "##vso[task.prependpath]$CONDA/bin"
       conda config --add channels conda-forge
       conda install -q conda-build
-    displayName: Add conda to PATH, update it and add conda-forge channel
+    displayName: Add conda to PATH, add conda-forge channel and install conda-build
 
   - bash: |
       conda create --yes --quiet --name testenv
@@ -66,7 +66,7 @@ jobs:
       conda config --add channels conda-forge
       conda install -q conda-build
       conda create --yes --quiet --name testenv
-    displayName: Add conda-forge channel and create Anaconda environment
+    displayName: Add conda to PATH, add conda-forge channel and install conda-build
 
   - bash: |
       source activate testenv
@@ -104,13 +104,12 @@ jobs:
 
   - script: |
       conda config --add channels conda-forge
-      conda install -q conda-build
       conda create --yes --quiet --name testenv
     displayName: Add conda-forge channel and create environment
 
   - script: |
       call activate testenv
-      conda install --yes --quiet --name testenv python=%PYTHON_VERSION%
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables
     displayName: Install Anaconda packages
 
   - script: |
@@ -119,7 +118,7 @@ jobs:
 
   - script: |
       call activate testenv
-      conda install -c file:///$(CONDA_PREFIX)/conda-bld/ fpsim2
+      python setup.py install
     displayName: Install the conda package
 
   - script: |
