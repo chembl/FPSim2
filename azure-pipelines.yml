@@ -55,6 +55,7 @@ jobs:
   steps:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R ${USER} ${CONDA}
       conda config --add channels conda-forge
     displayName: Add conda to PATH
 
@@ -92,12 +93,12 @@ jobs:
         python.version: '3.8'
 
   steps:
-  - powershell: |
-      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-      conda config --add channels conda-forge
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - script: conda create --yes --quiet --name test
+  - script: |
+      conda config --add channels conda-forge
+      conda create --yes --quiet --name test
     displayName: Create Anaconda environment
 
   - script: |
@@ -106,12 +107,12 @@ jobs:
     displayName: Install Anaconda packages
 
   - script: |
-      source activate testenv
+      call activate testenv
       conda build --py %PYTHON_VERSION% conda.recipe
       conda install --use-local fpsim2
     displayName: Build and install conda package
 
   - script: |
       call activate test
-      python test/test_fpsim.py
+      python test\test_fpsim.py
     displayName: tests
