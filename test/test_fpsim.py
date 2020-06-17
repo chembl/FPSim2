@@ -78,7 +78,7 @@ class TestFPSim2(unittest.TestCase):
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
+        self.assertEqual(fpe.fps.shape[0], 10)
 
     def test_d_create_db_file_list(self):
         out_file = os.path.join(TESTS_DIR, 'data/10mols_list.h5')
@@ -189,14 +189,14 @@ class TestFPSim2(unittest.TestCase):
         fpe = FPSim2Engine(in_file, in_memory_fps=False)
         fpe.storage.append_fps([["CC", 11], ["CCC", 12], ["CCCC", 13]])
         fpe = FPSim2Engine(in_file, in_memory_fps=True)
-        self.assertEqual(fpe.fps.fps.shape[0], 13)
+        self.assertEqual(fpe.fps.shape[0], 13)
 
     def test_m_sort_db_file(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         sort_db_file(in_file)
         fpe = FPSim2Engine(in_file)
-        self.assertEqual(fpe.fps.fps[-1][-1], 48)
-        self.assertEqual(fpe.fps.fps[0][-1], 2)
+        self.assertEqual(fpe.fps[-1][-1], 48)
+        self.assertEqual(fpe.fps[0][-1], 2)
 
     def test_n_delete_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
@@ -204,9 +204,9 @@ class TestFPSim2(unittest.TestCase):
         fpe.storage.delete_fps([11, 12, 13])
         sort_db_file(in_file)
         fpe = FPSim2Engine(in_file)
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
-        self.assertEqual(fpe.fps.fps[-1][-1], 48)
-        self.assertEqual(fpe.fps.fps[0][-1], 35)
+        self.assertEqual(fpe.fps.shape[0], 10)
+        self.assertEqual(fpe.fps[-1][-1], 48)
+        self.assertEqual(fpe.fps[0][-1], 35)
 
 
 if __name__ == "__main__":
