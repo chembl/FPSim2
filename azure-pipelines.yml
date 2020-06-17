@@ -20,11 +20,11 @@ jobs:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
       conda config --add channels conda-forge
+      conda install -q conda-build
     displayName: Add conda to PATH, update it and add conda-forge channel
 
   - bash: |
       conda create --yes --quiet --name testenv
-      conda install -q conda-build
     displayName: Create Anaconda environment
 
   - bash: |
