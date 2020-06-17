@@ -14,7 +14,9 @@ jobs:
         python.version: '3.8'
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+  - bash: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda config --add channels conda-forge
     displayName: Add conda to PATH
 
   - bash: conda create --yes --quiet --name testenv
@@ -51,7 +53,9 @@ jobs:
         python.version: '3.8'
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+  - bash: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda config --add channels conda-forge
     displayName: Add conda to PATH
 
   - bash: conda create --yes --quiet --name testenv
@@ -88,7 +92,9 @@ jobs:
         python.version: '3.8'
 
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  - powershell: |
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+      conda config --add channels conda-forge
     displayName: Add conda to PATH
 
   - script: conda create --yes --quiet --name test
