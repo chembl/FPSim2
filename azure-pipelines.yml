@@ -1,6 +1,9 @@
 jobs:
 
 - job:
+  variables:
+    CONDA_PREFIX: $(CONDA)/envs/testenv
+
   displayName: ubuntu-18.04
   pool:
     vmImage: 'ubuntu-18.04'
@@ -30,7 +33,7 @@ jobs:
   - bash: |
       source activate testenv
       conda build --py $PYTHON_VERSION conda.recipe
-      conda install --use-local fpsim2
+      conda install -c file:///$(CONDA_PREFIX)/conda-bld/ fpsim2
     displayName: Build and install conda package
 
   - bash: |
@@ -40,6 +43,9 @@ jobs:
 
 
 - job:
+  variables:
+    CONDA_PREFIX: $(CONDA)/envs/testenv
+
   displayName: macOS-10.15
   pool:
     vmImage: 'macOS-10.15'
@@ -55,12 +61,15 @@ jobs:
   steps:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R ${USER} ${CONDA}
-      conda config --add channels conda-forge
-    displayName: Add conda to PATH, update it and add conda-forge channel
+    displayName: Add conda to PATH
 
-  - bash: conda create --yes --quiet --name testenv
-    displayName: Create Anaconda environment
+  - bash: sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
+
+  - bash: | 
+      conda config --add channels conda-forge
+      conda create --yes --quiet --name testenv
+    displayName: Add conda-forge channel and create Anaconda environment
 
   - bash: |
       source activate testenv
@@ -70,7 +79,7 @@ jobs:
   - bash: |
       source activate testenv
       conda build --py $PYTHON_VERSION conda.recipe
-      conda install --use-local fpsim2
+      conda install -c file:///$(CONDA_PREFIX)/conda-bld/ fpsim2
     displayName: Build and install conda package
 
   - bash: |
@@ -80,6 +89,9 @@ jobs:
 
 
 - job:
+  variables:
+    CONDA_PREFIX: $(CONDA)\envs\testenv
+
   displayName: vs2017-win2016
   pool:
     vmImage: 'vs2017-win2016'
@@ -109,7 +121,7 @@ jobs:
   - script: |
       call activate testenv
       conda build --py %PYTHON_VERSION% conda.recipe
-      conda install --use-local fpsim2
+      conda install -c file:///$(CONDA_PREFIX)/conda-bld/ fpsim2
     displayName: Build and install conda package
 
   - script: |
