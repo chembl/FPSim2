@@ -109,7 +109,7 @@ jobs:
 
   - script: |
       call activate testenv
-      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables pybind11
     displayName: Install Anaconda packages
 
   - script: |
