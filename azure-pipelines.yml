@@ -114,8 +114,11 @@ jobs:
     displayName: Install Anaconda packages
 
   - script: |
-      call activate testenv
       conda build --py %PYTHON_VERSION% conda.recipe
+    displayName: Build the conda package
+
+  - script: |
+      call activate testenv
       conda install -c file:///$(CONDA_PREFIX)/conda-bld/ fpsim2
     displayName: Build and install conda package
 
