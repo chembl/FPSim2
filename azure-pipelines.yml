@@ -1,0 +1,119 @@
+jobs:
+
+- job:
+  displayName: ubuntu-18.04
+  pool:
+    vmImage: 'ubuntu-18.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - bash: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda config --add channels conda-forge
+    displayName: Add conda to PATH and add conda-forge channel
+
+  - bash: |
+      conda create --yes --quiet --name testenv
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate testenv
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate testenv
+      python setup.py install
+    displayName: Build and install the package
+
+  - bash: |
+      source activate testenv
+      python test/test_fpsim.py
+    displayName: tests
+
+
+- job:
+  displayName: macOS-10.15
+  pool:
+    vmImage: 'macOS-10.15'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - bash: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
+
+  - bash: | 
+      conda config --add channels conda-forge
+      conda create --yes --quiet --name testenv
+    displayName: Add conda to PATH and add conda-forge channel
+
+  - bash: |
+      source activate testenv
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate testenv
+      python setup.py install
+    displayName: Build and install the package
+
+  - bash: |
+      source activate testenv
+      python test/test_fpsim.py
+    displayName: tests
+
+
+- job:
+  displayName: vs2017-win2016
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
+  - script: |
+      conda config --add channels conda-forge
+      conda create --yes --quiet --name testenv
+    displayName: Add conda-forge channel and create environment
+
+  - script: |
+      call activate testenv
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables pybind11
+    displayName: Install Anaconda packages
+
+  - script: |
+      call activate testenv
+      python setup.py install
+    displayName: Build and install the package
+
+  - script: |
+      call activate testenv
+      python test\test_fpsim.py
+    displayName: tests
