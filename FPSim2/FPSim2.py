@@ -344,7 +344,7 @@ class FPSim2Engine:
                     exe.submit(
                         search_func,
                         query,
-                        self.fps.fps,
+                        self.fps,
                         threshold,
                         a,
                         b,
@@ -402,7 +402,7 @@ class FPSim2Engine:
                 else:
                     np_res = search_func(
                         query,
-                        self.fps.fps,
+                        self.fps,
                         threshold,
                         a,
                         b,
