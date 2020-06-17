@@ -65,7 +65,7 @@ class TestFPSim2(unittest.TestCase):
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
+        self.assertEqual(fpe.fps.shape[0], 10)
 
     def test_c_create_db_file_sdf(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.sdf')
@@ -90,20 +90,20 @@ class TestFPSim2(unittest.TestCase):
         self.assertEqual(fp_type, FP_TYPE)
         self.assertEqual(fp_params["radius"], FP_PARAMS["radius"])
         self.assertEqual(fp_params["nBits"], FP_PARAMS["nBits"])
-        self.assertEqual(fpe.fps.fps.shape[0], 3)
+        self.assertEqual(fpe.fps.shape[0], 3)
 
     def test_f_load_fps(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         fpe = FPSim2Engine(in_file)
-        self.assertEqual(fpe.fps.fps.shape[0], 10)
-        self.assertEqual(fpe.fps.fps.shape[1], 34)
-        self.assertTrue(fpe.fps.popcnt_bins != [])
+        self.assertEqual(fpe.fps.shape[0], 10)
+        self.assertEqual(fpe.fps.shape[1], 34)
+        self.assertTrue(fpe.popcnt_bins != [])
 
     def test_g_load_fps_sort(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
         fpe = FPSim2Engine(in_file)
         fpe2 = FPSim2Engine(in_file, fps_sort=True)
-        self.assertEqual(fpe.fps.popcnt_bins, fpe2.fps.popcnt_bins)
+        self.assertEqual(fpe.popcnt_bins, fpe2.popcnt_bins)
 
     def test_h_search(self):
         in_file = os.path.join(TESTS_DIR, 'data/10mols.h5')
