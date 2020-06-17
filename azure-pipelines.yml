@@ -101,12 +101,12 @@ jobs:
   - script: |
       conda update -q conda
       conda config --add channels conda-forge
-      conda create --yes --quiet --name test
-    displayName: Update conda, add conda-forge channel and create  environment
+      conda create --yes --quiet --name testenv
+    displayName: Update conda, add conda-forge channel and create environment
 
   - script: |
-      call activate test
-      conda install --yes --quiet --name test python=%PYTHON_VERSION% conda-build
+      call activate testenv
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% conda-build
     displayName: Install Anaconda packages
 
   - script: |
@@ -116,6 +116,6 @@ jobs:
     displayName: Build and install conda package
 
   - script: |
-      call activate test
+      call activate testenv
       python test\test_fpsim.py
     displayName: tests
