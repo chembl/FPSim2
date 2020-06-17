@@ -1,9 +1,6 @@
 jobs:
 
 - job:
-  variables:
-    CONDA_PREFIX: $(CONDA)/envs/testenv
-
   displayName: ubuntu-18.04
   pool:
     vmImage: 'ubuntu-18.04'
@@ -45,9 +42,6 @@ jobs:
 
 
 - job:
-  variables:
-    CONDA_PREFIX: $(CONDA)/envs/testenv
-
   displayName: macOS-10.15
   pool:
     vmImage: 'macOS-10.15'
@@ -92,9 +86,6 @@ jobs:
 
 
 - job:
-  variables:
-    CONDA_PREFIX: $(CONDA)\envs\testenv
-
   displayName: vs2017-win2016
   pool:
     vmImage: 'vs2017-win2016'
