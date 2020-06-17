@@ -22,7 +22,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION conda-build
     displayName: Install Anaconda packages
 
   - bash: |
@@ -59,7 +59,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION conda-build
     displayName: Install Anaconda packages
 
   - bash: |
@@ -96,7 +96,7 @@ jobs:
 
   - script: |
       call activate test
-      conda install --yes --quiet --name test python=%PYTHON_VERSION%
+      conda install --yes --quiet --name test python=%PYTHON_VERSION% conda-build
     displayName: Install Anaconda packages
 
   - script: |
