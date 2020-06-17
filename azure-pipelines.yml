@@ -16,7 +16,6 @@ jobs:
   steps:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
-      conda update -q conda
       conda config --add channels conda-forge
     displayName: Add conda to PATH, update it and add conda-forge channel
 
@@ -57,7 +56,6 @@ jobs:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R ${USER} ${CONDA}
-      conda update -q conda
       conda config --add channels conda-forge
     displayName: Add conda to PATH, update it and add conda-forge channel
 
@@ -99,7 +97,6 @@ jobs:
     displayName: Add conda to PATH
 
   - script: |
-      conda update -q conda
       conda config --add channels conda-forge
       conda create --yes --quiet --name testenv
     displayName: Update conda, add conda-forge channel and create environment
