@@ -27,7 +27,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda build --py $CONDA conda.recipe
+      conda build --py $PYTHON_VERSION conda.recipe
       conda install --use-local fpsim2
     displayName: Build and install conda package
 
@@ -64,7 +64,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda build --py $CONDA conda.recipe
+      conda build --py $PYTHON_VERSION conda.recipe
       conda install --use-local fpsim2
     displayName: Build and install conda package
 
@@ -101,7 +101,7 @@ jobs:
 
   - script: |
       source activate testenv
-      conda build --py $CONDA conda.recipe
+      conda build --py %PYTHON_VERSION% conda.recipe
       conda install --use-local fpsim2
     displayName: Build and install conda package
 
