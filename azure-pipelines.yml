@@ -22,7 +22,9 @@ jobs:
       conda config --add channels conda-forge
     displayName: Add conda to PATH, update it and add conda-forge channel
 
-  - bash: conda create --yes --quiet --name testenv
+  - bash: |
+      conda create --yes --quiet --name testenv
+      conda install -q conda-build
     displayName: Create Anaconda environment
 
   - bash: |
@@ -68,12 +70,13 @@ jobs:
 
   - bash: | 
       conda config --add channels conda-forge
+      conda install -q conda-build
       conda create --yes --quiet --name testenv
     displayName: Add conda-forge channel and create Anaconda environment
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION conda-build
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION
     displayName: Install Anaconda packages
 
   - bash: |
@@ -110,12 +113,13 @@ jobs:
 
   - script: |
       conda config --add channels conda-forge
+      conda install -q conda-build
       conda create --yes --quiet --name testenv
-    displayName: Update conda, add conda-forge channel and create environment
+    displayName: Add conda-forge channel and create environment
 
   - script: |
       call activate testenv
-      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% conda-build
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION%
     displayName: Install Anaconda packages
 
   - script: |
