@@ -6,18 +6,19 @@ jobs:
     vmImage: 'ubuntu-18.04'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
+      # Python36:
+      #   python.version: '3.6'
+      # Python37:
+      #   python.version: '3.7'
       Python38:
         python.version: '3.8'
 
   steps:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
+      conda update -q conda
       conda config --add channels conda-forge
-    displayName: Add conda to PATH
+    displayName: Add conda to PATH, update it and add conda-forge channel
 
   - bash: conda create --yes --quiet --name testenv
     displayName: Create Anaconda environment
@@ -45,10 +46,10 @@ jobs:
     vmImage: 'macOS-10.15'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
+      # Python36:
+      #   python.version: '3.6'
+      # Python37:
+      #   python.version: '3.7'
       Python38:
         python.version: '3.8'
 
@@ -56,8 +57,9 @@ jobs:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R ${USER} ${CONDA}
+      conda update -q conda
       conda config --add channels conda-forge
-    displayName: Add conda to PATH
+    displayName: Add conda to PATH, update it and add conda-forge channel
 
   - bash: conda create --yes --quiet --name testenv
     displayName: Create Anaconda environment
@@ -85,10 +87,10 @@ jobs:
     vmImage: 'vs2017-win2016'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
+      # Python36:
+      #   python.version: '3.6'
+      # Python37:
+      #   python.version: '3.7'
       Python38:
         python.version: '3.8'
 
@@ -97,9 +99,10 @@ jobs:
     displayName: Add conda to PATH
 
   - script: |
+      conda update -q conda
       conda config --add channels conda-forge
       conda create --yes --quiet --name test
-    displayName: Create Anaconda environment
+    displayName: Update conda, add conda-forge channel and create  environment
 
   - script: |
       call activate test
