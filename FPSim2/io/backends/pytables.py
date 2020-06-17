@@ -8,7 +8,6 @@ from ..chem import (
     calc_popcnt_bins,
     FP_FUNC_DEFAULTS,
 )
-from collections import namedtuple
 import tables as tb
 import numpy as np
 import rdkit
