@@ -106,9 +106,9 @@ bool cmp(const Result &l, const Result &r) { return l.coeff > r.coeff; }
 
 void sort_results(py::array_t<Result> pyres)
 {
-    py::buffer_info buf = pyres.request();
-    Result *ptr = (Result *)buf.ptr;
-    std::sort(&ptr[0], &ptr[buf.shape[0]], cmp);
+    auto res = pyres.unchecked<1>();
+    Result *ptr = (Result *)res.data(0);
+    std::sort(&ptr[0], &ptr[res.shape(0)], cmp);
 }
 
 py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
