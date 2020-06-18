@@ -285,39 +285,6 @@ def sdf_mol_supplier(
             continue
 
 
-def calc_popcnt_bins(fps: Any, fp_length: int, in_memory: bool = False) -> list:
-    """Calcs popcount bins.
-
-    Args:
-        fps_table: table storing fps.
-        fp_length: length of the fp.
-        kwargs: keyword arguments.
-    Returns:
-        list with popcnt ranges.
-    """
-    popcnt_bins = []
-    if in_memory:
-        idx = np.unique(fps[:, -1], return_index=True)
-        for i, k in enumerate(zip(*idx)):
-            if k[0] == idx[0][-1]:
-                popcnt_bins.append((k[0], (k[1], fps.shape[0])))
-            else:
-                popcnt_bins.append((k[0], (k[1], idx[1][int(i + 1)])))
-    else:
-        for i in range(0, fp_length + 1):
-            idx_gen = (row.nrow for row in fps.where("popcnt == {}".format(str(i))))
-            try:
-                first_id = next(idx_gen)
-            except StopIteration:
-                continue
-            j = first_id
-            for j in idx_gen:
-                pass
-            cnt_idxs = (first_id, j + 1)
-            popcnt_bins.append((i, cnt_idxs))
-    return popcnt_bins
-
-
 def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[int, Chem.Mol]]], None]:
     """Returns a mol supplier depending on the object type and file extension.
 
