@@ -25,7 +25,7 @@ PYBIND11_MODULE(FPSim2lib, m)
         Calcs the popcount of a NumPy int array.
     )pbdoc");
 
-    m.def("sort_results", &sort_results, R"pbdoc(
+    m.def("sort_results", &sort_results, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Sort results
         Sorts the NumPy array containing the results.
     )pbdoc");
