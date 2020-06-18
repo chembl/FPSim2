@@ -5,7 +5,6 @@ from ..chem import (
     get_mol_suplier,
     get_fp_length,
     rdmol_to_efp,
-    calc_popcnt_bins,
     FP_FUNC_DEFAULTS,
 )
 import tables as tb
@@ -96,6 +95,22 @@ def create_db_file(
         sort_db_file(filename)
 
 
+def calc_popcnt_bins_pytables(fps: Any, fp_length: int) -> list:
+    popcnt_bins = []
+    for i in range(0, fp_length + 1):
+        idx_gen = (row.nrow for row in fps.where("popcnt == {}".format(str(i))))
+        try:
+            first_id = next(idx_gen)
+        except StopIteration:
+            continue
+        j = first_id
+        for j in idx_gen:
+            pass
+        cnt_idxs = (first_id, j + 1)
+        popcnt_bins.append((i, cnt_idxs))
+    return popcnt_bins
+
+
 def sort_db_file(filename: str) -> None:
     """Sorts the FPs db file."""
     # rename not sorted filename
@@ -142,7 +157,7 @@ def sort_db_file(filename: str) -> None:
             param_table.append(rdkit.__version__)
 
             # update count ranges
-            popcnt_bins = calc_popcnt_bins(dst_fps, fp_length)
+            popcnt_bins = calc_popcnt_bins_pytables(dst_fps, fp_length)
             param_table.append(popcnt_bins)
 
     # remove not sorted file
@@ -155,7 +170,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
         self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         if in_memory_fps:
             self.load_fps(in_memory_fps, fps_sort)
-        self.load_popcnt_bins(in_memory_fps, fps_sort)
+        self.load_popcnt_bins(fps_sort)
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
@@ -170,10 +185,10 @@ class PyTablesStorageBackend(BaseStorageBackend):
             fps = fp_file.root.fps[slice(*chunk_range)]
         return fps
 
-    def load_popcnt_bins(self, in_memory_fps, fps_sort) -> None:
+    def load_popcnt_bins(self, fps_sort) -> None:
         if fps_sort:
             fp_length = get_fp_length(self.fp_type, self.fp_params)
-            popcnt_bins = calc_popcnt_bins(self.fps, fp_length, in_memory_fps)
+            popcnt_bins = self.calc_popcnt_bins(self.fps, fp_length)
         else:
             with tb.open_file(self.fp_filename, mode="r") as fp_file:
                 popcnt_bins = fp_file.root.config[3]
