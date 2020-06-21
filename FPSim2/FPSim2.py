@@ -274,7 +274,7 @@ class FPSim2Engine:
             on_disk=False,
             executor=cf.ThreadPoolExecutor,
             n_workers=n_workers,
-        )[["mol_id", "coeff"]]
+        )
 
     def on_disk_substructure(
         self, query_string: str, n_workers: int = 1, chunk_size: int = 250000
@@ -299,13 +299,13 @@ class FPSim2Engine:
             on_disk=True,
             executor=cf.ProcessPoolExecutor,
             n_workers=n_workers,
-        )[["mol_id", "coeff"]]
+        )
 
     def _parallel_run(
         self,
         query: np.ndarray,
         search_func: Callable[..., np.ndarray],
-        executor: Callable[..., Any],
+        executor: Union[Callable[..., Any], None],
         fp_range: Union[Tuple[int, int], list],
         n_workers: int,
         threshold: float,
@@ -377,7 +377,7 @@ class FPSim2Engine:
         chunk_size: int,
         search_type: str,
         on_disk: bool,
-        executor: Callable[..., Any],
+        executor: Union[Callable[..., np.ndarray], None],
         n_workers: int,
     ) -> np.ndarray:
         if search_type == "substructure":
@@ -454,7 +454,7 @@ class FPSim2Engine:
         b: float = 0,
         n_workers: int = multiprocessing.cpu_count(),
     ) -> sparse.csr.csr_matrix:
-        """ Returns CSR distance / similarity matrix """
+        """ Returns a CSR distance matrix """
 
         if search_type == "tversky" and a != b:
             raise Exception("tversky with a != b is asymmetric")
@@ -470,24 +470,27 @@ class FPSim2Engine:
         data = []
         if n_workers == 1:
             for idx in tqdm(idxs, total=idxs.shape[0]):
-                query = self.fps[idx]
-                fp_range = get_bounds_range(
-                    query, threshold, a, b, self.popcnt_bins, search_type
-                )
-                np_res = _similarity_search(
-                    query,
-                    self.fps,
-                    threshold,
-                    a,
-                    b,
-                    SEARCH_TYPES[search_type],
-                    fp_range[0] if fp_range[0] > idx else idx + 1,
-                    fp_range[1],
+                np_res = self._base_search(
+                    query=idx,
+                    threshold=threshold,
+                    a=a,
+                    b=b,
+                    search_func=_similarity_search,
+                    chunk_size=0,
+                    search_type=search_type,
+                    on_disk=False,
+                    executor=None,
+                    n_workers=1,
                 )
                 for r in np_res:
                     rows.append(idx)
                     cols.append(r["idx"])
                     data.append(r["coeff"])
+                    # symmetry
+                    rows.append(r["idx"])
+                    cols.append(idx)
+                    data.append(r["coeff"])
+
         else:
             with cf.ThreadPoolExecutor(max_workers=n_workers) as executor:
                 future_to_idx = {
@@ -508,27 +511,19 @@ class FPSim2Engine:
                 }
                 for future in tqdm(cf.as_completed(future_to_idx), total=idxs.shape[0]):
                     idx = future_to_idx[future]
-                    try:
-                        np_res = future.result()
-                        for r in np_res:
-                            rows.append(idx)
-                            cols.append(r["idx"])
-                            data.append(r["coeff"])
-                    except Exception as e:
-                        print("%r generated an exception: %s" % (idx, e))
+                    np_res = future.result()
+                    for r in np_res:
+                        rows.append(idx)
+                        cols.append(r["idx"])
+                        data.append(r["coeff"])
+                        # symmetry
+                        rows.append(r["idx"])
+                        cols.append(idx)
+                        data.append(r["coeff"])
 
-        rows = np.asarray(rows, dtype="<u4")
-        cols = np.asarray(cols, dtype="<u4")
-        data = np.asarray(data, dtype="<f4")
-
-        # set the sparse symmetric matrix
-        cols2 = np.concatenate((cols, rows))
-        rows = np.concatenate((rows, cols))
-        data = np.concatenate((data, data))
-        coo_matrix = sparse.coo_matrix(
-            (data, (rows, cols2)), shape=(self.fps.shape[0], self.fps.shape[0])
+        csr_matrix = sparse.csr_matrix(
+            (data, (rows, cols)), shape=(self.fps.shape[0], self.fps.shape[0])
         )
-        csr_matrix = coo_matrix.tocsr(copy=False)
 
         # similarity to distance
         csr_matrix.data = 1 - csr_matrix.data
