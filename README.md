@@ -2,6 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Anaconda-Server Badge](https://anaconda.org/efelix/fpsim2/badges/platforms.svg)](https://anaconda.org/efelix/fpsim2)
 [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
+[![DOI](https://zenodo.org/badge/154705090.svg)](https://zenodo.org/badge/latestdoi/154705090)
 
 
 # FPSim2: Simple package for fast molecular similarity searches
