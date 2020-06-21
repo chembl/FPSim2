@@ -144,7 +144,7 @@ class FPSim2Engine:
             on_disk=False,
             executor=cf.ThreadPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def on_disk_similarity(
         self,
@@ -174,7 +174,7 @@ class FPSim2Engine:
             on_disk=True,
             executor=cf.ProcessPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def tversky(
         self,
@@ -212,7 +212,7 @@ class FPSim2Engine:
             on_disk=False,
             executor=cf.ThreadPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def on_disk_tversky(
         self,
@@ -246,7 +246,7 @@ class FPSim2Engine:
             on_disk=True,
             executor=cf.ProcessPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
         """Run a substructure screenout using an optimised calculation of tversky wiht a=1, b=0
@@ -274,7 +274,7 @@ class FPSim2Engine:
             on_disk=False,
             executor=cf.ThreadPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def on_disk_substructure(
         self, query_string: str, n_workers: int = 1, chunk_size: int = 250000
@@ -299,7 +299,7 @@ class FPSim2Engine:
             on_disk=True,
             executor=cf.ProcessPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def _parallel_run(
         self,
@@ -454,10 +454,10 @@ class FPSim2Engine:
         b: float = 0,
         n_workers: int = multiprocessing.cpu_count(),
     ) -> sparse.csr.csr_matrix:
-        """ Returns CSR distance/similarity matrix """
+        """ Returns CSR distance / similarity matrix """
 
         if search_type == "tversky" and a != b:
-            raise Exception(f"tversky with a={a} and b={b} is an asymmetric similarity measure")
+            raise Exception("tversky with a != b is asymmetric")
 
         from tqdm import tqdm
 
