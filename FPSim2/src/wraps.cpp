@@ -18,7 +18,7 @@ PYBIND11_MODULE(FPSim2lib, m)
            _similarity_search
     )pbdoc";
 
-    PYBIND11_NUMPY_DTYPE(Result, mol_id, coeff);
+    PYBIND11_NUMPY_DTYPE(Result, idx, mol_id, coeff);
     
     m.def("py_popcount", &py_popcount, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Calc popcount

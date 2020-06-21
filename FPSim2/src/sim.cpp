@@ -164,6 +164,7 @@ py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
 
         if (coeff >= threshold)
         {
+            (*results)[total_sims].idx = i;
             (*results)[total_sims].mol_id = db(i, 0);
             (*results)[total_sims].coeff = coeff;
             total_sims += 1;
