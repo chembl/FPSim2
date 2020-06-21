@@ -1,5 +1,5 @@
 import concurrent.futures as cf
-import numpy as np
+import multiprocessing
 from .io.chem import load_molecule, rdmol_to_efp, get_bounds_range
 from .io.backends import PyTablesStorageBackend
 from typing import Callable, Any, Tuple, Union
@@ -9,7 +9,8 @@ from .FPSim2lib import (
     sort_results,
     py_popcount,
 )
-
+from scipy import sparse
+import numpy as np
 
 SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
 
@@ -133,7 +134,7 @@ class FPSim2Engine:
                 "Load the fingerprints into memory before running a in memory search"
             )
         return self._base_search(
-            query_string=query_string,
+            query=query_string,
             threshold=threshold,
             a=0,
             b=0,
@@ -143,7 +144,7 @@ class FPSim2Engine:
             on_disk=False,
             executor=cf.ThreadPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def on_disk_similarity(
         self,
@@ -163,7 +164,7 @@ class FPSim2Engine:
             Numpy array with ids and similarities.
         """
         return self._base_search(
-            query_string=query_string,
+            query=query_string,
             threshold=threshold,
             a=0,
             b=0,
@@ -173,7 +174,7 @@ class FPSim2Engine:
             on_disk=True,
             executor=cf.ProcessPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def tversky(
         self,
@@ -201,7 +202,7 @@ class FPSim2Engine:
                 "Load the fingerprints into memory before running a in memory search"
             )
         return self._base_search(
-            query_string=query_string,
+            query=query_string,
             threshold=threshold,
             a=a,
             b=b,
@@ -211,7 +212,7 @@ class FPSim2Engine:
             on_disk=False,
             executor=cf.ThreadPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def on_disk_tversky(
         self,
@@ -235,7 +236,7 @@ class FPSim2Engine:
             Numpy array with ids and similarities.
         """
         return self._base_search(
-            query_string=query_string,
+            query=query_string,
             threshold=threshold,
             a=a,
             b=b,
@@ -245,7 +246,7 @@ class FPSim2Engine:
             on_disk=True,
             executor=cf.ProcessPoolExecutor,
             n_workers=n_workers,
-        )
+        )[["mol_id", "coeff"]]
 
     def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
         """Run a substructure screenout using an optimised calculation of tversky wiht a=1, b=0
@@ -263,7 +264,7 @@ class FPSim2Engine:
                 "Load the fingerprints into memory before running a in memory search"
             )
         return self._base_search(
-            query_string=query_string,
+            query=query_string,
             threshold=1.0,
             a=0,
             b=0,
@@ -288,7 +289,7 @@ class FPSim2Engine:
             NumPy array with ids.
         """
         return self._base_search(
-            query_string=query_string,
+            query=query_string,
             threshold=1.0,
             a=0,
             b=0,
@@ -304,7 +305,7 @@ class FPSim2Engine:
         self,
         query: np.ndarray,
         search_func: Callable[..., np.ndarray],
-        executor: Callable[..., Any],
+        executor: Union[Callable[..., Any], None],
         fp_range: Union[Tuple[int, int], list],
         n_workers: int,
         threshold: float,
@@ -368,7 +369,7 @@ class FPSim2Engine:
 
     def _base_search(
         self,
-        query_string: str,
+        query: Union[np.uint32, str],
         threshold: float,
         a: float,
         b: float,
@@ -376,7 +377,7 @@ class FPSim2Engine:
         chunk_size: int,
         search_type: str,
         on_disk: bool,
-        executor: Callable[..., Any],
+        executor: Union[Callable[..., np.ndarray], None],
         n_workers: int,
     ) -> np.ndarray:
         if search_type == "substructure":
@@ -384,14 +385,23 @@ class FPSim2Engine:
         else:
             empty_np = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
 
-        query = self.load_query(query_string)
-        fp_range = get_bounds_range(query, threshold, a, b, self.popcnt_bins, search_type)
+        if isinstance(query, np.uint32):
+            np_query = self.fps[query]
+            # +1 to avoid the diagonal of the matrix
+            start_idx = query + 1
+        else:
+            np_query = self.load_query(query)
+            start_idx = None
+
+        fp_range = get_bounds_range(
+            np_query, threshold, a, b, self.popcnt_bins, search_type
+        )
 
         if fp_range:
             if n_workers == 1:
                 if on_disk:
                     np_res = search_func(
-                        query,
+                        np_query,
                         self.storage,
                         threshold,
                         a,
@@ -401,18 +411,20 @@ class FPSim2Engine:
                     )
                 else:
                     np_res = search_func(
-                        query,
+                        np_query,
                         self.fps,
                         threshold,
                         a,
                         b,
                         SEARCH_TYPES[search_type],
-                        fp_range[0],
+                        start_idx
+                        if start_idx and fp_range[0] < start_idx
+                        else fp_range[0],
                         fp_range[1],
                     )
             else:
                 results = self._parallel_run(
-                    query,
+                    np_query,
                     search_func,
                     executor,
                     fp_range,
@@ -433,3 +445,86 @@ class FPSim2Engine:
         else:
             np_res = empty_np
         return np_res
+
+    def symmetric_distance_matrix(
+        self,
+        threshold: float,
+        search_type: str = "tanimoto",
+        a: float = 0,
+        b: float = 0,
+        n_workers: int = multiprocessing.cpu_count(),
+    ) -> sparse.csr.csr_matrix:
+        """ Returns a CSR distance matrix """
+
+        if search_type == "tversky" and a != b:
+            raise Exception("tversky with a != b is asymmetric")
+
+        from tqdm import tqdm
+
+        # shuffle indexes so we can estimate how long can a run take
+        idxs = np.arange(self.fps.shape[0], dtype=np.uint32)
+        np.random.shuffle(idxs)
+
+        rows = []
+        cols = []
+        data = []
+        if n_workers == 1:
+            for idx in tqdm(idxs, total=idxs.shape[0]):
+                np_res = self._base_search(
+                    query=idx,
+                    threshold=threshold,
+                    a=a,
+                    b=b,
+                    search_func=_similarity_search,
+                    chunk_size=0,
+                    search_type=search_type,
+                    on_disk=False,
+                    executor=None,
+                    n_workers=1,
+                )
+                for r in np_res:
+                    rows.append(idx)
+                    cols.append(r["idx"])
+                    data.append(r["coeff"])
+                    # symmetry
+                    rows.append(r["idx"])
+                    cols.append(idx)
+                    data.append(r["coeff"])
+
+        else:
+            with cf.ThreadPoolExecutor(max_workers=n_workers) as executor:
+                future_to_idx = {
+                    executor.submit(
+                        self._base_search,
+                        query=idx,
+                        threshold=threshold,
+                        a=a,
+                        b=b,
+                        search_func=_similarity_search,
+                        chunk_size=0,
+                        search_type=search_type,
+                        on_disk=False,
+                        executor=None,
+                        n_workers=1,
+                    ): idx
+                    for idx in idxs
+                }
+                for future in tqdm(cf.as_completed(future_to_idx), total=idxs.shape[0]):
+                    idx = future_to_idx[future]
+                    np_res = future.result()
+                    for r in np_res:
+                        rows.append(idx)
+                        cols.append(r["idx"])
+                        data.append(r["coeff"])
+                        # symmetry
+                        rows.append(r["idx"])
+                        cols.append(idx)
+                        data.append(r["coeff"])
+
+        csr_matrix = sparse.csr_matrix(
+            (data, (rows, cols)), shape=(self.fps.shape[0], self.fps.shape[0])
+        )
+
+        # similarity to distance
+        csr_matrix.data = 1 - csr_matrix.data
+        return csr_matrix
