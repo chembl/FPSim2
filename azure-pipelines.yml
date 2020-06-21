@@ -25,7 +25,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11 scipy tqdm
     displayName: Install Anaconda packages
 
   - bash: |
@@ -67,7 +67,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11 scipy tqdm
     displayName: Install Anaconda packages
 
   - bash: |
@@ -105,7 +105,7 @@ jobs:
 
   - script: |
       call activate testenv
-      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables pybind11
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables pybind11 scipy tqdm
     displayName: Install Anaconda packages
 
   - script: |

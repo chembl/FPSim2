@@ -23,6 +23,8 @@ requirements:
     - numpy>=1.14
     - pytables>=3.4.4
     - rdkit>=2018.09
+    - scipy
+    - tqdm
     - vs2015_runtime  # [win]
 
 test:
