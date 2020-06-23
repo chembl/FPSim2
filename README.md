@@ -46,7 +46,7 @@ create_db_file('chembl.sdf', 'chembl.h5', 'Morgan', {'radius': 2, 'nBits': 2048}
 # from Python list
 create_db_file([['CC', 1], ['CCC', 2], ['CCCC', 3]], 'test/10mols.h5', 'Morgan', {'radius': 2, 'nBits': 2048})
 
-# or any other iterable like sqlalchemy ResultProxy 
+# or any other iterable
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
@@ -97,6 +97,40 @@ results = fpe.similarity(query, 0.7, n_workers=1)
 ```
 
 As GIL is most of the time released, searches can be speeded up using multiple threads. This is specially useful when dealing with huge datasets and demanding real time results. Performance will vary depending on the population count distribution of the dataset, the query molecule, the threshold, the number of results and the number of threads used.
+
+### Calc the full distance matrix of the database (only in memory mode)
+
+It outputs a SciPy [CSR](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html) sparse matrix. chembl_27 (1941405 compounds) matrix can be computed in 12.5h with 1 worker using a 0.7 threshold. 3.5h with 4 workers.
+
+```python
+from FPSim2 import FPSim2Engine
+
+fp_filename = 'chembl_27.h5'
+fpe = FPSim2Engine(fp_filename)
+
+csr_matrix = fpe.symmetric_distance_matrix(0.7, n_workers=1)
+```
+
+The CSR distance matrix can be used as an input for some [scikit-learn](https://scikit-learn.org/) algorithms supporting "precomputed" distance metrics.
+
+Some others may need a similarity matrix. A CSR distance matrix can be easily converted to a similarity matrix:
+
+```python
+csr_matrix.data = 1 - csr_matrix.data
+# 0's in the diagonal of the matrix are implicit so they are not affected by the instruction above
+csr_matrix.setdiag(1)
+```
+
+Finally, some algorithms (e.g. [MDS](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html)) require a dense matrix. Conversion to a dense matrix can be easily done but bear in mind that the number of elements in the dense matrix will be the square of the number of your compounds and this may not fit in your memory.
+
+```python
+from sklearn.manifold import MDS
+
+dense_matrix = csr_matrix.todense()
+
+mds = MDS(dissimilarity="precomputed")
+pos = mds.fit_transform(dense_matrix)
+```
 
 ### Run a on disk search
 
