@@ -8,7 +8,9 @@ namespace py = pybind11;
 uint64_t py_popcount(py::array_t<uint64_t> pyquery)
 {
     auto query = pyquery.unchecked<1>();
-    uint64_t qcount = popcount64_unrolled(query.data(0), query.shape(0));
+    uint64_t qcount = 0;
+    for (ssize_t i = 0; i < query.shape(0); i++)
+        qcount += popcnt64(query(i)); 
     return qcount;
 }
 
