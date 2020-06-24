@@ -126,7 +126,8 @@ Finally, some algorithms (e.g. [MDS](https://scikit-learn.org/stable/modules/gen
 ```python
 # classic MDS doesn't work with missing values, so it's better to only use it with threshold 0.0
 # in case you still want to run MDS on missing values matrices
-# this example uses the SMACOF algorithm which is known for being able to deal with missing data. Use it at your own risk!
+# this example uses the SMACOF algorithm which is known for being able to deal with missing data. 
+# Use it at your own risk!
 
 from sklearn.manifold import MDS
 
