@@ -124,11 +124,15 @@ csr_matrix.setdiag(1)
 Finally, some algorithms (e.g. [MDS](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html)) require a dense matrix. Conversion to a dense matrix can be easily done but bear in mind that the number of elements in the dense matrix will be the square of the number of your compounds and this may not fit in your memory.
 
 ```python
+# classic MDS doesn't work with missing values, so it's better to only use it with threshold 0.0
+# in case you still want to run MDS on missing values matrices
+# this example uses the SMACOF algorithm which is known for being able to deal with missing data. Use it at your own risk!
+
 from sklearn.manifold import MDS
 
 dense_matrix = csr_matrix.todense()
-
-mds = MDS(dissimilarity="precomputed")
+# with metric=False it uses the SMACOF algorithm
+mds = MDS(dissimilarity="precomputed", metric=False)
 pos = mds.fit_transform(dense_matrix)
 ```
 
