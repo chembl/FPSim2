@@ -344,6 +344,23 @@ class TestFPSim2(unittest.TestCase):
         csr_matrix = fpe.symmetric_distance_matrix(0.0, n_workers=2)
         np.testing.assert_array_equal(MATRIX, csr_matrix.todense())
 
+    def test_q_tversky(self):
+        in_file = os.path.join(TESTS_DIR, "data/10mols.h5")
+        fpe = FPSim2Engine(in_file, fps_sort=False)
+        results = fpe.tversky(query_smi, 0.85, 0.5, 0.5, n_workers=1)
+        res = np.array(
+            [(1, 1.0), (6, 0.85057473)],
+            dtype={"names": ["mol_id", "coeff"], "formats": ["<u4", "<f4"]},
+        )
+        np.testing.assert_array_equal(results, res)
+
+    def test_r_substructure(self):
+        in_file = os.path.join(TESTS_DIR, "data/10mols.h5")
+        fpe = FPSim2Engine(in_file, fps_sort=False)
+        results = fpe.substructure(query_smi, n_workers=1)
+        res = np.array(np.array([1], dtype="<u4"))
+        np.testing.assert_array_equal(results, res)
+
 
 if __name__ == "__main__":
     unittest.main()
