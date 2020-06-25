@@ -1,14 +1,13 @@
 import concurrent.futures as cf
 import multiprocessing
-from .io.chem import load_molecule, rdmol_to_efp, get_bounds_range
-from .io.backends import PyTablesStorageBackend
+from .io.chem import get_bounds_range
 from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
     _similarity_search,
     _substructure_search,
     sort_results,
-    py_popcount,
 )
+from .base import BaseEngine
 from scipy import sparse
 import numpy as np
 
@@ -48,8 +47,8 @@ def on_disk_search(
     return res
 
 
-class FPSim2Engine:
-    """FPSim2 base class to run searches.
+class FPSim2Engine(BaseEngine):
+    """FPSim2 class to run fast CPU searches.
 
     Args:
         fp_filename: FP db file path.
@@ -63,57 +62,19 @@ class FPSim2Engine:
         rdkit_ver: RDKit version used to generate the fingerprints.
     """
 
-    fp_filename = None
-    storage = None
-
     def __init__(
         self,
         fp_filename: str,
-        storage_backend: str = "pytables",
         in_memory_fps: bool = True,
         fps_sort: bool = False,
+        storage_backend: str = "pytables",
     ) -> None:
-
-        self.fp_filename = fp_filename
-        if storage_backend == "pytables":
-            self.storage = PyTablesStorageBackend(
-                fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
-            )
-
-    @property
-    def fps(self):
-        return self.storage.fps
-
-    @property
-    def popcnt_bins(self):
-        return self.storage.popcnt_bins
-
-    @property
-    def fp_type(self):
-        return self.storage.fp_type
-
-    @property
-    def fp_params(self):
-        return self.storage.fp_params
-
-    @property
-    def rdkit_ver(self):
-        return self.storage.rdkit_ver
-
-    def load_query(self, query_string: str) -> np.ndarray:
-        """Load query molecule from SMILES, molblock or InChi.
-
-        Args:
-            query_string: SMILES, molblock or InChi.
-        Returns:
-            Numpy array query molecule.
-        """
-        rdmol = load_molecule(query_string)
-        # generate the efp
-        efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
-        efp.append(py_popcount(np.array(efp, dtype=np.uint64)))
-        efp.insert(0, 0)
-        return np.array(efp, dtype=np.uint64)
+        super(FPSim2Engine, self).__init__(
+            fp_filename=fp_filename,
+            storage_backend=storage_backend,
+            in_memory_fps=True,
+            fps_sort=False,
+        )
 
     def similarity(
         self, query_string: str, threshold: float, n_workers=1
