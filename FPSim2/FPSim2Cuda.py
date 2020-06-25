@@ -127,4 +127,4 @@ class FPSim2CudaEngine(BaseEngine):
         results["mol_id"] = np_ids
         results["coeff"] = np_sim
         sort_results(results)
-        return results
+        return results[["mol_id", "coeff"]]
