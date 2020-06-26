@@ -78,17 +78,19 @@ class FPSim2CudaEngine(BaseEngine):
         )
         self.kernel = kernel
         if kernel == "raw":
+            # copy all the stuff to the GPU
+            self.cuda_db = cp.asarray(self.fps[:, 1:-1])
+            self.cuda_ids = cp.asarray(self.fps[:, 0])
+            self.cuda_popcnts = cp.asarray(self.fps[:, -1])
             self.cupy_kernel = cp.RawKernel(
                 self.raw_kernel.format(block=self.cuda_db.shape[1]),
                 name="taniRAW",
                 options=("-std=c++14",),
             )
-            # copy all the stuff to the GPU
-            self.cuda_db = cp.asarray(self.fps[:, 1:-1])
-            self.cuda_ids = cp.asarray(self.fps[:, 0])
-            self.cuda_popcnts = cp.asarray(self.fps[:, -1])
 
         elif self.kernel == "element_wise":
+            # copy the database to the GPU
+            self.cuda_db = cp.asarray(self.fps)
             self.cupy_kernel = cp.ElementwiseKernel(
                 in_params="raw T db, raw U query, uint64 in_width, float32 threshold",
                 out_params="raw V out",
@@ -97,8 +99,6 @@ class FPSim2CudaEngine(BaseEngine):
                 options=("-std=c++14",),
                 reduce_dims=False,
             )
-            # copy the database to the GPU
-            self.cuda_db = cp.asarray(self.fps)
 
         else:
             raise Exception("only supports 'raw' and 'element_wise' kernels")
