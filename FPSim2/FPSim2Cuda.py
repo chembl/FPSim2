@@ -14,39 +14,52 @@ class FPSim2CudaEngine(BaseEngine):
         fps_sort: Flag to sort or not fps after loading into memory.
     """
 
-    c_kernel = r"""
-    extern "C" __global__
-    void taniRAW(const unsigned long long int* query,
-                 const unsigned long long int* qcount,
-                 const unsigned long long int* db,
-                 const unsigned long long int* popcnts,
-                 float* threshold,
-                 float* out) {{
+    raw_kernel = r"""
+        extern "C" __global__
+        void taniRAW(const unsigned long long int* query,
+                     const unsigned long long int* qcount,
+                     const unsigned long long int* db,
+                     const unsigned long long int* popcnts,
+                     float* threshold,
+                     float* out) {{
 
-        // Shared block array. Only visible for threads in same block
-        __shared__ int common[{block}];
+            // Shared block array. Only visible for threads in same block
+            __shared__ int common[{block}];
 
-        int tid = blockDim.x * blockIdx.x + threadIdx.x;
-        common[threadIdx.x] = __popcll(query[threadIdx.x] & db[tid]);
+            int tid = blockDim.x * blockIdx.x + threadIdx.x;
+            common[threadIdx.x] = __popcll(query[threadIdx.x] & db[tid]);
 
-        // threads need to wait until all threads finish
-        __syncthreads();
+            // threads need to wait until all threads finish
+            __syncthreads();
 
-        // thread 0 in each block sums the common bits
-        // and calcs the final coeff
-        if(0 == threadIdx.x)
-        {{
-            int comm_sum = 0;
-            for(int i=0; i<{block}; i++)
-                comm_sum += common[i];
+            // thread 0 in each block sums the common bits
+            // and calcs the final coeff
+            if(0 == threadIdx.x)
+            {{
+                int comm_sum = 0;
+                for(int i=0; i<{block}; i++)
+                    comm_sum += common[i];
 
-            float coeff = 0.0;
-            coeff = *qcount + popcnts[blockIdx.x] - comm_sum;
-            if (coeff != 0.0)
-                coeff = comm_sum / coeff;
-            out[blockIdx.x] = coeff >= *threshold ? coeff : 0.0;
+                float coeff = 0.0;
+                coeff = *qcount + popcnts[blockIdx.x] - comm_sum;
+                if (coeff != 0.0)
+                    coeff = comm_sum / coeff;
+                out[blockIdx.x] = coeff >= *threshold ? coeff : 0.0;
+            }}
         }}
-    }}
+    """
+
+    ew_kernel = r"""
+        int comm_sum = 0;
+        for(int j = 1; j < in_width - 1; ++j){
+            int pos = i * in_width + j;
+            comm_sum += __popcll(db[pos] & query[j]);
+        }
+        float coeff = 0.0;
+        coeff = query[in_width - 1] + db[i * in_width + in_width - 1] - comm_sum;
+        if (coeff != 0.0)
+            coeff = comm_sum / coeff;
+        out[i] = coeff >= threshold ? coeff : 0.0;
     """
 
     def __init__(
@@ -55,6 +68,7 @@ class FPSim2CudaEngine(BaseEngine):
         in_memory_fps: bool = True,
         fps_sort: bool = False,
         storage_backend: str = "pytables",
+        kernel: str = "raw",
     ) -> None:
         super(FPSim2CudaEngine, self).__init__(
             fp_filename=fp_filename,
@@ -62,16 +76,114 @@ class FPSim2CudaEngine(BaseEngine):
             in_memory_fps=True,
             fps_sort=False,
         )
-        self.cuda_db = cp.asarray(self.fps[:, 1:-1])
-        self.cuda_ids = cp.asarray(self.fps[:, 0])
-        self.cuda_popcnts = cp.asarray(self.fps[:, -1])
-        self.kernel = cp.RawKernel(
-            self.c_kernel.format(block=self.cuda_db.shape[1]),
-            name="taniRAW",
-            options=("-std=c++14", ),
+        self.kernel = kernel
+        if kernel == "raw":
+            self.cupy_kernel = cp.RawKernel(
+                self.raw_kernel.format(block=self.cuda_db.shape[1]),
+                name="taniRAW",
+                options=("-std=c++14",),
+            )
+            # copy all the stuff to the GPU
+            self.cuda_db = cp.asarray(self.fps[:, 1:-1])
+            self.cuda_ids = cp.asarray(self.fps[:, 0])
+            self.cuda_popcnts = cp.asarray(self.fps[:, -1])
+
+        elif self.kernel == "element_wise":
+            self.cupy_kernel = cp.ElementwiseKernel(
+                in_params="raw T db, raw U query, uint64 in_width, float32 threshold",
+                out_params="raw V out",
+                operation=self.ew_kernel,
+                name="taniEW",
+                options=("-std=c++14",),
+                reduce_dims=False,
+            )
+            # copy the database to the GPU
+            self.cuda_db = cp.asarray(self.fps)
+
+        else:
+            raise Exception("only supports 'raw' and 'element_wise' kernels")
+
+    def _element_wise_search(self, query_string, threshold):
+
+        np_query = self.load_query(query_string)
+
+        # get the range of the molecule subset to screen
+        fp_range = get_bounds_range(
+            np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
         )
 
-    def similarity(self, query_string, threshold):
+        # copy query and threshold to GPU
+        query = cp.asarray(np_query)
+        cuda_threshold = cp.asarray(threshold, dtype="f4")
+
+        # get the subset of molecule ids
+        ids = self.cuda_db[:, 0][slice(*fp_range)]
+        subset_size = int(fp_range[1] - fp_range[0])
+
+        # init sims result array
+        sims = cp.zeros(subset_size, dtype="f4")
+
+        # set the threshold variable and run the search
+        threshold = cp.asarray(threshold, dtype="f4")
+        self.cupy_kernel(
+            self.cuda_db[slice(*fp_range)],
+            query,
+            self.cuda_db.shape[1],
+            cuda_threshold,
+            sims,
+            size=subset_size,
+        )
+
+        mask = sims.nonzero()[0]
+        np_sim = cp.asnumpy(sims[mask])
+        np_ids = cp.asnumpy(ids[mask])
+
+        return np_ids, np_sim
+
+    def _raw_kernel_search(self, query_string, threshold):
+
+        np_query = self.load_query(query_string)
+
+        # get the range of the molecule subset to screen
+        fp_range = get_bounds_range(
+            np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
+        )
+
+        # copy query and threshold to GPU
+        cuda_threshold = cp.asarray(threshold, dtype="f4")
+        query = cp.asarray(np_query[1:-1])
+        popcount = cp.asarray(np_query[-1])
+
+        # get the subset of molecule ids
+        subset_size = int(fp_range[1] - fp_range[0])
+        ids = self.cuda_ids[slice(*fp_range)]
+
+        # init sims result array
+        sims = cp.zeros(subset_size, dtype=cp.float32)
+
+        # run in the search, it compiles the kernel only the first time it runs
+        # grid, block and arguments
+        self.cupy_kernel(
+            (subset_size,),
+            (self.cuda_db.shape[1],),
+            (
+                query,
+                popcount,
+                self.cuda_db[slice(*fp_range)],
+                self.cuda_popcnts[slice(*fp_range)],
+                cuda_threshold,
+                sims,
+            ),
+        )
+
+        # get all non 0 values and ids
+        mask = sims.nonzero()[0]
+        np_sim = cp.asnumpy(sims[mask])
+        np_ids = cp.asnumpy(ids[mask])
+
+        return np_ids, np_sim
+
+    def similarity(self, query_string: str, threshold: str) -> np.ndarray:
         """Run a CUDA Tanimoto search
 
         Args:
@@ -80,51 +192,21 @@ class FPSim2CudaEngine(BaseEngine):
         Returns:
             Numpy array with ids and similarities.
         """
-
-        np_query = self.load_query(query_string)
-        c_query = cp.asarray(np_query[1:-1])
-        qpopcnt = cp.asarray(np_query[-1])
-
-        # get the range of the molecule subset to screen
-        fp_range = get_bounds_range(
-            np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
-        )
-
-        cuda_threshold = cp.asarray(threshold, dtype="f4")
-
-        # get the subset of molecule ids
-        subset_size = int(fp_range[1] - fp_range[0])
-        ids = self.cuda_ids[slice(*fp_range)]
-
-        # init results array
-        cp_results = cp.zeros(subset_size, dtype=cp.float32)
-
-        # run in the search, it compiles the kernel only the first time it runs
-        # grid, block and arguments
-        self.kernel(
-            (subset_size,),
-            (self.cuda_db.shape[1],),
-            (
-                c_query,
-                qpopcnt,
-                self.cuda_db[slice(*fp_range)],
-                self.cuda_popcnts[slice(*fp_range)],
-                cuda_threshold,
-                cp_results,
-            ),
-        )
-
-        # get all non 0 values and ids
-        mask = cp_results.nonzero()[0]
-        np_sim = cp.asnumpy(cp_results[mask])
-        np_ids = cp.asnumpy(ids[mask])
+        if self.kernel == "raw":
+            ids, sims = self._raw_kernel_search(query_string, threshold)
+        elif self.kernel == "element_wise":
+            ids, sims = self._element_wise_search(query_string, threshold)
+        else:
+            raise Exception("only supports 'raw' and 'element_wise' kernels")
 
         # create results numpy array
         results = np.empty(
-            len(np_ids), dtype=np.dtype([("idx", "u4"), ("mol_id", "u4"), ("coeff", "f4")])
+            len(ids),
+            dtype=np.dtype([("idx", "u4"), ("mol_id", "u4"), ("coeff", "f4")]),
         )
-        results["idx"] = np.zeros(np_ids.shape[0])
-        results["mol_id"] = np_ids
-        results["coeff"] = np_sim
+        results["idx"] = np.zeros(ids.shape[0])  # need to get rid of this
+        results["mol_id"] = ids
+        results["coeff"] = sims
         sort_results(results)
+
         return results[["mol_id", "coeff"]]
