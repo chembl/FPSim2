@@ -14,7 +14,7 @@ Highlights
 
  - Runs fast in memory CPU similarity searches. 
  - Can split a single query in multiple CPU threads to accelerate a search. 
- - Can run similarities in a GPU using CUDA via the CuPy library, using the :class:`~FPSim2.FPSim2.FPSim2CudaEngine`. 
+ - Can run similarities in a GPU using CUDA via the CuPy library, using the :class:`~FPSim2.FPSim2Cuda.FPSim2CudaEngine`. 
  - Can be used to run on disk CPU searches in case there is not enough RAM to load the dataset.
 
 
