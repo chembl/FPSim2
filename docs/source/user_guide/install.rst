@@ -3,7 +3,7 @@
 Installation
 ============
 
-With conda
+From conda
 ----------
 
 Conda builds avaiable for Linux, MacOs and Windws::
