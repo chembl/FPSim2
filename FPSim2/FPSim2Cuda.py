@@ -6,12 +6,41 @@ import cupy as cp
 
 
 class FPSim2CudaEngine(BaseEngine):
-    """FPSim2 class to run GPU searches.
+    """FPSim2 class to run fast CPU searches.
 
-    Args:
-        fp_filename: FP db file path.
-        in_memory_fps: Flat to load into memory or not the fps.
-        fps_sort: Flag to sort or not fps after loading into memory.
+    Parameters
+    ----------
+    fp_filename : str
+        Fingerprints database file path.
+
+    fps_sort : bool
+        Wheter if the FPs should be sorted after being loaded into memory or not.
+
+    storage_backend : str
+        Which storage backend to use (only pytables available).
+
+    kernel: str
+        Which CUDA kernel to use (raw or element_wise).
+
+    Attributes
+    ----------
+    fps : Numpy array
+        Fingerprints.
+
+    popcnt_bins : list
+        List with the popcount bins ranges.
+
+    fp_type : str
+        Fingerprint type used to create the fingerprints.
+
+    fp_params : dict
+        Parameters used to create the fingerprints.
+
+    rdkit_ver : dict
+        RDKit version used to create the fingerprints.
+
+    Examples
+    --------
     """
 
     raw_kernel = r"""
@@ -65,7 +94,6 @@ class FPSim2CudaEngine(BaseEngine):
     def __init__(
         self,
         fp_filename: str,
-        in_memory_fps: bool = True,
         fps_sort: bool = False,
         storage_backend: str = "pytables",
         kernel: str = "raw",
@@ -184,13 +212,20 @@ class FPSim2CudaEngine(BaseEngine):
         return np_ids, np_sim
 
     def similarity(self, query_string: str, threshold: str) -> np.ndarray:
-        """Run a CUDA Tanimoto search
+        """Runs a CUDA Tanimoto search.
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            threshold: Similarities with a coeff above the threshold will be kept.
-        Returns:
-            Numpy array with ids and similarities.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChi or molblock.
+
+        threshold: float
+            Similarity threshold.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
         """
         if self.kernel == "raw":
             ids, sims = self._raw_kernel_search(query_string, threshold)

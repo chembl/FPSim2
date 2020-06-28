@@ -9,14 +9,20 @@ class BaseStorageBackend(ABC):
 
     @staticmethod
     def calc_popcnt_bins(fps: np.ndarray, fp_length: int) -> list:
-        """Calcs popcount bins
+        """Calcs popcount bins.
 
-        Args:
-            fps: np array storing fps
-            fp_length: length of the fp
-            kwargs: keyword arguments
-        Returns:
-            list with popcnt ranges
+        Parameters
+        ----------
+        fps : numpy array
+            numpy array with the fingerprints of the database.
+
+        fp_length : int
+            length of the fingeprints.
+
+        Returns
+        -------
+        popcnt_bins: list
+            list with the ranges of the popcount bins.
         """
         popcnt_bins = []
         idx = np.unique(fps[:, -1], return_index=True)
@@ -45,19 +51,28 @@ class BaseStorageBackend(ABC):
 
     @abstractmethod
     def delete_fps(self, ids_list):
-        """Delete fps from FP db file
-        Args:
-            ids_list: ids to delete list
-        Returns:
-            None
+        """Delete FPs given a list of ids.
+
+        Parameters
+        ----------
+        ids_list : list
+            ids to delete.
+
+        Returns
+        -------
+        None
         """
 
     @abstractmethod
-    def append_fps(self, io_source, mol_id_prop="mol_id"):
-        """Appends new fps to the fp db file
-        Args:
-            mols_source: .smi or .sdf filename or iterable
-            mol_id_prop: name of the property storing the id in sdf files
-        Returns:
-            None
+    def append_fps(self, io_source, mol_id_prop):
+        """Appends FPs to the file.
+
+        Parameters
+        ----------
+        mols_source : str or iterable
+            .smi or .sdf filename or iterable.
+
+        Returns
+        -------
+        None
         """

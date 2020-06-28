@@ -81,30 +81,26 @@ FP_FUNC_DEFAULTS = {
 
 
 def rdmol_to_efp(
-    rdmol: Chem.Mol, fp_func: str, fp_func_params: Dict[str, Any]
+    rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]
 ) -> List[int]:
-    """Converts rdkit mol in FPSim2 fp format.
-
-    Args:
-        rdmol: rdkit mol.
-        fp_func: String name of function to generate fps.
-        fp_func_params: Parameter dict for fp_func.
-    Returns:
-        list with ints packing 64 fp bits each.
-    """
-    fp = FP_FUNCS[fp_func](rdmol, **fp_func_params)
+    fp = FP_FUNCS[fp_func](rdmol, **fp_params)
     splited = textwrap.wrap(fp.ToBitString(), 64)
     efp = [int(x, 2) for x in splited]
     return efp
 
 
 def load_molecule(mol_string: str) -> Chem.Mol:
-    """Reads SMILES, molblock or InChi and returns a rdkit mol.
+    """Reads SMILES, molblock or InChI and returns a RDKit mol.
 
-    Args:
-        mol_string: SMILES, molblock or InChi.
-    Returns:
-        rdkit mol object.
+    Parameters
+    ----------
+    mol_string : str
+         SMILES, molblock or InChI.
+
+    Returns
+    -------
+    mol: ROMol
+        RDKit molecule.
     """
     if re.search(INCHI_RE, mol_string, flags=re.IGNORECASE):
         rdmol = Chem.MolFromInchi(mol_string)
@@ -115,23 +111,28 @@ def load_molecule(mol_string: str) -> Chem.Mol:
     return rdmol
 
 
-def get_fp_length(fp_func: str, fp_func_params: Dict[str, Any]) -> int:
-    """Returns fp length given the name of a function and it's parameters.
+def get_fp_length(fp_type: str, fp_params: Dict[str, Any]) -> int:
+    """Returns the FP length given the name of the FP function and it's parameters.
 
-    Args:
-        fp_func: Name of the function to generate fps.
-        fp_func_params: Parameters dict for the function to generate fps.
-    Raises:
-        Exception: If can't find fp length for a given fp type.
-    Returns:
-        fp length for the given fp type.
+    Parameters
+    ----------
+    fp_type : str
+         Name of the function used to generate the fingerprints.
+
+    fp_params: dict
+        Parameters used to generate the fingerprints.
+
+    Returns
+    -------
+    fp_length: int
+        fp length of the fingerprint.
     """
     fp_length = None
-    if "nBits" in fp_func_params.keys():
-        fp_length = fp_func_params["nBits"]
-    elif "fpSize" in fp_func_params.keys():
-        fp_length = fp_func_params["fpSize"]
-    if fp_func == "MACCSKeys":
+    if "nBits" in fp_params.keys():
+        fp_length = fp_params["nBits"]
+    elif "fpSize" in fp_params.keys():
+        fp_length = fp_params["fpSize"]
+    if fp_type == "MACCSKeys":
         fp_length = 166
     if not fp_length:
         raise Exception("fingerprint size is not specified")
@@ -173,14 +174,18 @@ def it_supplier(
 ) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from iterables.
 
-    Args:
-        iterable: Python iterable storing molecules.
-        gen_ids: flag to generate new ids.
-        kwargs: keyword arguments.
-    Raises:
-        Exception: If tries to use non int values for id.
-    Returns:
-        Yields next id and rdkit mol tuple.
+    Parameters
+    ----------
+    iterable : iterable
+         Python iterable storing molecules.
+
+    gen_ids: bool
+        generate ids or not.
+
+    Yields
+    -------
+    tuple
+        int id and rdkit mol.
     """
     for new_mol_id, mol in enumerate(iterable, 1):
         if len(mol) == 1:
@@ -211,16 +216,20 @@ def it_supplier(
 def smi_mol_supplier(
     filename: str, gen_ids: bool, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
-    """Generator function that reads .smi files.
+    """Generator function that reads from a .smi file.
 
-    Args:
-        filename: input .smi file name.
-        gen_ids: flag to generate new ids.
-        kwargs: keyword arguments.
-    Raises:
-        Exception: If tries to use non int values for id.
-    Returns:
-        Yields next id and rdkit mol tuple.
+    Parameters
+    ----------
+    filename : str
+         .smi file name.
+
+    gen_ids: bool
+        generate ids or not.
+
+    Yields
+    -------
+    tuple
+        int id and rdkit mol.
     """
     with open(filename, "r") as f:
         for new_mol_id, mol in enumerate(f, 1):
@@ -254,16 +263,20 @@ def smi_mol_supplier(
 def sdf_mol_supplier(
     filename: str, gen_ids: bool, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
-    """Generator function that reads .sdf files.
+    """Generator function that reads from a .sdf file.
 
-    Args:
-        filename: .sdf filename.
-        gen_ids: flag to generate new ids.
-        kwargs: keyword arguments.
-    Raises:
-        Exception: If tries to use non int values for id.
-    Returns:
-        Yields next id and rdkit mol tuple.
+    Parameters
+    ----------
+    filename : str
+        .sdf filename.
+
+    gen_ids: bool
+        generate ids or not.
+
+    Yields
+    -------
+    tuple
+        int id and rdkit mol.
     """
     suppl = Chem.SDMolSupplier(filename)
     for new_mol_id, rdmol in enumerate(suppl, 1):
@@ -288,11 +301,18 @@ def sdf_mol_supplier(
 def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[int, Chem.Mol]]], None]:
     """Returns a mol supplier depending on the object type and file extension.
 
-    Args:
-        io_source: source of molecules; smi or sdf filenames,
-                   or any iterable object.
-    Returns:
-        molecule supplier generator.
+    Parameters
+    ----------
+    mols_source : str or iterable
+        .smi or .sdf filename or iterable.
+
+    fps_sort: bool
+        Whether if the FPs should be sorted or not.
+
+    Returns
+    -------
+    callable
+        function that will read the molecules from the input.
     """
     supplier = None
     if isinstance(io_source, str):

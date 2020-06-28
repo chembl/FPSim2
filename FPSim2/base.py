@@ -47,11 +47,16 @@ class BaseEngine(ABC):
         return self.storage.rdkit_ver
 
     def load_query(self, query_string: str) -> np.ndarray:
-        """Load query molecule from SMILES, molblock or InChi.
+        """Loads the query molecule from SMILES, molblock or InChI.
 
-        Args:
-            query_string: SMILES, molblock or InChi.
-        Returns:
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChi or molblock.
+
+        Returns
+        -------
+        query : numpy array
             Numpy array query molecule.
         """
         rdmol = load_molecule(query_string)
@@ -65,4 +70,4 @@ class BaseEngine(ABC):
     def similarity(
         self, query_string: str, threshold: float, n_workers=1
     ) -> np.ndarray:
-        """ Tanimoto similarity search """
+        """Tanimoto similarity search """
