@@ -24,7 +24,7 @@ Implementing:
 From source:
 
  - clone the repo
- - `pip install /FPSim2`
+ - `pip install FPSim2/`
 
 From a conda environment:
 
