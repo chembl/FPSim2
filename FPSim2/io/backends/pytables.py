@@ -33,30 +33,46 @@ def create_schema(fp_length: int) -> Any:
 def create_db_file(
     mols_source: Union[str, IterableType],
     filename: str,
-    fp_func: str,
-    fp_func_params: dict = {},
+    fp_type: str,
+    fp_params: dict = {},
     mol_id_prop: str = "mol_id",
     gen_ids: bool = False,
     sort_by_popcnt: bool = True,
 ) -> None:
     """Creates FPSim2 FPs db file from .smi, .sdf files or from an iterable.
 
-    Args:
-        mols_source: .smi, .sdf filename or iterable.
-        filename: FPs output filename.
-        fp_func: Name of fingerprint function to use to generate fingerprints.
-        fp_func_params: Parameters for the fingerprint function.
-        mol_id_prop: Name of the .sdf property to read the molecule id.
-        gen_ids: Flag to auto-generate ids for the molecules.
-        sort_by_popcnt: Flag to sort or not fps by popcnt.
-    Returns:
-        None.
+    Parameters
+    ----------
+    mols_source : str
+        .smi/.sdf filename or iterable.
+
+    filename: float
+        Fingerprint database filename.
+
+    fp_type : str
+        Fingerprint type used to create the fingerprints.
+
+    fp_params : dict
+        Parameters used to create the fingerprints.
+
+    mol_id_prop : str
+        Name of the .sdf property to read the molecule id.
+
+    gen_ids : bool
+        Autogenerate FP ids.
+
+    sort_by_popcnt: bool
+        Whether if the FPs should be sorted or not.
+
+    Returns
+    -------
+    None
     """
     # if params dict is empty use defaults
-    if not fp_func_params:
-        fp_func_params = FP_FUNC_DEFAULTS[fp_func]
+    if not fp_params:
+        fp_params = FP_FUNC_DEFAULTS[fp_type]
     supplier = get_mol_suplier(mols_source)
-    fp_length = get_fp_length(fp_func, fp_func_params)
+    fp_length = get_fp_length(fp_type, fp_params)
     # set compression
     filters = tb.Filters(complib="blosc", complevel=5)
 
@@ -71,13 +87,13 @@ def create_db_file(
         param_table = fp_file.create_vlarray(
             fp_file.root, "config", atom=tb.ObjectAtom()
         )
-        param_table.append(fp_func)
-        param_table.append(fp_func_params)
+        param_table.append(fp_type)
+        param_table.append(fp_params)
         param_table.append(rdkit.__version__)
 
         fps = []
         for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
-            efp = rdmol_to_efp(rdmol, fp_func, fp_func_params)
+            efp = rdmol_to_efp(rdmol, fp_type, fp_params)
             popcnt = py_popcount(np.array(efp, dtype=np.uint64))
             efp.insert(0, mol_id)
             efp.append(popcnt)
@@ -121,9 +137,9 @@ def sort_db_file(filename: str) -> None:
     # copy sorted fps and config to a new file
     with tb.open_file(tmp_filename, mode="r") as fp_file:
         with tb.open_file(filename, mode="w") as sorted_fp_file:
-            fp_func = fp_file.root.config[0]
-            fp_func_params = fp_file.root.config[1]
-            fp_length = get_fp_length(fp_func, fp_func_params)
+            fp_type = fp_file.root.config[0]
+            fp_params = fp_file.root.config[1]
+            fp_length = get_fp_length(fp_type, fp_params)
 
             # create a sorted copy of the fps table
             dst_fps = fp_file.root.fps.copy(
@@ -152,8 +168,8 @@ def sort_db_file(filename: str) -> None:
             param_table = sorted_fp_file.create_vlarray(
                 sorted_fp_file.root, "config", atom=tb.ObjectAtom()
             )
-            param_table.append(fp_func)
-            param_table.append(fp_func_params)
+            param_table.append(fp_type)
+            param_table.append(fp_params)
             param_table.append(rdkit.__version__)
 
             # update count ranges
@@ -198,9 +214,18 @@ class PyTablesStorageBackend(BaseStorageBackend):
     def load_fps(self, in_memory_fps, fps_sort) -> None:
         """Loads FP db file into memory.
 
-        Args:
-        Returns:
-            namedtuple with fps and count ranges.
+        Parameters
+        ----------
+        in_memory_fps : bool
+            Whether if the FPs should be loaded into memory or not.
+
+        fps_sort: bool
+            Whether if the FPs should be sorted or not.
+
+        Returns
+        -------
+        fps: numpy array
+            Numpy array with the fingerprints.
         """
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             fps = fp_file.root.fps[:]
@@ -214,12 +239,16 @@ class PyTablesStorageBackend(BaseStorageBackend):
         self.fps = fps
 
     def delete_fps(self, ids_list: List[int]) -> None:
-        """Delete fps from FP db file.
+        """Delete FPs given a list of ids.
 
-        Args:
-            ids_list: ids to delete list.
-        Returns:
-            None.
+        Parameters
+        ----------
+        ids_list : list
+            ids to delete.
+
+        Returns
+        -------
+        None
         """
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
@@ -231,12 +260,16 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 fps_table.remove_row(to_delete[0])
 
     def append_fps(self, mols_source: Union[str, IterableType], mol_id_prop: str = "mol_id") -> None:
-        """Appends fps to a FP db file.
+        """Appends FPs to the file.
 
-        Args:
-            mols_source: .smi or .sdf filename or iterable.
-        Returns:
-            None.
+        Parameters
+        ----------
+        mols_source : str or iterable
+            .smi or .sdf filename or iterable.
+
+        Returns
+        -------
+        None
         """
         supplier = get_mol_suplier(mols_source)
         fp_type, fp_params, _ = self.read_parameters()

@@ -1,14 +1,12 @@
 import concurrent.futures as cf
-import multiprocessing
-from .io.chem import load_molecule, rdmol_to_efp, get_bounds_range
-from .io.backends import PyTablesStorageBackend
+from .io.chem import get_bounds_range
 from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
     _similarity_search,
     _substructure_search,
     sort_results,
-    py_popcount,
 )
+from .base import BaseEngine
 from scipy import sparse
 import numpy as np
 
@@ -24,19 +22,6 @@ def on_disk_search(
     st: str,
     chunk_range: Tuple[int, int],
 ) -> np.ndarray:
-    """Run a on disk search.
-
-        Args:
-            query: Preprocessed NumPy query array.
-            fp_filename: Flat to load into memory or not the fps.
-            threshold: Search threshold.
-            a: alpha.
-            b: beta.
-            st: Type of search.
-            chunk_range: List with the start and the end of the chunk to search.
-        Returns:
-            Numpy array with results.
-    """
     fps = storage.get_fps_chunk(chunk_range)
     num_fields = len(fps[0])
     fps = fps.view("<u8")
@@ -48,86 +33,78 @@ def on_disk_search(
     return res
 
 
-class FPSim2Engine:
-    """FPSim2 base class to run searches.
+class FPSim2Engine(BaseEngine):
+    """FPSim2 class to run fast CPU searches.
 
-    Args:
-        fp_filename: FP db file path.
-        in_memory_fps: Flat to load into memory or not the fps.
-        fps_sort: Flag to sort or not fps after loading into memory.
+    Parameters
+    ----------
+    fp_filename : str
+        Fingerprints database file path.
 
-    Attributes:
-        fp_filename: FP db file path.
-        fp_type: FP type used to generate the fingerprints.
-        fp_params: Parameters used in the fingerprint function.
-        rdkit_ver: RDKit version used to generate the fingerprints.
+    in_memory_fps : bool
+        Whether if the FPs should be loaded into memory or not.
+
+    fps_sort : bool
+        Whether if the FPs should be sorted by popcnt after being loaded into memory or not.
+
+    storage_backend : str
+        Storage backend to use (only pytables available at the moment).
+
+    Attributes
+    ----------
+    fps : Numpy array
+        Fingerprints.
+
+    popcnt_bins : list
+        List with the popcount bins ranges.
+
+    fp_type : str
+        Fingerprint type used to create the fingerprints.
+
+    fp_params : dict
+        Parameters used to create the fingerprints.
+
+    rdkit_ver : dict
+        RDKit version used to create the fingerprints.
+
+    Examples
+    --------
     """
-
-    fp_filename = None
-    storage = None
 
     def __init__(
         self,
         fp_filename: str,
-        storage_backend: str = "pytables",
         in_memory_fps: bool = True,
         fps_sort: bool = False,
+        storage_backend: str = "pytables",
     ) -> None:
-
-        self.fp_filename = fp_filename
-        if storage_backend == "pytables":
-            self.storage = PyTablesStorageBackend(
-                fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
-            )
-
-    @property
-    def fps(self):
-        return self.storage.fps
-
-    @property
-    def popcnt_bins(self):
-        return self.storage.popcnt_bins
-
-    @property
-    def fp_type(self):
-        return self.storage.fp_type
-
-    @property
-    def fp_params(self):
-        return self.storage.fp_params
-
-    @property
-    def rdkit_ver(self):
-        return self.storage.rdkit_ver
-
-    def load_query(self, query_string: str) -> np.ndarray:
-        """Load query molecule from SMILES, molblock or InChi.
-
-        Args:
-            query_string: SMILES, molblock or InChi.
-        Returns:
-            Numpy array query molecule.
-        """
-        rdmol = load_molecule(query_string)
-        # generate the efp
-        efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
-        efp.append(py_popcount(np.array(efp, dtype=np.uint64)))
-        efp.insert(0, 0)
-        return np.array(efp, dtype=np.uint64)
+        super(FPSim2Engine, self).__init__(
+            fp_filename=fp_filename,
+            storage_backend=storage_backend,
+            in_memory_fps=True,
+            fps_sort=False,
+        )
 
     def similarity(
         self, query_string: str, threshold: float, n_workers=1
     ) -> np.ndarray:
-        """Run a tanimoto search
+        """Runs a Tanimoto search.
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            threshold: Similarities with a coeff above the threshold will be kept.
-            n_workers: Number of threads used for the search.
-        Raises:
-            Exception: If fps are not loaded into memory.
-        Returns:
-            Numpy array with ids and similarities.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChI or molblock.
+
+        threshold: float
+            Similarity threshold.
+
+        n_workers : int
+            Number of threads used for the search.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
         """
         if self.fps is None:
             raise Exception(
@@ -153,15 +130,26 @@ class FPSim2Engine:
         n_workers: int = 1,
         chunk_size: int = 250000,
     ) -> np.ndarray:
-        """Run a on disk tanimoto search.
+        """Runs a on disk Tanimoto search.
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            threshold: Similarities with a coeff above the threshold will be kept.
-            n_workers: Number of threads used for the search.
-            chunk_size: Chunk size.
-        Returns:
-            Numpy array with ids and similarities.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChI or molblock.
+
+        threshold: float
+            Similarity threshold.
+
+        n_workers : int
+            Number of processes used for the search.
+
+        chunk_size : float
+            Chunk size.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
         """
         return self._base_search(
             query=query_string,
@@ -184,18 +172,32 @@ class FPSim2Engine:
         b: float,
         n_workers: int = 1,
     ) -> np.ndarray:
-        """Run a tversky search
+        """Runs a Tversky search.
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            threshold: Similarities with a coeff above the threshold will be kept.
-            a: alpha
-            b: beta
-            n_workers: Number of threads used for the search.
-        Raises:
-            Exception: If fps are not loaded into memory.
-        Returns:
-            Numpy array with ids and similarities.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChI or molblock.
+
+        threshold: float
+            Similarity threshold.
+
+        a: float
+            alpha
+
+        b: float
+            beta
+
+        n_workers : int
+            Number of threads used for the search.
+
+        chunk_size : float
+            Chunk size.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
         """
         if self.fps is None:
             raise Exception(
@@ -223,17 +225,32 @@ class FPSim2Engine:
         n_workers: int = 1,
         chunk_size: int = 250000,
     ) -> np.ndarray:
-        """Run a on disk tversky search.
+        """Runs a on disk Tversky search.
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            threshold: Similarities with a coeff above the threshold will be kept.
-            a: alpha
-            b: beta
-            n_workers: Number of threads used for the search.
-            chunk_size: Chunk size.
-        Returns:
-            Numpy array with ids and similarities.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChI or molblock.
+
+        threshold: float
+            Similarity threshold.
+
+        a: float
+            alpha
+
+        b: float
+            beta
+
+        n_workers : int
+            Number of processes used for the search.
+
+        chunk_size : float
+            Chunk size.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
         """
         return self._base_search(
             query=query_string,
@@ -251,13 +268,21 @@ class FPSim2Engine:
     def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
         """Run a substructure screenout using an optimised calculation of tversky wiht a=1, b=0
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            n_workers: Number of processes used for the search.
-        Raises:
-            Exception: If fps are not loaded into memory.
-        Returns:
-            NumPy array with ids.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChI or molblock.
+
+        n_workers : int
+            Number of processes used for the search.
+
+        chunk_size : float
+            Chunk size.
+
+        Returns
+        -------
+        results : numpy array
+            Substructure results.
         """
         if self.fps is None:
             raise Exception(
@@ -281,12 +306,21 @@ class FPSim2Engine:
     ) -> np.ndarray:
         """Run a on disk substructure screenout.
 
-        Args:
-            query_string: SMILES, InChi or molblock.
-            n_workers: Number of processes used for the search.
-            chunk_size: Chunk size.
-        Returns:
-            NumPy array with ids.
+        Parameters
+        ----------
+        query_string : str
+            SMILES, InChI or molblock.
+
+        n_workers : int
+            Number of processes used for the search.
+
+        chunk_size : float
+            Chunk size.
+
+        Returns
+        -------
+        results : numpy array
+            Substructure results.
         """
         return self._base_search(
             query=query_string,
@@ -452,10 +486,32 @@ class FPSim2Engine:
         search_type: str = "tanimoto",
         a: float = 0,
         b: float = 0,
-        n_workers: int = multiprocessing.cpu_count(),
+        n_workers: int = 4,
     ) -> sparse.csr.csr_matrix:
-        """ Returns a CSR distance matrix """
+        """Computes the Tanimoto similarity matrix of the set.
 
+        Parameters
+        ----------
+        threshold : float
+            Similarity threshold.
+
+        search_type : str
+            Type of search.
+
+        a : float
+            alpha in Tversky search.
+
+        b : float
+            beta in Tversky search.
+
+        n_workers : int
+            Number of threads to use.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
+        """
         if search_type == "tversky" and a != b:
             raise Exception("tversky with a != b is asymmetric")
 
