@@ -38,9 +38,6 @@ class FPSim2CudaEngine(BaseEngine):
 
     rdkit_ver : dict
         RDKit version used to create the fingerprints.
-
-    Examples
-    --------
     """
 
     raw_kernel = r"""
@@ -217,7 +214,7 @@ class FPSim2CudaEngine(BaseEngine):
         Parameters
         ----------
         query_string : str
-            SMILES, InChi or molblock.
+            SMILES, InChI or molblock.
 
         threshold: float
             Similarity threshold.
