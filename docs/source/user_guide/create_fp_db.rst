@@ -6,7 +6,7 @@ Create a fingerprint database file
 Use the :func:`~FPSim2.io.backends.pytables.create_db_file` function to create the fingerprint database file. FPSim2 does only support integer molecule ids.
 
 
-The fingerprints are calculated using `RDKit <https://www.rdkit.org/>`_. Fingerprint types available:
+The fingerprints are calculated using `RDKit <https://www.rdkit.org/>`_. Fingerprint types available are:
 
     - `MACCSKeys <http://rdkit.org/docs/source/rdkit.Chem.rdMolDescriptors.html#rdkit.Chem.rdMolDescriptors.GetMACCSKeysFingerprint/>`_
     - `Avalon <http://rdkit.org/docs/source/rdkit.Avalon.pyAvalonTools.html#rdkit.Avalon.pyAvalonTools.GetAvalonFP/>`_

@@ -3,9 +3,6 @@
 Installation
 ============
 
-RDKit is used to generate the fingerprints, if you install FPSim2 with conda it will automatically install it. Be sure that you have it installed in case you install from source.
-
-
 With conda
 ----------
 
