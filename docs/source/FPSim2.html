@@ -1,0 +1,653 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FPSim2 package &mdash; FPSim2  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FPSim2
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/create_fp_db.html">Create a fingerprint database file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/limitations.html">Limitations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">CPU searches</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/sim.html">Run Tanimoto similarity searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/tversky.html">Run Tversky searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/subs.html">Run Tversky substructure screenouts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+</ul>
+<p class="caption"><span class="caption-text">GPU searches</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/gpu_sim.html">Run a GPU similarity search</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FPSim2</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>FPSim2 package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/FPSim2.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fpsim2-package">
+<h1>FPSim2 package<a class="headerlink" href="#fpsim2-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FPSim2.io.html">FPSim2.io package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="FPSim2.io.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="FPSim2.io.backends.html">FPSim2.io.backends package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="FPSim2.io.backends.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="FPSim2.io.backends.html#module-FPSim2.io.backends.base">FPSim2.io.backends.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="FPSim2.io.backends.html#module-FPSim2.io.backends.pytables">FPSim2.io.backends.pytables module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="FPSim2.io.backends.html#module-FPSim2.io.backends">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="FPSim2.io.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FPSim2.io.html#module-FPSim2.io.chem">FPSim2.io.chem module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FPSim2.io.html#module-FPSim2.io">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-FPSim2.FPSim2">
+<span id="fpsim2-fpsim2-module"></span><h2>FPSim2.FPSim2 module<a class="headerlink" href="#module-FPSim2.FPSim2" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="FPSim2.FPSim2.FPSim2Engine">
+<em class="property">class </em><code class="sig-prename descclassname">FPSim2.FPSim2.</code><code class="sig-name descname">FPSim2Engine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_filename</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">in_memory_fps</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">fps_sort</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">storage_backend</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'pytables'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FPSim2.base.BaseEngine" title="FPSim2.base.BaseEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2.base.BaseEngine</span></code></a></p>
+<p>FPSim2 class to run fast CPU searches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fp_filename</strong> (<em>str</em>) – Fingerprints database file path.</p></li>
+<li><p><strong>in_memory_fps</strong> (<em>bool</em>) – Whether if the FPs should be loaded into memory or not.</p></li>
+<li><p><strong>fps_sort</strong> (<em>bool</em>) – Whether if the FPs should be sorted by popcnt after being loaded into memory or not.</p></li>
+<li><p><strong>storage_backend</strong> (<em>str</em>) – Storage backend to use (only pytables available at the moment).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2.FPSim2Engine.fps">
+<code class="sig-name descname">fps</code><a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2.FPSim2Engine.popcnt_bins">
+<code class="sig-name descname">popcnt_bins</code><a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.popcnt_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>List with the popcount bins ranges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2.FPSim2Engine.fp_type">
+<code class="sig-name descname">fp_type</code><a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.fp_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fingerprint type used to create the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2.FPSim2Engine.fp_params">
+<code class="sig-name descname">fp_params</code><a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.fp_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters used to create the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2.FPSim2Engine.rdkit_ver">
+<code class="sig-name descname">rdkit_ver</code><a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.rdkit_ver" title="Permalink to this definition">¶</a></dt>
+<dd><p>RDKit version used to create the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.on_disk_similarity">
+<code class="sig-name descname">on_disk_similarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">chunk_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">250000</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.on_disk_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a on disk Tanimoto search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of processes used for the search.</p></li>
+<li><p><strong>chunk_size</strong> (<em>float</em>) – Chunk size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.on_disk_substructure">
+<code class="sig-name descname">on_disk_substructure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">chunk_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">250000</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.on_disk_substructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a on disk substructure screenout.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of processes used for the search.</p></li>
+<li><p><strong>chunk_size</strong> (<em>float</em>) – Chunk size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Substructure results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.on_disk_tversky">
+<code class="sig-name descname">on_disk_tversky</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">b</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">chunk_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">250000</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.on_disk_tversky" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a on disk Tversky search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – alpha</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – beta</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of processes used for the search.</p></li>
+<li><p><strong>chunk_size</strong> (<em>float</em>) – Chunk size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.similarity">
+<code class="sig-name descname">similarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a Tanimoto search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of threads used for the search.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.substructure">
+<code class="sig-name descname">substructure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.substructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a substructure screenout using an optimised calculation of tversky wiht a=1, b=0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of processes used for the search.</p></li>
+<li><p><strong>chunk_size</strong> (<em>float</em>) – Chunk size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Substructure results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix">
+<code class="sig-name descname">symmetric_distance_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">search_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'tanimoto'</span></em>, <em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">b</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">4</span></em><span class="sig-paren">)</span> &#x2192; scipy.sparse.csr.csr_matrix<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Tanimoto similarity matrix of the set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
+<li><p><strong>search_type</strong> (<em>str</em>) – Type of search.</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – alpha in Tversky search.</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – beta in Tversky search.</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of threads to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2.FPSim2Engine.tversky">
+<code class="sig-name descname">tversky</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">b</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.FPSim2Engine.tversky" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a Tversky search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – alpha</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – beta</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – Number of threads used for the search.</p></li>
+<li><p><strong>chunk_size</strong> (<em>float</em>) – Chunk size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="FPSim2.FPSim2.on_disk_search">
+<code class="sig-prename descclassname">FPSim2.FPSim2.</code><code class="sig-name descname">on_disk_search</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">storage</span><span class="p">:</span> <span class="n">Any</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">b</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">st</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">chunk_range</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2.on_disk_search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-FPSim2.FPSim2Cuda">
+<span id="fpsim2-fpsim2cuda-module"></span><h2>FPSim2.FPSim2Cuda module<a class="headerlink" href="#module-FPSim2.FPSim2Cuda" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine">
+<em class="property">class </em><code class="sig-prename descclassname">FPSim2.FPSim2Cuda.</code><code class="sig-name descname">FPSim2CudaEngine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_filename</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">fps_sort</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">storage_backend</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'pytables'</span></em>, <em class="sig-param"><span class="n">kernel</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'raw'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FPSim2.base.BaseEngine" title="FPSim2.base.BaseEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2.base.BaseEngine</span></code></a></p>
+<p>FPSim2 class to run fast CPU searches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fp_filename</strong> (<em>str</em>) – Fingerprints database file path.</p></li>
+<li><p><strong>fps_sort</strong> (<em>bool</em>) – Wheter if the FPs should be sorted after being loaded into memory or not.</p></li>
+<li><p><strong>storage_backend</strong> (<em>str</em>) – Which storage backend to use (only pytables available).</p></li>
+<li><p><strong>kernel</strong> (<em>str</em>) – Which CUDA kernel to use (raw or element_wise).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.fps">
+<code class="sig-name descname">fps</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.popcnt_bins">
+<code class="sig-name descname">popcnt_bins</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.popcnt_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>List with the popcount bins ranges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_type">
+<code class="sig-name descname">fp_type</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fingerprint type used to create the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_params">
+<code class="sig-name descname">fp_params</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters used to create the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.rdkit_ver">
+<code class="sig-name descname">rdkit_ver</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.rdkit_ver" title="Permalink to this definition">¶</a></dt>
+<dd><p>RDKit version used to create the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.ew_kernel">
+<code class="sig-name descname">ew_kernel</code><em class="property"> = '\n        int comm_sum = 0;\n        for(int j = 1; j &lt; in_width - 1; ++j){\n            int pos = i * in_width + j;\n            comm_sum += __popcll(db[pos] &amp; query[j]);\n        }\n        float coeff = 0.0;\n        coeff = query[in_width - 1] + db[i * in_width + in_width - 1] - comm_sum;\n        if (coeff != 0.0)\n            coeff = comm_sum / coeff;\n        out[i] = coeff &gt;= threshold ? coeff : 0.0;\n    '</em><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.ew_kernel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.raw_kernel">
+<code class="sig-name descname">raw_kernel</code><em class="property"> = '\n        extern &quot;C&quot; __global__\n        void taniRAW(const unsigned long long int* query,\n                     const unsigned long long int* qcount,\n                     const unsigned long long int* db,\n                     const unsigned long long int* popcnts,\n                     float* threshold,\n                     float* out) {{\n\n            // Shared block array. Only visible for threads in same block\n            __shared__ int common[{block}];\n\n            int tid = blockDim.x * blockIdx.x + threadIdx.x;\n            common[threadIdx.x] = __popcll(query[threadIdx.x] &amp; db[tid]);\n\n            // threads need to wait until all threads finish\n            __syncthreads();\n\n            // thread 0 in each block sums the common bits\n            // and calcs the final coeff\n            if(0 == threadIdx.x)\n            {{\n                int comm_sum = 0;\n                for(int i=0; i&lt;{block}; i++)\n                    comm_sum += common[i];\n\n                float coeff = 0.0;\n                coeff = *qcount + popcnts[blockIdx.x] - comm_sum;\n                if (coeff != 0.0)\n                    coeff = comm_sum / coeff;\n                out[blockIdx.x] = coeff &gt;= *threshold ? coeff : 0.0;\n            }}\n        }}\n    '</em><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.raw_kernel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity">
+<code class="sig-name descname">similarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a CUDA Tanimoto search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-FPSim2.base">
+<span id="fpsim2-base-module"></span><h2>FPSim2.base module<a class="headerlink" href="#module-FPSim2.base" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="FPSim2.base.BaseEngine">
+<em class="property">class </em><code class="sig-prename descclassname">FPSim2.base.</code><code class="sig-name descname">BaseEngine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_filename</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">storage_backend</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">in_memory_fps</span><span class="p">:</span> <span class="n">bool</span></em>, <em class="sig-param"><span class="n">fps_sort</span><span class="p">:</span> <span class="n">bool</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.base.BaseEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<dl class="py attribute">
+<dt id="FPSim2.base.BaseEngine.fp_filename">
+<code class="sig-name descname">fp_filename</code><em class="property"> = None</em><a class="headerlink" href="#FPSim2.base.BaseEngine.fp_filename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.fp_params">
+<em class="property">property </em><code class="sig-name descname">fp_params</code><a class="headerlink" href="#FPSim2.base.BaseEngine.fp_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.fp_type">
+<em class="property">property </em><code class="sig-name descname">fp_type</code><a class="headerlink" href="#FPSim2.base.BaseEngine.fp_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.fps">
+<em class="property">property </em><code class="sig-name descname">fps</code><a class="headerlink" href="#FPSim2.base.BaseEngine.fps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.load_query">
+<code class="sig-name descname">load_query</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.base.BaseEngine.load_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the query molecule from SMILES, molblock or InChI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChi or molblock.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>query</strong> – Numpy array query molecule.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.popcnt_bins">
+<em class="property">property </em><code class="sig-name descname">popcnt_bins</code><a class="headerlink" href="#FPSim2.base.BaseEngine.popcnt_bins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.rdkit_ver">
+<em class="property">property </em><code class="sig-name descname">rdkit_ver</code><a class="headerlink" href="#FPSim2.base.BaseEngine.rdkit_ver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.base.BaseEngine.similarity">
+<em class="property">abstract </em><code class="sig-name descname">similarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">n_workers</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.base.BaseEngine.similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tanimoto similarity search</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FPSim2.base.BaseEngine.storage">
+<code class="sig-name descname">storage</code><em class="property"> = None</em><a class="headerlink" href="#FPSim2.base.BaseEngine.storage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-FPSim2">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FPSim2" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Eloy Félix
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

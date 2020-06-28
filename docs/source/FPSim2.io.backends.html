@@ -1,0 +1,430 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FPSim2.io.backends package &mdash; FPSim2  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FPSim2
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/create_fp_db.html">Create a fingerprint database file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/limitations.html">Limitations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">CPU searches</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/sim.html">Run Tanimoto similarity searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/tversky.html">Run Tversky searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/subs.html">Run Tversky substructure screenouts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+</ul>
+<p class="caption"><span class="caption-text">GPU searches</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/gpu_sim.html">Run a GPU similarity search</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FPSim2</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>FPSim2.io.backends package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/FPSim2.io.backends.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fpsim2-io-backends-package">
+<h1>FPSim2.io.backends package<a class="headerlink" href="#fpsim2-io-backends-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-FPSim2.io.backends.base">
+<span id="fpsim2-io-backends-base-module"></span><h2>FPSim2.io.backends.base module<a class="headerlink" href="#module-FPSim2.io.backends.base" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend">
+<em class="property">class </em><code class="sig-prename descclassname">FPSim2.io.backends.base.</code><code class="sig-name descname">BaseStorageBackend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.append_fps">
+<em class="property">abstract </em><code class="sig-name descname">append_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">io_source</span></em>, <em class="sig-param"><span class="n">mol_id_prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.append_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends FPs to the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mols_source</strong> (<em>str</em><em> or </em><em>iterable</em>) – .smi or .sdf filename or iterable.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.calc_popcnt_bins">
+<em class="property">static </em><code class="sig-name descname">calc_popcnt_bins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fps</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">fp_length</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.calc_popcnt_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calcs popcount bins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fps</strong> (<em>numpy array</em>) – numpy array with the fingerprints of the database.</p></li>
+<li><p><strong>fp_length</strong> (<em>int</em>) – length of the fingeprints.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>popcnt_bins</strong> – list with the ranges of the popcount bins.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.delete_fps">
+<em class="property">abstract </em><code class="sig-name descname">delete_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ids_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.delete_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete FPs given a list of ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ids_list</strong> (<em>list</em>) – ids to delete.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.get_fps_chunk">
+<em class="property">abstract </em><code class="sig-name descname">get_fps_chunk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">chunk_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.get_fps_chunk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a contiguous chunk of data from the storage into memory</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.load_fps">
+<em class="property">abstract </em><code class="sig-name descname">load_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_memory_fps</span></em>, <em class="sig-param"><span class="n">fps_sort</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.load_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the whole fp db file into memory</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.load_popcnt_bins">
+<em class="property">abstract </em><code class="sig-name descname">load_popcnt_bins</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.load_popcnt_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads popcnt bins info</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.base.BaseStorageBackend.read_parameters">
+<em class="property">abstract </em><code class="sig-name descname">read_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.base.BaseStorageBackend.read_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads fp file info</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-FPSim2.io.backends.pytables">
+<span id="fpsim2-io-backends-pytables-module"></span><h2>FPSim2.io.backends.pytables module<a class="headerlink" href="#module-FPSim2.io.backends.pytables" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend">
+<em class="property">class </em><code class="sig-prename descclassname">FPSim2.io.backends.pytables.</code><code class="sig-name descname">PyTablesStorageBackend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_filename</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">in_memory_fps</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">fps_sort</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FPSim2.io.backends.base.BaseStorageBackend" title="FPSim2.io.backends.base.BaseStorageBackend"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2.io.backends.base.BaseStorageBackend</span></code></a></p>
+<dl class="py method">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend.append_fps">
+<code class="sig-name descname">append_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mols_source</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>Iterable<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">mol_id_prop</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mol_id'</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend.append_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends FPs to the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mols_source</strong> (<em>str</em><em> or </em><em>iterable</em>) – .smi or .sdf filename or iterable.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend.delete_fps">
+<code class="sig-name descname">delete_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ids_list</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend.delete_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete FPs given a list of ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ids_list</strong> (<em>list</em>) – ids to delete.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend.get_fps_chunk">
+<code class="sig-name descname">get_fps_chunk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">chunk_range</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; numpy.asarray<a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend.get_fps_chunk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a contiguous chunk of data from the storage into memory</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend.load_fps">
+<code class="sig-name descname">load_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_memory_fps</span></em>, <em class="sig-param"><span class="n">fps_sort</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend.load_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads FP db file into memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_memory_fps</strong> (<em>bool</em>) – Whether if the FPs should be loaded into memory or not.</p></li>
+<li><p><strong>fps_sort</strong> (<em>bool</em>) – Whether if the FPs should be sorted or not.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fps</strong> – Numpy array with the fingerprints.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend.load_popcnt_bins">
+<code class="sig-name descname">load_popcnt_bins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fps_sort</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend.load_popcnt_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads popcnt bins info</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FPSim2.io.backends.pytables.PyTablesStorageBackend.read_parameters">
+<code class="sig-name descname">read_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>str<span class="p">, </span>Dict<span class="p">[</span>str<span class="p">, </span>Dict<span class="p">[</span>str<span class="p">, </span>dict<span class="p">]</span><span class="p">]</span><span class="p">, </span>str<span class="p">]</span><a class="headerlink" href="#FPSim2.io.backends.pytables.PyTablesStorageBackend.read_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads fingerprint parameters</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="FPSim2.io.backends.pytables.calc_popcnt_bins_pytables">
+<code class="sig-prename descclassname">FPSim2.io.backends.pytables.</code><code class="sig-name descname">calc_popcnt_bins_pytables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fps</span><span class="p">:</span> <span class="n">Any</span></em>, <em class="sig-param"><span class="n">fp_length</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#FPSim2.io.backends.pytables.calc_popcnt_bins_pytables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="FPSim2.io.backends.pytables.create_db_file">
+<code class="sig-prename descclassname">FPSim2.io.backends.pytables.</code><code class="sig-name descname">create_db_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mols_source</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>Iterable<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">fp_type</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">fp_params</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">mol_id_prop</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mol_id'</span></em>, <em class="sig-param"><span class="n">gen_ids</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sort_by_popcnt</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.pytables.create_db_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates FPSim2 FPs db file from .smi, .sdf files or from an iterable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mols_source</strong> (<em>str</em>) – .smi/.sdf filename or iterable.</p></li>
+<li><p><strong>filename</strong> (<em>float</em>) – Fingerprint database filename.</p></li>
+<li><p><strong>fp_type</strong> (<em>str</em>) – Fingerprint type used to create the fingerprints.</p></li>
+<li><p><strong>fp_params</strong> (<em>dict</em>) – Parameters used to create the fingerprints.</p></li>
+<li><p><strong>mol_id_prop</strong> (<em>str</em>) – Name of the .sdf property to read the molecule id.</p></li>
+<li><p><strong>gen_ids</strong> (<em>bool</em>) – Autogenerate FP ids.</p></li>
+<li><p><strong>sort_by_popcnt</strong> (<em>bool</em>) – Whether if the FPs should be sorted or not.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FPSim2.io.backends.pytables.create_schema">
+<code class="sig-prename descclassname">FPSim2.io.backends.pytables.</code><code class="sig-name descname">create_schema</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_length</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#FPSim2.io.backends.pytables.create_schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="FPSim2.io.backends.pytables.sort_db_file">
+<code class="sig-prename descclassname">FPSim2.io.backends.pytables.</code><code class="sig-name descname">sort_db_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#FPSim2.io.backends.pytables.sort_db_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorts the FPs db file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-FPSim2.io.backends">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FPSim2.io.backends" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Eloy Félix
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

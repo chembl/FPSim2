@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Compute a symmetric similarity matrix &mdash; FPSim2  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Run a GPU similarity search" href="gpu_sim.html" />
+    <link rel="prev" title="Run Tversky substructure screenouts" href="subs.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> FPSim2
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_fp_db.html">Create a fingerprint database file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="limitations.html">Limitations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">CPU searches</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Run Tanimoto similarity searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tversky.html">Run Tversky searches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="subs.html">Run Tversky substructure screenouts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Compute a symmetric similarity matrix</a></li>
+</ul>
+<p class="caption"><span class="caption-text">GPU searches</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run a GPU similarity search</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FPSim2</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Compute a symmetric similarity matrix</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/source/user_guide/sim_matrix.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-a-symmetric-similarity-matrix">
+<span id="sim-mat"></span><h1>Compute a symmetric similarity matrix<a class="headerlink" href="#compute-a-symmetric-similarity-matrix" title="Permalink to this headline">¶</a></h1>
+<p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix" title="FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">symmetric_distance_matrix()</span></code></a> function to create a SciPy CSR sparse distance matrix from the current dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2CudaEngine</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fp_filename</span> <span class="o">=</span> <span class="s1">&#39;chembl_27.h5&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fpe</span> <span class="o">=</span> <span class="n">FPSim2CudaEngine</span><span class="p">(</span><span class="n">fp_filename</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csr_matrix</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">symmetric_distance_matrix</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The CSR distance matrix can be used as an input for some scikit-learn algorithms supporting “precomputed” distance metrics. Some others may need a similarity matrix. A CSR distance matrix can be easily converted into a similarity matrix:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">csr_matrix</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">csr_matrix</span><span class="o">.</span><span class="n">data</span>
+<span class="c1"># 0&#39;s in the diagonal of the matrix are implicit so they are not affected by the instruction above</span>
+<span class="n">csr_matrix</span><span class="o">.</span><span class="n">setdiag</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, some algorithms (e.g. MDS) require a dense matrix. Conversion to a dense matrix can be easily done but bear in mind that the number of elements in the dense matrix will be the square of the number of your compounds and this may not fit in your memory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># classic MDS doesn&#39;t work with missing values, so it&#39;s better to only use it with threshold 0.0</span>
+<span class="c1"># in case you still want to run MDS on missing values matrices</span>
+<span class="c1"># this example uses the SMACOF algorithm which is known for being able to deal with missing data.</span>
+<span class="c1"># Use it at your own risk!</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.manifold</span> <span class="kn">import</span> <span class="n">MDS</span>
+
+<span class="n">dense_matrix</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+
+<span class="c1"># with metric=False it uses the SMACOF algorithm</span>
+<span class="n">mds</span> <span class="o">=</span> <span class="n">MDS</span><span class="p">(</span><span class="n">dissimilarity</span><span class="o">=</span><span class="s2">&quot;precomputed&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">mds</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dense_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="gpu_sim.html" class="btn btn-neutral float-right" title="Run a GPU similarity search" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="subs.html" class="btn btn-neutral float-left" title="Run Tversky substructure screenouts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Eloy Félix
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
