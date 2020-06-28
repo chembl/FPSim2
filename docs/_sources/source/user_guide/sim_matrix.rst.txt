@@ -1,6 +1,6 @@
 .. _sim_mat:
 
-Compute a symmetric similarity matrix
+Compute a symmetric distance matrix
 =====================================
 
 Use the :func:`~FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR sparse distance matrix from the current dataset::

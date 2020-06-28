@@ -46,9 +46,9 @@ Learn how to run CPU based similarity searches
 
 * **CPU searches**:
   :doc:`Run Tanimoto similarity searches </source/user_guide/sim>` |
-  :doc:`Run a Tversky search with a and b parameters </source/user_guide/tversky>` |
+  :doc:`Run Tversky searches with a and b parameters </source/user_guide/tversky>` |
   :doc:`Run Tversky substructure screenouts </source/user_guide/subs>` |
-  :doc:`Generate a symmetics similarity matrix </source/user_guide/sim_matrix>`
+  :doc:`Generate a symmetic distance matrix </source/user_guide/sim_matrix>`
 
 
 .. toctree::

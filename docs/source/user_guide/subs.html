@@ -36,7 +36,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Compute a symmetric similarity matrix" href="sim_matrix.html" />
+    <link rel="next" title="Compute a symmetric distance matrix" href="sim_matrix.html" />
     <link rel="prev" title="Run Tversky searches" href="tversky.html" /> 
 </head>
 
@@ -97,11 +97,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#on-disk">On disk</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run a GPU similarity search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -171,7 +171,7 @@
 <span id="subs"></span><h1>Run Tversky substructure screenouts<a class="headerlink" href="#run-tversky-substructure-screenouts" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="in-memory">
 <h2>In memory<a class="headerlink" href="#in-memory" title="Permalink to this headline">¶</a></h2>
-<p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.substructure" title="FPSim2.FPSim2.FPSim2Engine.substructure"><code class="xref py py-func docutils literal notranslate"><span class="pre">substructure()</span></code></a> function to run a optimised Tversky (a=1, b=0, threshold=1.0) substructure screenout. Bear in mind this is not a full substructure (i.e. with subgraph isomorphism). It’s recommended to use <strong>RDKPatternFingerprint</strong> type to run this kind of searches.</p>
+<p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.substructure" title="FPSim2.FPSim2.FPSim2Engine.substructure"><code class="xref py py-func docutils literal notranslate"><span class="pre">substructure()</span></code></a> function to run an optimised Tversky (a=1, b=0, threshold=1.0) substructure screenout. Bear in mind that this is not a full substructure (i.e. with subgraph isomorphism) search. It’s recommended to use <strong>RDKPatternFingerprint</strong> type to run this kind of searches.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2Engine</span>
 
 <span class="n">fp_filename</span> <span class="o">=</span> <span class="s1">&#39;chembl_27.h5&#39;</span>
@@ -205,7 +205,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="sim_matrix.html" class="btn btn-neutral float-right" title="Compute a symmetric similarity matrix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="sim_matrix.html" class="btn btn-neutral float-right" title="Compute a symmetric distance matrix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tversky.html" class="btn btn-neutral float-left" title="Run Tversky searches" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

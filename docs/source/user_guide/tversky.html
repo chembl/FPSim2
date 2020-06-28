@@ -97,11 +97,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="subs.html">Run Tversky substructure screenouts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run a GPU similarity search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -171,12 +171,12 @@
 <span id="tversky"></span><h1>Run Tversky searches<a class="headerlink" href="#run-tversky-searches" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="in-memory">
 <h2>In memory<a class="headerlink" href="#in-memory" title="Permalink to this headline">¶</a></h2>
-<p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.tversky" title="FPSim2.FPSim2.FPSim2Engine.tversky"><code class="xref py py-func docutils literal notranslate"><span class="pre">tversky()</span></code></a> function to run Tversky searches setting a and b values. Remember that Tversky is a generalisation of Tanimoto and the Sørensen–Dice.</p>
+<p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.tversky" title="FPSim2.FPSim2.FPSim2Engine.tversky"><code class="xref py py-func docutils literal notranslate"><span class="pre">tversky()</span></code></a> function to run Tversky searches. Tversky is a generalisation of Tanimoto and the Sørensen–Dice coefficients.</p>
 <dl class="simple">
 <dt>By setting the a, b and threshold parameters:</dt><dd><ul class="simple">
-<li><p>a=b=1 will throw the same results than a Tanimoto search but will be slower than using <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.similarity" title="FPSim2.FPSim2.FPSim2Engine.similarity"><code class="xref py py-func docutils literal notranslate"><span class="pre">similarity()</span></code></a></p></li>
+<li><p>a=b=1 will return the same results than a Tanimoto search but will be slower than using <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.similarity" title="FPSim2.FPSim2.FPSim2Engine.similarity"><code class="xref py py-func docutils literal notranslate"><span class="pre">similarity()</span></code></a></p></li>
 <li><p>a=b=0.5: will run a Sørensen–Dice search.</p></li>
-<li><p>a=1, b=0, threshold=1.0 will throw the same results than using <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.substructure" title="FPSim2.FPSim2.FPSim2Engine.substructure"><code class="xref py py-func docutils literal notranslate"><span class="pre">substructure()</span></code></a></p></li>
+<li><p>a=1, b=0, threshold=1.0 will return the same results than using <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.substructure" title="FPSim2.FPSim2.FPSim2Engine.substructure"><code class="xref py py-func docutils literal notranslate"><span class="pre">substructure()</span></code></a></p></li>
 </ul>
 </dd>
 </dl>

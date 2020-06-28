@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Run a GPU similarity search &mdash; FPSim2  documentation</title>
+  <title>Run GPU similarity searches &mdash; FPSim2  documentation</title>
   
 
   
@@ -36,7 +36,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="prev" title="Compute a symmetric similarity matrix" href="sim_matrix.html" /> 
+    <link rel="prev" title="Compute a symmetric distance matrix" href="sim_matrix.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -92,11 +92,11 @@
 <li class="toctree-l1"><a class="reference internal" href="sim.html">Run Tanimoto similarity searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tversky.html">Run Tversky searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="subs.html">Run Tversky substructure screenouts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Run a GPU similarity search</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -143,7 +143,7 @@
     
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Run a GPU similarity search</li>
+      <li>Run GPU similarity searches</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -162,8 +162,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="run-a-gpu-similarity-search">
-<span id="gpu-sim"></span><h1>Run a GPU similarity search<a class="headerlink" href="#run-a-gpu-similarity-search" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="run-gpu-similarity-searches">
+<span id="gpu-sim"></span><h1>Run GPU similarity searches<a class="headerlink" href="#run-gpu-similarity-searches" title="Permalink to this headline">¶</a></h1>
 <p>Experimental CUDA similarity search is implemented via the <a class="reference external" href="https://cupy.chainer.org/">CuPy</a> library. Be sure to have it properly <a class="reference external" href="https://docs-cupy.chainer.org/en/stable/install.html">installed</a>  before using this feature.</p>
 <p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity" title="FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity"><code class="xref py py-func docutils literal notranslate"><span class="pre">similarity()</span></code></a> function in the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2Cuda.FPSim2CudaEngine" title="FPSim2.FPSim2Cuda.FPSim2CudaEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2CudaEngine</span></code></a> class to run a Tanimoto similarity search:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2CudaEngine</span>
@@ -186,7 +186,7 @@
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="sim_matrix.html" class="btn btn-neutral float-left" title="Compute a symmetric similarity matrix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="sim_matrix.html" class="btn btn-neutral float-left" title="Compute a symmetric distance matrix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

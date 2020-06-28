@@ -1,6 +1,6 @@
 .. _gpu_sim:
 
-Run a GPU similarity search
+Run GPU similarity searches
 ===========================
 
 Experimental CUDA similarity search is implemented via the `CuPy <https://cupy.chainer.org/>`_ library. Be sure to have it properly `installed <https://docs-cupy.chainer.org/en/stable/install.html>`_  before using this feature.

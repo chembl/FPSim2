@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Compute a symmetric similarity matrix &mdash; FPSim2  documentation</title>
+  <title>Compute a symmetric distance matrix &mdash; FPSim2  documentation</title>
   
 
   
@@ -36,7 +36,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Run a GPU similarity search" href="gpu_sim.html" />
+    <link rel="next" title="Run GPU similarity searches" href="gpu_sim.html" />
     <link rel="prev" title="Run Tversky substructure screenouts" href="subs.html" /> 
 </head>
 
@@ -93,11 +93,11 @@
 <li class="toctree-l1"><a class="reference internal" href="sim.html">Run Tanimoto similarity searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tversky.html">Run Tversky searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="subs.html">Run Tversky substructure screenouts</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run a GPU similarity search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -144,7 +144,7 @@
     
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Compute a symmetric similarity matrix</li>
+      <li>Compute a symmetric distance matrix</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -163,8 +163,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="compute-a-symmetric-similarity-matrix">
-<span id="sim-mat"></span><h1>Compute a symmetric similarity matrix<a class="headerlink" href="#compute-a-symmetric-similarity-matrix" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="compute-a-symmetric-distance-matrix">
+<span id="sim-mat"></span><h1>Compute a symmetric distance matrix<a class="headerlink" href="#compute-a-symmetric-distance-matrix" title="Permalink to this headline">¶</a></h1>
 <p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix" title="FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">symmetric_distance_matrix()</span></code></a> function to create a SciPy CSR sparse distance matrix from the current dataset:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2CudaEngine</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fp_filename</span> <span class="o">=</span> <span class="s1">&#39;chembl_27.h5&#39;</span>
@@ -203,7 +203,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="gpu_sim.html" class="btn btn-neutral float-right" title="Run a GPU similarity search" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="gpu_sim.html" class="btn btn-neutral float-right" title="Run GPU similarity searches" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="subs.html" class="btn btn-neutral float-left" title="Run Tversky substructure screenouts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
