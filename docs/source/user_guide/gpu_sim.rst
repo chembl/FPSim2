@@ -12,7 +12,7 @@ Use the :func:`~FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity` function in the :
     from FPSim2 import FPSim2CudaEngine
 
     fp_filename = 'chembl_27.h5'
-    fpe = FPSim2CudaEngine(fp_filename)
+    fpce = FPSim2CudaEngine(fp_filename)
 
     query = 'CC(=O)Oc1ccccc1C(=O)O'
-    results = fpe.similarity(query, 0.7)
+    results = fpce.similarity(query, 0.7)
