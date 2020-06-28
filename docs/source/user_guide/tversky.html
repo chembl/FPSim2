@@ -186,20 +186,20 @@
 <span class="n">fpe</span> <span class="o">=</span> <span class="n">FPSim2Engine</span><span class="p">(</span><span class="n">fp_filename</span><span class="p">)</span>
 
 <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;CC(=O)Oc1ccccc1C(=O)O&#39;</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">substructure</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">tversky</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="on-disk">
 <h2>On disk<a class="headerlink" href="#on-disk" title="Permalink to this headline">¶</a></h2>
-<p>It is also possible to run on disk similarity searches (i.e. without loading the whole fingerprints file in memory) with the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.on_disk_substructure" title="FPSim2.FPSim2.FPSim2Engine.on_disk_substructure"><code class="xref py py-func docutils literal notranslate"><span class="pre">on_disk_substructure()</span></code></a> function. This allows running similarity searches on databases bigger than the available system memory:</p>
+<p>It is also possible to run on disk similarity searches (i.e. without loading the whole fingerprints file in memory) with the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.on_disk_tversky" title="FPSim2.FPSim2.FPSim2Engine.on_disk_tversky"><code class="xref py py-func docutils literal notranslate"><span class="pre">on_disk_tversky()</span></code></a> function. This allows running similarity searches on databases bigger than the available system memory:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2Engine</span>
 
 <span class="n">fp_filename</span> <span class="o">=</span> <span class="s1">&#39;chembl_27.h5&#39;</span>
 <span class="n">fpe</span> <span class="o">=</span> <span class="n">FPSim2Engine</span><span class="p">(</span><span class="n">fp_filename</span><span class="p">,</span> <span class="n">in_memory_fps</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;CC(=O)Oc1ccccc1C(=O)O&#39;</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">on_disk_substructure</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">250000</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">on_disk_tversky</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">250000</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
