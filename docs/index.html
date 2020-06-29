@@ -169,10 +169,11 @@
 <h2>Highlights<a class="headerlink" href="#highlights" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
-<li><p>Runs fast in memory CPU similarity searches.</p></li>
-<li><p>Can split a single query in multiple CPU threads to accelerate a search.</p></li>
-<li><p>Can run similarities in a GPU using CUDA via the CuPy library, using the <a class="reference internal" href="source/FPSim2.html#FPSim2.FPSim2Cuda.FPSim2CudaEngine" title="FPSim2.FPSim2Cuda.FPSim2CudaEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2CudaEngine</span></code></a>.</p></li>
-<li><p>Can be used to run on disk CPU searches in case there is not enough RAM to load the dataset.</p></li>
+<li><p>Using a fast population count algorithm from libpopcnt <a class="reference external" href="https://github.com/kimwalisch/libpopcnt/">libpopcnt</a></p></li>
+<li><p>Bounds for sublinear speedups from <a class="reference external" href="https://pubs.acs.org/doi/abs/10.1021/ci600358f/">10.1021/ci600358f</a></p></li>
+<li><p>A compressed file format with optimised read speed based in <a class="reference external" href="https://www.pytables.org/">PyTables</a>  and <a class="reference external" href="http://www.blosc.org/pages/blosc-in-depth/">BLOSC</a></p></li>
+<li><p>Fast multicore CPU and GPU similarity searches</p></li>
+<li><p>Distance matrix calculation</p></li>
 </ul>
 </div></blockquote>
 </div>
@@ -183,7 +184,7 @@
 <li><p><strong>Getting started</strong>:
 <a class="reference internal" href="source/user_guide/install.html"><span class="doc">Installation</span></a> |
 <a class="reference internal" href="source/user_guide/create_fp_db.html"><span class="doc">Create a fingeprint db file</span></a> |
-<a class="reference internal" href="source/user_guide/create_fp_db.html"><span class="doc">Limitations</span></a></p></li>
+<a class="reference internal" href="source/user_guide/limitations.html"><span class="doc">Limitations</span></a></p></li>
 </ul>
 <div class="toctree-wrapper compound">
 </div>

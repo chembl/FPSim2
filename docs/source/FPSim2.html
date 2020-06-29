@@ -91,11 +91,11 @@
 <li class="toctree-l1"><a class="reference internal" href="user_guide/sim.html">Run Tanimoto similarity searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_guide/tversky.html">Run Tversky searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_guide/subs.html">Run Tversky substructure screenouts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/sim_matrix.html">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/gpu_sim.html">Run a GPU similarity search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/gpu_sim.html">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -426,110 +426,8 @@
 <dd></dd></dl>
 
 </div>
-<div class="section" id="module-FPSim2.FPSim2Cuda">
-<span id="fpsim2-fpsim2cuda-module"></span><h2>FPSim2.FPSim2Cuda module<a class="headerlink" href="#module-FPSim2.FPSim2Cuda" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine">
-<em class="property">class </em><code class="sig-prename descclassname">FPSim2.FPSim2Cuda.</code><code class="sig-name descname">FPSim2CudaEngine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fp_filename</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">fps_sort</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">storage_backend</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'pytables'</span></em>, <em class="sig-param"><span class="n">kernel</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'raw'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#FPSim2.base.BaseEngine" title="FPSim2.base.BaseEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2.base.BaseEngine</span></code></a></p>
-<p>FPSim2 class to run fast CPU searches.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fp_filename</strong> (<em>str</em>) – Fingerprints database file path.</p></li>
-<li><p><strong>fps_sort</strong> (<em>bool</em>) – Wheter if the FPs should be sorted after being loaded into memory or not.</p></li>
-<li><p><strong>storage_backend</strong> (<em>str</em>) – Which storage backend to use (only pytables available).</p></li>
-<li><p><strong>kernel</strong> (<em>str</em>) – Which CUDA kernel to use (raw or element_wise).</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.fps">
-<code class="sig-name descname">fps</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.fps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fingerprints.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.popcnt_bins">
-<code class="sig-name descname">popcnt_bins</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.popcnt_bins" title="Permalink to this definition">¶</a></dt>
-<dd><p>List with the popcount bins ranges.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_type">
-<code class="sig-name descname">fp_type</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fingerprint type used to create the fingerprints.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_params">
-<code class="sig-name descname">fp_params</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.fp_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parameters used to create the fingerprints.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.rdkit_ver">
-<code class="sig-name descname">rdkit_ver</code><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.rdkit_ver" title="Permalink to this definition">¶</a></dt>
-<dd><p>RDKit version used to create the fingerprints.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.ew_kernel">
-<code class="sig-name descname">ew_kernel</code><em class="property"> = '\n        int comm_sum = 0;\n        for(int j = 1; j &lt; in_width - 1; ++j){\n            int pos = i * in_width + j;\n            comm_sum += __popcll(db[pos] &amp; query[j]);\n        }\n        float coeff = 0.0;\n        coeff = query[in_width - 1] + db[i * in_width + in_width - 1] - comm_sum;\n        if (coeff != 0.0)\n            coeff = comm_sum / coeff;\n        out[i] = coeff &gt;= threshold ? coeff : 0.0;\n    '</em><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.ew_kernel" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.raw_kernel">
-<code class="sig-name descname">raw_kernel</code><em class="property"> = '\n        extern &quot;C&quot; __global__\n        void taniRAW(const unsigned long long int* query,\n                     const unsigned long long int* qcount,\n                     const unsigned long long int* db,\n                     const unsigned long long int* popcnts,\n                     float* threshold,\n                     float* out) {{\n\n            // Shared block array. Only visible for threads in same block\n            __shared__ int common[{block}];\n\n            int tid = blockDim.x * blockIdx.x + threadIdx.x;\n            common[threadIdx.x] = __popcll(query[threadIdx.x] &amp; db[tid]);\n\n            // threads need to wait until all threads finish\n            __syncthreads();\n\n            // thread 0 in each block sums the common bits\n            // and calcs the final coeff\n            if(0 == threadIdx.x)\n            {{\n                int comm_sum = 0;\n                for(int i=0; i&lt;{block}; i++)\n                    comm_sum += common[i];\n\n                float coeff = 0.0;\n                coeff = *qcount + popcnts[blockIdx.x] - comm_sum;\n                if (coeff != 0.0)\n                    coeff = comm_sum / coeff;\n                out[blockIdx.x] = coeff &gt;= *threshold ? coeff : 0.0;\n            }}\n        }}\n    '</em><a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.raw_kernel" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity">
-<code class="sig-name descname">similarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_string</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs a CUDA Tanimoto search.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>query_string</strong> (<em>str</em>) – SMILES, InChI or molblock.</p></li>
-<li><p><strong>threshold</strong> (<em>float</em>) – Similarity threshold.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>results</strong> – Similarity results.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="fpsim2-fpsim2cuda-module">
+<h2>FPSim2.FPSim2Cuda module<a class="headerlink" href="#fpsim2-fpsim2cuda-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-FPSim2.base">
 <span id="fpsim2-base-module"></span><h2>FPSim2.base module<a class="headerlink" href="#module-FPSim2.base" title="Permalink to this headline">¶</a></h2>

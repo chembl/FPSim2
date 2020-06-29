@@ -6,7 +6,10 @@ Run Tversky substructure screenouts
 In memory
 ---------
 
-Use the :func:`~FPSim2.FPSim2.FPSim2Engine.substructure` function to run an optimised Tversky (a=1, b=0, threshold=1.0) substructure screenout. Bear in mind that this is not a full substructure (i.e. with subgraph isomorphism) search. It's recommended to use **RDKPatternFingerprint** type to run this kind of searches.
+Use the :func:`~FPSim2.FPSim2.FPSim2Engine.substructure` function to run an optimised Tversky (*a=1*, *b=0*, *threshold=1.0*) substructure screenout. Bear in mind that this is not a full substructure (i.e. with subgraph isomorphism) search.
+
+.. tip::
+    It's recommended to use **RDKPatternFingerprint** fingerprint type with this kind of searches.
 
 .. code-block:: python
 
@@ -17,6 +20,9 @@ Use the :func:`~FPSim2.FPSim2.FPSim2Engine.substructure` function to run an opti
     
     query = 'CC(=O)Oc1ccccc1C(=O)O'
     results = fpe.substructure(query, 0.7, n_workers=1)
+
+.. tip::
+    *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful on big datasets.
 
 On disk
 -------

@@ -3,7 +3,10 @@
 Run GPU similarity searches
 ===========================
 
-Experimental CUDA similarity search is implemented via the `CuPy <https://cupy.chainer.org/>`_ library. Be sure to have it properly `installed <https://docs-cupy.chainer.org/en/stable/install.html>`_  before using this feature.
+Experimental CUDA similarity search is implemented via the `CuPy <https://cupy.chainer.org/>`_ library.
+
+.. important::
+    Be sure to have CuPy properly `installed <https://docs-cupy.chainer.org/en/stable/install.html>`_  before using this feature.
 
 Use the :func:`~FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity` function in the :class:`~FPSim2.FPSim2Cuda.FPSim2CudaEngine` class to run a Tanimoto similarity search:
 

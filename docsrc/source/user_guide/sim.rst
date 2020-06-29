@@ -18,6 +18,8 @@ Use the :func:`~FPSim2.FPSim2.FPSim2Engine.similarity` function in the :class:`~
     query = 'CC(=O)Oc1ccccc1C(=O)O'
     results = fpe.similarity(query, 0.7, n_workers=1)
 
+.. tip::
+    *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful on big datasets.
 
 On disk
 -------

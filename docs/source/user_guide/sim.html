@@ -97,11 +97,11 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tversky.html">Run Tversky searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="subs.html">Run Tversky substructure screenouts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run a GPU similarity search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -180,6 +180,10 @@
 <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;CC(=O)Oc1ccccc1C(=O)O&#39;</span>
 <span class="n">results</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">similarity</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><em>n_workers</em> parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful on big datasets.</p>
 </div>
 </div>
 <div class="section" id="on-disk">

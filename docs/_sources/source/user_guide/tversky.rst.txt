@@ -8,10 +8,11 @@ In memory
 
 Use the :func:`~FPSim2.FPSim2.FPSim2Engine.tversky` function to run Tversky searches. Tversky is a generalisation of Tanimoto and the Sørensen–Dice coefficients. 
 
-By setting the a, b and threshold parameters:
-    - a=b=1 will return the same results than a Tanimoto search but will be slower than using :func:`~FPSim2.FPSim2.FPSim2Engine.similarity`
-    - a=b=0.5: will run a Sørensen–Dice search.
-    - a=1, b=0, threshold=1.0 will return the same results than using :func:`~FPSim2.FPSim2.FPSim2Engine.substructure`
+.. tip::
+    By setting the a, b and threshold parameters:
+        - a=b=1 will return the same results than a Tanimoto search but will be slower than using :func:`~FPSim2.FPSim2.FPSim2Engine.similarity`.
+        - a=b=0.5: will run a Sørensen–Dice search.
+        - a=1, b=0, threshold=1.0 will return the same results than using :func:`~FPSim2.FPSim2.FPSim2Engine.substructure` function but will be slower.
 
 .. code-block:: python
 
@@ -22,6 +23,9 @@ By setting the a, b and threshold parameters:
     
     query = 'CC(=O)Oc1ccccc1C(=O)O'
     results = fpe.tversky(query, 0.7, n_workers=1)
+
+.. tip::
+    *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful on big datasets.
 
 On disk
 -------
