@@ -6,7 +6,7 @@ Run Tversky substructure screenouts
 In memory
 ---------
 
-Use the :func:`~FPSim2.FPSim2.FPSim2Engine.substructure` function to run an optimised Tversky (*a=1*, *b=0*, *threshold=1.0*) substructure screenout. Bear in mind that this is not a full substructure (i.e. with subgraph isomorphism) search. 
+Use the :func:`~FPSim2.FPSim2.FPSim2Engine.substructure` function to run an optimised Tversky (*a=1*, *b=0*, *threshold=1.0*) substructure screenout. Bear in mind that this is not a full substructure (i.e. with subgraph isomorphism) search.
 
 .. tip::
     It's recommended to use **RDKPatternFingerprint** fingerprint type with this kind of searches.
