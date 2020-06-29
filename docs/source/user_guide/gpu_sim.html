@@ -164,7 +164,11 @@
             
   <div class="section" id="run-gpu-similarity-searches">
 <span id="gpu-sim"></span><h1>Run GPU similarity searches<a class="headerlink" href="#run-gpu-similarity-searches" title="Permalink to this headline">¶</a></h1>
-<p>Experimental CUDA similarity search is implemented via the <a class="reference external" href="https://cupy.chainer.org/">CuPy</a> library. Be sure to have it properly <a class="reference external" href="https://docs-cupy.chainer.org/en/stable/install.html">installed</a>  before using this feature.</p>
+<p>Experimental CUDA similarity search is implemented via the <a class="reference external" href="https://cupy.chainer.org/">CuPy</a> library.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Be sure to have CuPy properly <a class="reference external" href="https://docs-cupy.chainer.org/en/stable/install.html">installed</a>  before using this feature.</p>
+</div>
 <p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity" title="FPSim2.FPSim2Cuda.FPSim2CudaEngine.similarity"><code class="xref py py-func docutils literal notranslate"><span class="pre">similarity()</span></code></a> function in the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2Cuda.FPSim2CudaEngine" title="FPSim2.FPSim2Cuda.FPSim2CudaEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPSim2CudaEngine</span></code></a> class to run a Tanimoto similarity search:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2CudaEngine</span>
 

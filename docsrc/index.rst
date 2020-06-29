@@ -12,11 +12,11 @@ FPSim2 is a small NumPy centric Python/C++ package to run fast compound similari
 Highlights
 ----------
 
- - Runs fast in memory CPU similarity searches. 
- - Can split a single query in multiple CPU threads to accelerate a search. 
- - Can run similarities in a GPU using CUDA via the CuPy library, using the :class:`~FPSim2.FPSim2Cuda.FPSim2CudaEngine`. 
- - Can be used to run on disk CPU searches in case there is not enough RAM to load the dataset.
-
+ - Using a fast population count algorithm from libpopcnt `libpopcnt <https://github.com/kimwalisch/libpopcnt/>`_
+ - Bounds for sublinear speedups from `10.1021/ci600358f <https://pubs.acs.org/doi/abs/10.1021/ci600358f/>`_ 
+ - A compressed file format with optimised read speed based in `PyTables <https://www.pytables.org/>`_  and `BLOSC <http://www.blosc.org/pages/blosc-in-depth/>`_
+ - Fast multicore CPU and GPU similarity searches
+ - Distance matrix calculation
 
 Getting started
 ---------------
@@ -26,7 +26,7 @@ Install and generate a FPSim2 fingerprint db file.
 * **Getting started**:
   :doc:`Installation </source/user_guide/install>` |
   :doc:`Create a fingeprint db file </source/user_guide/create_fp_db>` |
-  :doc:`Limitations </source/user_guide/create_fp_db>`
+  :doc:`Limitations </source/user_guide/limitations>`
 
 .. toctree::
    :maxdepth: 2

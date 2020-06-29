@@ -8,8 +8,10 @@ Use the :func:`~FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix` function t
     >>> from FPSim2 import FPSim2CudaEngine
     >>> fp_filename = 'chembl_27.h5'
     >>> fpe = FPSim2CudaEngine(fp_filename)
-    >>> csr_matrix = fpe.symmetric_distance_matrix(0.7)
+    >>> csr_matrix = fpe.symmetric_distance_matrix(0.7, n_workers=4)
 
+.. note::
+    Code above generating the symmetric matrix of ChEMBL 27 (1941405 compounds) took 12.5h, using 4 cores, running in a 2019 core i9 laptop. 12.5h in a single core.
 
 The CSR distance matrix can be used as an input for some scikit-learn algorithms supporting "precomputed" distance metrics. Some others may need a similarity matrix. A CSR distance matrix can be easily converted into a similarity matrix:
 

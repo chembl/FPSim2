@@ -99,11 +99,11 @@
 <li class="toctree-l1"><a class="reference internal" href="sim.html">Run Tanimoto similarity searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tversky.html">Run Tversky searches</a></li>
 <li class="toctree-l1"><a class="reference internal" href="subs.html">Run Tversky substructure screenouts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric similarity matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_matrix.html">Compute a symmetric distance matrix</a></li>
 </ul>
 <p class="caption"><span class="caption-text">GPU searches</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run a GPU similarity search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu_sim.html">Run GPU similarity searches</a></li>
 </ul>
 
             
@@ -171,8 +171,12 @@
             
   <div class="section" id="create-a-fingerprint-database-file">
 <span id="create"></span><h1>Create a fingerprint database file<a class="headerlink" href="#create-a-fingerprint-database-file" title="Permalink to this headline">¶</a></h1>
-<p>Use the <a class="reference internal" href="../FPSim2.io.backends.html#FPSim2.io.backends.pytables.create_db_file" title="FPSim2.io.backends.pytables.create_db_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_db_file()</span></code></a> function to create the fingerprint database file. FPSim2 does only support integer molecule ids.</p>
-<p>The fingerprints are calculated using <a class="reference external" href="https://www.rdkit.org/">RDKit</a>. Fingerprint types available are:</p>
+<p>Use the <a class="reference internal" href="../FPSim2.io.backends.html#FPSim2.io.backends.pytables.create_db_file" title="FPSim2.io.backends.pytables.create_db_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_db_file()</span></code></a> function to create the fingerprint database file.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>FPSim2 only supports integer molecule ids.</p>
+</div>
+<p>The fingerprints are calculated with <a class="reference external" href="https://www.rdkit.org/">RDKit</a>. Fingerprint types available are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference external" href="http://rdkit.org/docs/source/rdkit.Chem.rdMolDescriptors.html#rdkit.Chem.rdMolDescriptors.GetMACCSKeysFingerprint/">MACCSKeys</a></p></li>
