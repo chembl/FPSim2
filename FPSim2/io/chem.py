@@ -324,5 +324,5 @@ def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[in
     elif isinstance(io_source, Iterable):
         supplier = it_supplier
     else:
-        raise Exception("No valid input molecules input.")
+        raise Exception("Invalid input")
     return supplier

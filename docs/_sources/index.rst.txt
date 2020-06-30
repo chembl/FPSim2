@@ -6,8 +6,7 @@
 Welcome to FPSim2's documentation!
 ==================================
 
-FPSim2 is a small NumPy centric Python/C++ package to run fast compound similarity searches. Currently used in the `ChEMBL
-<http://www.ebi.ac.uk/chembl/>`_ interface. 
+`FPSim2 <https://github.com/chembl/FPSim2/>`_ is a small NumPy centric Python/C++ package to run fast compound similarity searches. FPSim2 performs better with high search thresholds (>=0.7). Currently used in the `ChEMBL <http://www.ebi.ac.uk/chembl/>`_ interface.
 
 Highlights
 ----------
@@ -16,6 +15,7 @@ Highlights
  - Bounds for sublinear speedups from `10.1021/ci600358f <https://pubs.acs.org/doi/abs/10.1021/ci600358f/>`_ 
  - A compressed file format with optimised read speed based in `PyTables <https://www.pytables.org/>`_  and `BLOSC <http://www.blosc.org/pages/blosc-in-depth/>`_
  - Fast multicore CPU and GPU similarity searches
+ - In memory and on disk search modes
  - Distance matrix calculation
 
 Getting started
