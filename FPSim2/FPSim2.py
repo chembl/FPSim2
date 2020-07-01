@@ -81,8 +81,8 @@ class FPSim2Engine(BaseEngine):
         super(FPSim2Engine, self).__init__(
             fp_filename=fp_filename,
             storage_backend=storage_backend,
-            in_memory_fps=True,
-            fps_sort=False,
+            in_memory_fps=in_memory_fps,
+            fps_sort=fps_sort,
         )
 
     def similarity(

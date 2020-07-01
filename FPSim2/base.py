@@ -21,6 +21,7 @@ class BaseEngine(ABC):
     ) -> None:
 
         self.fp_filename = fp_filename
+        self.in_memory_fps = in_memory_fps
         if storage_backend == "pytables":
             self.storage = PyTablesStorageBackend(
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
@@ -28,7 +29,10 @@ class BaseEngine(ABC):
 
     @property
     def fps(self):
-        return self.storage.fps
+        if self.in_memory_fps:
+            return self.storage.fps
+        else:
+            raise Exception("FPs not loaded into memory.")
 
     @property
     def popcnt_bins(self):
