@@ -155,7 +155,7 @@ def test_validate_against_rdkit():
         [DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True
     )
 
-    fpe = FPSim2Engine(in_file_h5)
+    fpe = FPSim2Engine(in_file_h5, storage_backend="pytables")
     results = fpe.similarity(query_smi, 0.0, n_workers=1)["coeff"]
     for rds, fpss in zip(rdresults, results):
         assert math.isclose(rds, fpss, rel_tol=1e-7)
@@ -171,7 +171,7 @@ def test_load_fps():
 
 def test_load_fps_sort():
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
-    fpe = FPSim2Engine(in_file)
+    fpe = FPSim2Engine(in_file, storage_backend="pytables")
     fpe2 = FPSim2Engine(in_file, fps_sort=True)
     assert fpe.popcnt_bins == fpe2.popcnt_bins
 
@@ -212,7 +212,7 @@ def test_single_core_matrix():
 
 def test_multi_core_matrix():
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
-    fpe = FPSim2Engine(in_file)
+    fpe = FPSim2Engine(in_file, storage_backend="pytables")
     csr_matrix = fpe.symmetric_distance_matrix(0.0, n_workers=2)
     np.testing.assert_array_equal(MATRIX, csr_matrix.todense())
 
