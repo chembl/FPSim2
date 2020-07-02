@@ -25,7 +25,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11 scipy tqdm
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11 scipy tqdm pytest
     displayName: Install Anaconda packages
 
   - bash: |
@@ -35,7 +35,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      python test/test_fpsim.py
+      pytest
     displayName: tests
 
 
@@ -67,7 +67,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11 scipy tqdm
+      conda install --yes --quiet --name testenv python=$PYTHON_VERSION rdkit pytables pybind11 scipy tqdm pytest
     displayName: Install Anaconda packages
 
   - bash: |
@@ -77,7 +77,7 @@ jobs:
 
   - bash: |
       source activate testenv
-      python test/test_fpsim.py
+      pytest
     displayName: tests
 
 
@@ -105,7 +105,7 @@ jobs:
 
   - script: |
       call activate testenv
-      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables pybind11 scipy tqdm
+      conda install --yes --quiet --name testenv python=%PYTHON_VERSION% rdkit pytables pybind11 scipy tqdm pytest
     displayName: Install Anaconda packages
 
   - script: |
@@ -115,5 +115,5 @@ jobs:
 
   - script: |
       call activate testenv
-      python test\test_fpsim.py
+      pytest
     displayName: tests
