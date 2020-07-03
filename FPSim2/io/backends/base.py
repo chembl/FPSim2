@@ -8,16 +8,13 @@ class BaseStorageBackend(ABC):
         self.fp_filename = fp_filename
 
     @staticmethod
-    def calc_popcnt_bins(fps: np.ndarray, fp_length: int) -> list:
+    def calc_popcnt_bins(fps: np.ndarray) -> list:
         """Calcs popcount bins.
 
         Parameters
         ----------
         fps : numpy array
             numpy array with the fingerprints of the database.
-
-        fp_length : int
-            length of the fingeprints.
 
         Returns
         -------

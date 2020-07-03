@@ -1,5 +1,6 @@
 from FPSim2.io.backends.pytables import create_db_file, sort_db_file
 from FPSim2 import FPSim2Engine
+import tables as tb
 import pytest
 import os
 
@@ -8,6 +9,13 @@ TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 FP_TYPE = "Morgan"
 FP_PARAMS = {"radius": 2, "nBits": 2048}
 
+
+with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
+    fps = fp_file.root.fps[:]
+    num_fields = len(fps[0])
+    fps = fps.view("<u8")
+    fps = fps.reshape(int(fps.size / num_fields), num_fields)
+    popcnt_bins = fp_file.root.config[3]
 
 @pytest.mark.incremental
 class TestPytablesBackend:
@@ -44,8 +52,8 @@ class TestPytablesBackend:
         sort_db_file(in_file)
         fpe = FPSim2Engine(in_file)
         assert fpe.fps.shape[0] == 10
-        assert fpe.fps[-1][-1] == 48
         assert fpe.fps[0][-1] == 35
+        assert fpe.fps[-1][-1] == 48
 
 
 def test_create_db_file_sdf():
@@ -71,3 +79,10 @@ def test_create_db_file_list():
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["nBits"] == FP_PARAMS["nBits"]
     assert fpe.fps.shape[0] == 3
+
+def test_calc_popcnt_bins():
+    in_file = os.path.join(TESTS_DIR, "data/test.h5")
+    fpe = FPSim2Engine(
+        in_file, in_memory_fps=True, fps_sort=True, storage_backend="pytables"
+    )
+    assert fpe.popcnt_bins == popcnt_bins
