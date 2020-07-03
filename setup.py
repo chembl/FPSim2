@@ -1,9 +1,9 @@
-from setuptools import setup, Extension, distutils
+from setuptools import setup, Extension, distutils, find_packages
 from setuptools.command.build_ext import build_ext
 import platform
 import sys
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 
 class get_pybind_include(object):
@@ -110,7 +110,7 @@ setup(
     author_email="eloyfelix@gmail.com",
     url="https://github.com/chembl/FPSim2",
     license="MIT",
-    packages=["FPSim2", "FPSim2.io", "FPSim2.io.backends"],
+    packages=find_packages(),
     description="Simple package for fast molecular similarity searching",
     long_description=open("README.md", encoding="utf-8").read(),
     ext_modules=ext_modules,

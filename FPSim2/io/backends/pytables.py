@@ -204,8 +204,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
 
     def load_popcnt_bins(self, fps_sort) -> None:
         if fps_sort:
-            fp_length = get_fp_length(self.fp_type, self.fp_params)
-            popcnt_bins = self.calc_popcnt_bins(self.fps, fp_length)
+            popcnt_bins = self.calc_popcnt_bins(self.fps)
         else:
             with tb.open_file(self.fp_filename, mode="r") as fp_file:
                 popcnt_bins = fp_file.root.config[3]

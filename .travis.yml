@@ -26,11 +26,11 @@ before_install:
   conda config --add channels conda-forge
   conda update -q conda
   conda install -q conda-build
-  conda create -q -n test-environment python=$CONDA
+  conda create -q -n test-environment python=$CONDA pytest
   source activate test-environment
 install:
 - |
   conda build --py $CONDA conda.recipe
   conda install --use-local fpsim2
 script:
-- python test/test_fpsim.py
+- pytest

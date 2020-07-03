@@ -169,7 +169,7 @@ def get_bounds_range(
     return range_to_keep
 
 
-def it_supplier(
+def it_mol_supplier(
     iterable: IterableType, gen_ids: bool, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from iterables.
@@ -188,8 +188,8 @@ def it_supplier(
         int id and rdkit mol.
     """
     for new_mol_id, mol in enumerate(iterable, 1):
-        if len(mol) == 1:
-            mol_string = mol[0]
+        if isinstance(mol, str):
+            mol_string = mol
             mol_id = new_mol_id
         else:
             if gen_ids:
@@ -322,7 +322,7 @@ def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[in
         elif input_type == "sdf":
             supplier = sdf_mol_supplier
     elif isinstance(io_source, Iterable):
-        supplier = it_supplier
+        supplier = it_mol_supplier
     else:
         raise Exception("Invalid input")
     return supplier

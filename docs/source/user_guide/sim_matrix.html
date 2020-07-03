@@ -166,9 +166,9 @@
   <div class="section" id="compute-a-symmetric-distance-matrix">
 <span id="sim-mat"></span><h1>Compute a symmetric distance matrix<a class="headerlink" href="#compute-a-symmetric-distance-matrix" title="Permalink to this headline">¶</a></h1>
 <p>Use the <a class="reference internal" href="../FPSim2.html#FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix" title="FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">symmetric_distance_matrix()</span></code></a> function to create a SciPy CSR sparse distance matrix from the current dataset:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2CudaEngine</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">FPSim2</span> <span class="kn">import</span> <span class="n">FPSim2Engine</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fp_filename</span> <span class="o">=</span> <span class="s1">&#39;chembl_27.h5&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fpe</span> <span class="o">=</span> <span class="n">FPSim2CudaEngine</span><span class="p">(</span><span class="n">fp_filename</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fpe</span> <span class="o">=</span> <span class="n">FPSim2Engine</span><span class="p">(</span><span class="n">fp_filename</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">csr_matrix</span> <span class="o">=</span> <span class="n">fpe</span><span class="o">.</span><span class="n">symmetric_distance_matrix</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>

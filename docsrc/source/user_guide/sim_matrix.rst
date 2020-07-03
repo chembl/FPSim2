@@ -5,9 +5,9 @@ Compute a symmetric distance matrix
 
 Use the :func:`~FPSim2.FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR sparse distance matrix from the current dataset::
 
-    >>> from FPSim2 import FPSim2CudaEngine
+    >>> from FPSim2 import FPSim2Engine
     >>> fp_filename = 'chembl_27.h5'
-    >>> fpe = FPSim2CudaEngine(fp_filename)
+    >>> fpe = FPSim2Engine(fp_filename)
     >>> csr_matrix = fpe.symmetric_distance_matrix(0.7, n_workers=4)
 
 .. note::
