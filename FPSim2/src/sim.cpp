@@ -135,7 +135,7 @@ py::array_t<Result> _similarity_search(py::array_t<uint64_t> pyquery,
     case 0: // tanimoto
       coeff = tanimoto_coeff(int_count, query(popcntidx), db(i, popcntidx));
       break;
-    case  1 : // tversky
+    case 1: // tversky
       for (size_t j = 1; j < popcntidx; j++) {
         // popcnts of both relative complements
         rel_co_count += popcnt64(query(j) & ~db(i, j));
