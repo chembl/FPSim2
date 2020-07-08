@@ -32,7 +32,7 @@ conda install -c efelix fpsim2
 
 ## Documentation
 
-Documentation is available at https://chembl.github.io/FPSim2/.
+Documentation is available at https://chembl.github.io/FPSim2/
 
 
 ## Trying it online
