@@ -4,3 +4,5 @@ try:
     from .FPSim2Cuda import FPSim2CudaEngine
 except Exception as e:
     pass
+
+__version__ = "0.2.4"

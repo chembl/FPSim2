@@ -11,7 +11,7 @@ Welcome to FPSim2's documentation!
 Highlights
 ----------
 
- - Using a fast population count algorithm from libpopcnt `libpopcnt <https://github.com/kimwalisch/libpopcnt/>`_
+ - Using a fast population count algorithm from `libpopcnt <https://github.com/kimwalisch/libpopcnt/>`_
  - Bounds for sublinear speedups from `10.1021/ci600358f <https://pubs.acs.org/doi/abs/10.1021/ci600358f/>`_ 
  - A compressed file format with optimised read speed based in `PyTables <https://www.pytables.org/>`_  and `BLOSC <http://www.blosc.org/pages/blosc-in-depth/>`_
  - Fast multicore CPU and GPU similarity searches
