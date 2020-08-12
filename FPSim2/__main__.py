@@ -36,8 +36,6 @@ import FPSim2.io.chem
 
 from typing import Any, Callable, Iterable, Dict, List, Tuple, Union
 
-__version__ = "0.2.4"
-
 def die(msg: str):
     sys.stderr.write(f"{msg}\n")
     raise SystemExit(1)
@@ -783,7 +781,7 @@ def export_command(parser: argparse.ArgumentParser, args: argparse.Namespace):
     write("#FPS1\n")
     write(f"#num_bits={num_bits}\n")
     write(f"#type={fps_typename}\n")
-    write(f"#software=RDKit/{rdkit_ver} FPSim2/{__version__}\n")
+    write(f"#software=RDKit/{rdkit_ver} FPSim2/{FPSim2.__version__}\n")
     
     # Table is laid out as:
     #   "fp_id": Int64Col(shape=(), dflt=0, pos=0),
@@ -1054,7 +1052,7 @@ def search_command(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         write(f"#type=Tanimoto k=all threshold={threshold}\n")
     else:
         write(f"#type=Tversky k=all threshold={threshold} alpha={alpha} beta={beta}\n")
-    write(f"#software=FPSim2/{__version__}\n")
+    write(f"#software=FPSim2/{FPSim2.__version__}\n")
     if args.queries is not None:
         write(f"#queries={format_filename(args.queries)}\n")
     write(f"#targets={format_filename(args.targets)}\n")
@@ -1201,7 +1199,7 @@ def substructure_command(parser: argparse.ArgumentParser, args: argparse.Namespa
 
     # Write the header
     write("#Screenout/1\n")
-    write(f"#software=FPSim2/{__version__}\n")
+    write(f"#software=FPSim2/{FPSim2.__version__}\n")
     if args.queries is not None:
         write(f"#queries={format_filename(args.queries)}\n")
     write(f"#targets={format_filename(args.targets)}\n")

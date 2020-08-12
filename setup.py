@@ -1,9 +1,24 @@
 from setuptools import setup, Extension, distutils, find_packages
 from setuptools.command.build_ext import build_ext
 import platform
+import codecs
+import os.path
 import sys
 
-__version__ = "0.2.4"
+
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), "r") as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith("__version__"):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
 
 
 class get_pybind_include(object):
@@ -105,7 +120,7 @@ class BuildExt(build_ext):
 
 setup(
     name="FPSim2",
-    version=__version__,
+    version=get_version("FPSim2/__init__.py"),
     author="Eloy Felix",
     author_email="eloyfelix@gmail.com",
     url="https://github.com/chembl/FPSim2",
