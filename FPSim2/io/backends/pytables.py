@@ -275,7 +275,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
         fp_type, fp_params, _ = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
-            new_mols = []
+            fps = []
             for mol_id, rdmol in supplier(mols_source, False, mol_id_prop=mol_id_prop):
                 if not rdmol:
                     continue
@@ -283,10 +283,10 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 popcnt = py_popcount(np.array(efp, dtype=np.uint64))
                 efp.insert(0, mol_id)
                 efp.append(popcnt)
-                new_mols.append(tuple(efp))
-                if len(new_mols) == BATCH_WRITE_SIZE:
-                    fps_table.append(new_mols)
-                    new_mols = []
+                fps.append(tuple(efp))
+                if len(fps) == BATCH_WRITE_SIZE:
+                    fps_table.append(fps)
+                    fps = []
             # append last batch < 10k
-            if new_mols:
-                fps_table.append(new_mols)
+            if fps:
+                fps_table.append(fps)
