@@ -102,7 +102,8 @@ def create_db_file(
                 fps_table.append(fps)
                 fps = []
         # append last batch < 10k
-        fps_table.append(fps)
+        if fps:
+            fps_table.append(fps)
 
         # create index so table can be sorted
         fps_table.cols.popcnt.create_index(kind="full")
@@ -284,7 +285,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 efp.append(popcnt)
                 new_mols.append(tuple(efp))
                 if len(new_mols) == BATCH_WRITE_SIZE:
-                    # append last batch < 10k
                     fps_table.append(new_mols)
                     new_mols = []
-            fps_table.append(new_mols)
+            # append last batch < 10k
+            if new_mols:
+                fps_table.append(new_mols)
