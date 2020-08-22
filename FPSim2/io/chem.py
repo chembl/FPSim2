@@ -278,7 +278,12 @@ def sdf_mol_supplier(
     tuple
         int id and rdkit mol.
     """
-    suppl = Chem.SDMolSupplier(filename)
+    if filename.endswith('.gz'):
+        import gzip
+        gzf = gzip.open(filename)
+        suppl = Chem.ForwardSDMolSupplier(gzf)
+    else:
+        suppl = Chem.ForwardSDMolSupplier(filename)
     for new_mol_id, rdmol in enumerate(suppl, 1):
         if rdmol:
             if gen_ids:
@@ -298,7 +303,7 @@ def sdf_mol_supplier(
             continue
 
 
-def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[int, Chem.Mol]]], None]:
+def get_mol_supplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[int, Chem.Mol]]], None]:
     """Returns a mol supplier depending on the object type and file extension.
 
     Parameters
@@ -316,7 +321,11 @@ def get_mol_suplier(io_source: Any) -> Union[Callable[..., IterableType[Tuple[in
     """
     supplier = None
     if isinstance(io_source, str):
-        input_type = io_source.split(".")[-1]
+        split_source = io_source.split(".")
+        if split_source[-1] == 'gz':
+            input_type = split_source[-2]
+        else:
+            input_type = split_source[-1]
         if input_type == "smi":
             supplier = smi_mol_supplier
         elif input_type == "sdf":

@@ -2,7 +2,7 @@ from FPSim2.io.chem import (
     smi_mol_supplier,
     sdf_mol_supplier,
     it_mol_supplier,
-    get_mol_suplier,
+    get_mol_supplier,
     get_bounds_range,
 )
 from rdkit import Chem
@@ -42,16 +42,22 @@ def test_suppliers():
         Chem.MolToSmiles(x[1])
         for x in sdf_mol_supplier(sdf_file, gen_ids=False, mol_id_prop="mol_id")
     ]
+    sdfgz_file = os.path.join(TESTS_DIR, "data/10mols.sdf.gz")
+    sdfgz_mols = [
+        Chem.MolToSmiles(x[1])
+        for x in sdf_mol_supplier(sdfgz_file, gen_ids=False, mol_id_prop="mol_id")
+    ]
     it_mols = [
         Chem.MolToSmiles(x[1]) for x in it_mol_supplier(smiles_list, gen_ids=True)
     ]
-    assert smi_mols == sdf_mols == it_mols
+    assert smi_mols == sdf_mols == sdfgz_mols == it_mols
 
 
-def test_get_mol_suplier():
-    assert get_mol_suplier("aaa.sdf") == sdf_mol_supplier
-    assert get_mol_suplier("aaa.smi") == smi_mol_supplier
-    assert get_mol_suplier(smiles_list) == it_mol_supplier
+def test_get_mol_supplier():
+    assert get_mol_supplier("aaa.sdf") == sdf_mol_supplier
+    assert get_mol_supplier("aaa.sdf.gz") == sdf_mol_supplier
+    assert get_mol_supplier("aaa.smi") == smi_mol_supplier
+    assert get_mol_supplier(smiles_list) == it_mol_supplier
 
 
 def test_get_bounds_range():

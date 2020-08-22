@@ -2,7 +2,7 @@ from typing import Any, Iterable as IterableType, Dict, List, Tuple, Union
 from .base import BaseStorageBackend
 from FPSim2.FPSim2lib import py_popcount
 from ..chem import (
-    get_mol_suplier,
+    get_mol_supplier,
     get_fp_length,
     rdmol_to_efp,
     FP_FUNC_DEFAULTS,
@@ -71,7 +71,7 @@ def create_db_file(
     # if params dict is empty use defaults
     if not fp_params:
         fp_params = FP_FUNC_DEFAULTS[fp_type]
-    supplier = get_mol_suplier(mols_source)
+    supplier = get_mol_supplier(mols_source)
     fp_length = get_fp_length(fp_type, fp_params)
     # set compression
     filters = tb.Filters(complib="blosc", complevel=5)
@@ -271,7 +271,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
         -------
         None
         """
-        supplier = get_mol_suplier(mols_source)
+        supplier = get_mol_supplier(mols_source)
         fp_type, fp_params, _ = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
