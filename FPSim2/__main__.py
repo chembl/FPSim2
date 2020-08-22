@@ -434,7 +434,7 @@ def create_command(parser: argparse.ArgumentParser, args: argparse.Namespace):
 
     input_filename = args.input
     try:
-        supl = FPSim2.io.chem.get_mol_suplier(input_filename)
+        supl = FPSim2.io.chem.get_mol_supplier(input_filename)
         if supl is None:
             raise Exception
     except Exception:
@@ -710,7 +710,7 @@ def import_command(parser: argparse.ArgumentParser, args: argparse.Namespace):
 
     # create_db_file() has no way to pass in the fingerprints to use.  Rather
     # than re-implement the underlying functionality, it's easier to replace
-    # the existing get_mol_suplier() and rdmol_to_efp() so they pass
+    # the existing get_mol_supplier() and rdmol_to_efp() so they pass
     # fingerprints through unchanged.
     def import_get_mol_supplier(mols_source):
         def open_existing_fingerprint_reader(mols_source, gen_ids, mol_id_prop):
@@ -721,7 +721,7 @@ def import_command(parser: argparse.ArgumentParser, args: argparse.Namespace):
         return rdmol  # 'rdmol' is really the fingerprint
     
     from FPSim2.io.backends import pytables
-    pytables.get_mol_suplier = import_get_mol_supplier
+    pytables.get_mol_supplier = import_get_mol_supplier
     pytables.rdmol_to_efp = import_rdmol_to_efp
 
     unused = None
