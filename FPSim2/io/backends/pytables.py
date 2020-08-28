@@ -1,6 +1,6 @@
 from typing import Any, Iterable as IterableType, Dict, List, Tuple, Union
 from .base import BaseStorageBackend
-from FPSim2.FPSim2lib import py_popcount
+from FPSim2.FPSim2lib import PyPopcount
 from ..chem import (
     get_mol_supplier,
     get_fp_length,
@@ -94,7 +94,7 @@ def create_db_file(
         fps = []
         for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
             efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-            popcnt = py_popcount(np.array(efp, dtype=np.uint64))
+            popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
             efp.insert(0, mol_id)
             efp.append(popcnt)
             fps.append(tuple(efp))
@@ -280,7 +280,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 if not rdmol:
                     continue
                 efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-                popcnt = py_popcount(np.array(efp, dtype=np.uint64))
+                popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
                 efp.insert(0, mol_id)
                 efp.append(popcnt)
                 fps.append(tuple(efp))
