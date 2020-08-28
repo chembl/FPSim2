@@ -239,6 +239,6 @@ class FPSim2CudaEngine(BaseEngine):
         results["idx"] = np.zeros(ids.shape[0])  # need to get rid of this
         results["mol_id"] = ids
         results["coeff"] = sims
-        SortResultsresults)
+        SortResults(results)
 
         return results[["mol_id", "coeff"]]
