@@ -64,11 +64,9 @@ class BaseEngine(ABC):
             Numpy array query molecule.
         """
         rdmol = load_molecule(query_string)
-        # generate the efp
         efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
-        efp.append(PyPopcount(np.array(efp, dtype=np.uint64)))
-        efp.insert(0, 0)
-        return np.array(efp, dtype=np.uint64)
+        popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
+        return np.array((0, *efp, popcnt)), dtype=np.uint64)
 
     @abstractmethod
     def similarity(
