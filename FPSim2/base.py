@@ -66,7 +66,7 @@ class BaseEngine(ABC):
         rdmol = load_molecule(query_string)
         efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
         popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-        return np.array((0, *efp, popcnt)), dtype=np.uint64)
+        return np.array((0, *efp, popcnt), dtype=np.uint64)
 
     @abstractmethod
     def similarity(
