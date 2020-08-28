@@ -95,9 +95,7 @@ def create_db_file(
         for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
             efp = rdmol_to_efp(rdmol, fp_type, fp_params)
             popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-            efp.insert(0, mol_id)
-            efp.append(popcnt)
-            fps.append(tuple(efp))
+            fps.append((mol_id, *efp, popcnt))
             if len(fps) == BATCH_WRITE_SIZE:
                 fps_table.append(fps)
                 fps = []
@@ -281,9 +279,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
                     continue
                 efp = rdmol_to_efp(rdmol, fp_type, fp_params)
                 popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-                efp.insert(0, mol_id)
-                efp.append(popcnt)
-                fps.append(tuple(efp))
+                fps.append((mol_id, *efp, popcnt))
                 if len(fps) == BATCH_WRITE_SIZE:
                     fps_table.append(fps)
                     fps = []
