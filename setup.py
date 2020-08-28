@@ -86,13 +86,7 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
-    c_opts = {"msvc": ["/EHsc /arch:AVX"], "unix": ["-O3"]}
-
-    if platform.machine() == "x86_64":
-        c_opts["unix"] += ["-msse4.2"]
-    else:
-        c_opts["unix"] += ["-march=native"]
-
+    c_opts = {"msvc": ["/EHsc"], "unix": ["-O3"]}
     l_opts = {"msvc": [], "unix": []}
 
     if sys.platform == "darwin":

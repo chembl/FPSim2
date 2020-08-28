@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, rdmol_to_efp
 from .io.backends import PyTablesStorageBackend
-from .FPSim2lib import py_popcount
+from .FPSim2lib import PyPopcount
 import numpy as np
 
 SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
@@ -66,7 +66,7 @@ class BaseEngine(ABC):
         rdmol = load_molecule(query_string)
         # generate the efp
         efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
-        efp.append(py_popcount(np.array(efp, dtype=np.uint64)))
+        efp.append(PyPopcount(np.array(efp, dtype=np.uint64)))
         efp.insert(0, 0)
         return np.array(efp, dtype=np.uint64)
 

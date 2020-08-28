@@ -2,9 +2,9 @@ import concurrent.futures as cf
 from .io.chem import get_bounds_range
 from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
-    _similarity_search,
-    _substructure_search,
-    sort_results,
+    SimilaritySearch,
+    SubstructureScreenout,
+    SortResults,
 )
 from .base import BaseEngine
 from scipy import sparse
@@ -27,9 +27,9 @@ def on_disk_search(
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
     if st == 2:
-        res = _substructure_search(query, fps, threshold, 0, 0, st, 0, fps.shape[0])
+        res = SubstructureScreenout(query, fps, threshold, 0, 0, st, 0, fps.shape[0])
     else:
-        res = _similarity_search(query, fps, threshold, a, b, st, 0, fps.shape[0])
+        res = SimilaritySearch(query, fps, threshold, a, b, st, 0, fps.shape[0])
     return res
 
 
@@ -115,7 +115,7 @@ class FPSim2Engine(BaseEngine):
             threshold=threshold,
             a=0,
             b=0,
-            search_func=_similarity_search,
+            search_func=SimilaritySearch,
             chunk_size=0,
             search_type="tanimoto",
             on_disk=False,
@@ -208,7 +208,7 @@ class FPSim2Engine(BaseEngine):
             threshold=threshold,
             a=a,
             b=b,
-            search_func=_similarity_search,
+            search_func=SimilaritySearch,
             chunk_size=0,
             search_type="tversky",
             on_disk=False,
@@ -293,7 +293,7 @@ class FPSim2Engine(BaseEngine):
             threshold=1.0,
             a=0,
             b=0,
-            search_func=_substructure_search,
+            search_func=SubstructureScreenout,
             chunk_size=0,
             search_type="substructure",
             on_disk=False,
@@ -473,7 +473,7 @@ class FPSim2Engine(BaseEngine):
                 if results:
                     np_res = np.concatenate(results)
                     if search_type != "substructure":
-                        sort_results(np_res)
+                        SortResults(np_res)
                 else:
                     np_res = empty_np
         else:
@@ -531,7 +531,7 @@ class FPSim2Engine(BaseEngine):
                     threshold=threshold,
                     a=a,
                     b=b,
-                    search_func=_similarity_search,
+                    search_func=SimilaritySearch,
                     chunk_size=0,
                     search_type=search_type,
                     on_disk=False,
@@ -556,7 +556,7 @@ class FPSim2Engine(BaseEngine):
                         threshold=threshold,
                         a=a,
                         b=b,
-                        search_func=_similarity_search,
+                        search_func=SimilaritySearch,
                         chunk_size=0,
                         search_type=search_type,
                         on_disk=False,
