@@ -27,7 +27,7 @@ From source:
 From a conda environment:
 
 ```bash
-conda install -c efelix fpsim2
+conda install -c conda-forge fpsim2
 ```
 
 ## Documentation
