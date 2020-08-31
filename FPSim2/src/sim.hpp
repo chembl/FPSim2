@@ -9,13 +9,13 @@ struct Result {
     float coeff;
 };
 
-__inline float SubstructCoeff(uint64_t rel_co_popcnt, uint64_t common_popcnt);
+inline float SubstructCoeff(uint64_t rel_co_popcnt, uint64_t common_popcnt);
 
-__inline float TanimotoCoeff(uint64_t common_popcnt, uint32_t qcount,
-                             uint32_t ocount);
+inline float TanimotoCoeff(uint64_t common_popcnt, uint64_t qcount,
+                           uint64_t ocount);
 
-__inline float TverskyCoeff(uint64_t common_popcnt, uint64_t rel_co_popcnt,
-                            uint64_t rel_co_popcnt2, float a, float b);
+inline float TverskyCoeff(uint64_t common_popcnt, uint64_t rel_co_popcnt,
+                          uint64_t rel_co_popcnt2, float a, float b);
 
 uint64_t PyPopcount(py::array_t<uint64_t> pyquery);
 
