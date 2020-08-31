@@ -91,8 +91,8 @@ py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,
         fpidx = i * qshape;
         // calc count for intersection and relative complement
         for (size_t j = 1; j < popcnt_idx; j++) {
-            common_popcnt += popcntll(qptr[fpidx + j] & dbptr[fpidx + j]);
-            rel_co_popcnt += popcntll(qptr[fpidx + j] & ~dbptr[fpidx + j]);
+            common_popcnt += popcntll(qptr[j] & dbptr[fpidx + j]);
+            rel_co_popcnt += popcntll(qptr[j] & ~dbptr[fpidx + j]);
         }
         // calc optimised tversky with a=1, b=0
         coeff = SubstructCoeff(rel_co_popcnt, common_popcnt);
