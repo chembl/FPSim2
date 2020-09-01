@@ -17,9 +17,9 @@ inline float TanimotoCoeff(uint64_t common_popcnt, uint64_t qcount,
 inline float TverskyCoeff(uint64_t common_popcnt, uint64_t rel_co_popcnt,
                           uint64_t rel_co_popcnt2, float a, float b);
 
-uint64_t PyPopcount(py::array_t<uint64_t> pyquery);
+uint64_t PyPopcount(py::array_t<uint64_t> py_query);
 
-void SortResults(py::array_t<Result> pyres);
+void SortResults(py::array_t<Result> py_res);
 
 py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,
                                             py::array_t<uint64_t> py_db,

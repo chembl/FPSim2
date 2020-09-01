@@ -105,7 +105,7 @@ py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,
             results_length *= 1.12;
             results->resize(results_length);
         }
-        //  reset values for next fp
+        // reset values for next fp
         common_popcnt = 0;
         rel_co_popcnt = 0;
         i++;
@@ -126,8 +126,8 @@ bool cmp(const Result &l, const Result &r) {
     return l.coeff > r.coeff;
 }
 
-void SortResults(py::array_t<Result> pyres) {
-    auto res = pyres.unchecked<1>();
+void SortResults(py::array_t<Result> py_res) {
+    auto res = py_res.unchecked<1>();
     Result *ptr = (Result *)res.data(0);
     std::sort(&ptr[0], &ptr[res.shape(0)], cmp);
 }
