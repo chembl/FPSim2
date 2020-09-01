@@ -10,7 +10,7 @@
 FPSim2 is a small NumPy centric Python/C++ package to run fast compound similarity searches. FPSim2 performs better with high search thresholds (>=0.7). Currently used in the [ChEMBL](http://www.ebi.ac.uk/chembl/) interface.
 
 Highlights:
-- Using a fast population count algorithm from [libpopcnt](https://github.com/kimwalisch/libpopcnt)
+- Using __builtin_popcountll/_mm_popcnt_u64 for fast popcount
 - Bounds for sublinear speedups from [10.1021/ci600358f](https://pubs.acs.org/doi/abs/10.1021/ci600358f)
 - A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/)
 - Fast multicore CPU and GPU similarity searches
