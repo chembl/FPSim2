@@ -1,10 +1,10 @@
-from rdkit import Chem
+from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, Union
+from FPSim2.FPSim2lib import BitStrToIntList
+from collections.abc import Iterable
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
-from collections.abc import Iterable
-from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, Union
+from rdkit import Chem
 import numpy as np
-import textwrap
 import re
 
 
@@ -84,9 +84,7 @@ def rdmol_to_efp(
     rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]
 ) -> List[int]:
     fp = FP_FUNCS[fp_func](rdmol, **fp_params)
-    splited = textwrap.wrap(fp.ToBitString(), 64)
-    efp = [int(x, 2) for x in splited]
-    return efp
+    return BitStrToIntList(fp.ToBitString())
 
 
 def load_molecule(mol_string: str) -> Chem.Mol:

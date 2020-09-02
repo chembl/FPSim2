@@ -12,6 +12,7 @@ PYBIND11_MODULE(FPSim2lib, m) {
         .. autosummary::
            :toctree: _generate
            PyPopcount
+           BitStrToIntList
            SortResults
            SubstructureScreenout
            SimilaritySearch
@@ -24,6 +25,13 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Calc popcount
         
         Calcs the popcount of a NumPy int array.
+    )pbdoc");
+
+    m.def("BitStrToIntList", &BitStrToIntList,
+        R"pbdoc(
+        Bitstring to python int list
+
+        Converts RDKit FP bitstring to a python int list.
     )pbdoc");
 
     m.def("SortResults", &SortResults, py::call_guard<py::gil_scoped_release>(),

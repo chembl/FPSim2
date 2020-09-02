@@ -175,7 +175,7 @@ def sort_db_file(filename: str) -> None:
             popcnt_bins = calc_popcnt_bins_pytables(dst_fps, fp_length)
             param_table.append(popcnt_bins)
 
-    # remove not sorted file
+    # remove unsorted file
     os.remove(tmp_filename)
 
 

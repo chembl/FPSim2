@@ -19,6 +19,8 @@ inline float TverskyCoeff(uint64_t common_popcnt, uint64_t rel_co_popcnt,
 
 uint64_t PyPopcount(py::array_t<uint64_t> py_query);
 
+py::list BitStrToIntList(std::string &bit_string);
+
 void SortResults(py::array_t<Result> py_res);
 
 py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,

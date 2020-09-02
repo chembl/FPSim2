@@ -23,9 +23,17 @@ inline uint64_t popcntll(uint64_t X)
 uint64_t PyPopcount(py::array_t<uint64_t> py_query) {
     auto query = py_query.unchecked<1>();
     uint64_t qcount = 0;
-    for (ssize_t i = 0; i < query.shape(0); i++)
+    for (size_t i = 0; i < query.shape(0); i++)
         qcount += popcntll(query(i));
     return qcount;
+}
+
+py::list BitStrToIntList(std::string &bit_string) {
+    py::list efp;
+    for (size_t i = 0; i < bit_string.length(); i += 64) {
+        efp.append(std::stoull(bit_string.substr(i, 64), 0, 2));
+    }
+    return efp;
 }
 
 inline float TanimotoCoeff(uint64_t common_popcnt, uint64_t qcount,
