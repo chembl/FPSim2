@@ -1,5 +1,5 @@
 from .io.chem import get_bounds_range
-from .FPSim2lib import SortResults
+from .FPSim2libib.utilsh.utilsSortResults
 from .base import BaseEngine
 import numpy as np
 import cupy as cp

@@ -1,5 +1,5 @@
 from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, Union
-from FPSim2.FPSim2lib import BitStrToIntList
+from FPSim2.FPSim2lib.utils import BitStrToIntList
 from collections.abc import Iterable
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools

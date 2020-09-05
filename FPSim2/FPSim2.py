@@ -4,8 +4,8 @@ from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
     SimilaritySearch,
     SubstructureScreenout,
-    SortResults,
 )
+from .FPSim2lib.utils import SortResults
 from .base import BaseEngine
 from scipy import sparse
 import numpy as np
@@ -290,7 +290,7 @@ class FPSim2Engine(BaseEngine):
             )
         return self._base_search(
             query=query_string,
-            threshold=1.0,
+            threshold=1,
             a=0,
             b=0,
             search_func=SubstructureScreenout,
@@ -324,7 +324,7 @@ class FPSim2Engine(BaseEngine):
         """
         return self._base_search(
             query=query_string,
-            threshold=1.0,
+            threshold=1,
             a=0,
             b=0,
             search_func=on_disk_search,

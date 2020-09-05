@@ -1,52 +1,23 @@
 #include "sim.hpp"
+#include "popcnt.hpp"
+#include "utils.hpp"
+#include "result.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <stdexcept>
-#ifdef _MSC_VER
-#include <nmmintrin.h>
-#endif
 
 namespace py = pybind11;
 
-#ifdef _WIN64
-inline uint64_t popcntll(uint64_t X)
-{
-    return _mm_popcnt_u64(X);
-}
-#else
-inline uint64_t popcntll(uint64_t X)
-{
-    return __builtin_popcountll(X);
-}
-#endif
-
-uint64_t PyPopcount(py::array_t<uint64_t> py_query) {
-    auto query = py_query.unchecked<1>();
-    uint64_t qcount = 0;
-    for (size_t i = 0; i < query.shape(0); i++)
-        qcount += popcntll(query(i));
-    return qcount;
+inline float TanimotoCoeff(const uint32_t &common_popcnt,
+                           const uint32_t &qcount,
+                           const uint32_t &ocount) {
+    return (float) common_popcnt / (qcount + ocount - common_popcnt);
 }
 
-py::list BitStrToIntList(std::string &bit_string) {
-    py::list efp;
-    for (size_t i = 0; i < bit_string.length(); i += 64) {
-        efp.append(std::stoull(bit_string.substr(i, 64), 0, 2));
-    }
-    return efp;
-}
-
-inline float TanimotoCoeff(uint64_t common_popcnt, uint64_t qcount,
-                           uint64_t ocount) {
-    float coeff = 0.0;
-    coeff = qcount + ocount - common_popcnt;
-    if (coeff != 0.0)
-        coeff = common_popcnt / coeff;
-    return coeff;
-}
-
-inline float TverskyCoeff(uint64_t common_popcnt, uint64_t rel_co_popcnt,
-                          uint64_t rel_co_popcnt2, float a, float b) {
+inline float TverskyCoeff(const uint32_t &common_popcnt,
+                          const uint32_t &rel_co_popcnt,
+                          const uint32_t &rel_co_popcnt2,
+                          const float &a, const float &b) {
     float coeff = 0.0;
     coeff = common_popcnt + a * rel_co_popcnt + b * rel_co_popcnt2;
     if (coeff != 0.0)
@@ -54,48 +25,45 @@ inline float TverskyCoeff(uint64_t common_popcnt, uint64_t rel_co_popcnt,
     return coeff;
 }
 
-inline float SubstructCoeff(uint64_t rel_co_popcnt, uint64_t common_popcnt) {
-    float coeff = 0.0;
+inline uint32_t SubstructCoeff(const uint32_t &rel_co_popcnt,
+                               const uint32_t &common_popcnt) {
+    uint32_t coeff = 0;
     coeff = rel_co_popcnt + common_popcnt;
-    if (coeff != 0.0)
+    if (coeff != 0)
         coeff = common_popcnt / coeff;
     return coeff;
 }
 
-py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,
-                                            py::array_t<uint64_t> py_db,
-                                            float threshold,
-                                            float a,
-                                            float b,
-                                            uint8_t sim_type,
-                                            uint32_t i_start,
-                                            uint32_t i_end) {
+py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query,
+                                            const py::array_t<uint64_t> py_db,
+                                            const float threshold,
+                                            const float a,
+                                            const float b,
+                                            const uint8_t sim_type,
+                                            const uint32_t i_start,
+                                            const uint32_t i_end) {
 
     // direct access to np arrays without checks
-    auto query = py_query.unchecked<1>();
-    uint64_t *qptr = (uint64_t *)query.data(0);
-    auto db = py_db.unchecked<2>();
-    uint64_t *dbptr = (uint64_t *)db.data(0, 0);
+    const auto query = py_query.unchecked<1>();
+    const uint64_t *qptr = (uint64_t *)query.data(0);
+    const auto db = py_db.unchecked<2>();
+    const uint64_t *dbptr = (uint64_t *)db.data(0, 0);
 
-    uint8_t qshape = query.shape(0);
-    uint8_t popcnt_idx = qshape - 1;
+    const ssize_t qshape = query.shape(0);
+    const size_t popcnt_idx = qshape - 1;
 
-    // initial similarity result array size, allocate memory for results
+    // initial results array size
     uint32_t results_length = 256;
     auto results = new std::vector<uint32_t>(results_length);
+    uint32_t num_results = 0;
 
     // relative complement and intersection popcounts
     uint64_t common_popcnt = 0;
     uint64_t rel_co_popcnt = 0;
 
-    // number of results during execution
-    uint32_t num_results = 0;
-
-    float coeff = 0.0;
+    uint32_t coeff;
     uint64_t fpidx;
-
-    uint32_t i = i_start;
-    while (i_end > i) {
+    for (uint32_t i = i_start; i < i_end; i++) {
         fpidx = i * qshape;
         // calc count for intersection and relative complement
         for (size_t j = 1; j < popcnt_idx; j++) {
@@ -105,18 +73,17 @@ py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,
         // calc optimised tversky with a=1, b=0
         coeff = SubstructCoeff(rel_co_popcnt, common_popcnt);
 
-        if (coeff == threshold) {
+        if (coeff == 1) {
             (*results)[num_results] = dbptr[fpidx];
-            num_results += 1;
-        }
-        if (num_results == results_length) {
-            results_length *= 1.12;
-            results->resize(results_length);
+            num_results++;
+            if (num_results == results_length) {
+                results_length *= 1.12;
+                results->resize(results_length);
+            }
         }
         // reset values for next fp
         common_popcnt = 0;
         rel_co_popcnt = 0;
-        i++;
     }
     results->resize(num_results);
 
@@ -130,51 +97,37 @@ py::array_t<uint32_t> SubstructureScreenout(py::array_t<uint64_t> py_query,
     return py::array_t<uint32_t>(results->size(), results->data(), capsule);
 }
 
-bool cmp(const Result &l, const Result &r) {
-    return l.coeff > r.coeff;
-}
-
-void SortResults(py::array_t<Result> py_res) {
-    auto res = py_res.unchecked<1>();
-    Result *ptr = (Result *)res.data(0);
-    std::sort(&ptr[0], &ptr[res.shape(0)], cmp);
-}
-
-py::array_t<Result> SimilaritySearch(py::array_t<uint64_t> py_query,
-                                     py::array_t<uint64_t> py_db,
-                                     float threshold,
-                                     float a,
-                                     float b,
-                                     uint8_t sim_type,
-                                     uint32_t i_start,
-                                     uint32_t i_end) {
+py::array_t<Result> SimilaritySearch(const py::array_t<uint64_t> py_query,
+                                     const py::array_t<uint64_t> py_db,
+                                     const float threshold,
+                                     const float a,
+                                     const float b,
+                                     const uint8_t sim_type,
+                                     const uint32_t i_start,
+                                     const uint32_t i_end) {
 
     // direct access to np arrays without checks
-    auto query = py_query.unchecked<1>();
-    uint64_t *qptr = (uint64_t *)query.data(0);
-    auto db = py_db.unchecked<2>();
-    uint64_t *dbptr = (uint64_t *)db.data(0, 0);
+    const auto query = py_query.unchecked<1>();
+    const uint64_t *qptr = (uint64_t *)query.data(0);
+    const auto db = py_db.unchecked<2>();
+    const uint64_t *dbptr = (uint64_t *)db.data(0, 0);
 
-    uint8_t qshape = query.shape(0);
-    uint8_t popcnt_idx = qshape - 1;
+    const ssize_t qshape = query.shape(0);
+    const size_t popcnt_idx = qshape - 1;
 
-    // initial similarity result array size, allocate memory for results
+    // initial results array size
     uint32_t results_length = 256;
     auto results = new std::vector<Result>(results_length);
+    uint32_t num_results = 0;
 
     // relative complements and intersection popcounts
     uint64_t common_popcnt = 0;
     uint64_t rel_co_popcnt = 0;
     uint64_t rel_co_popcnt2 = 0;
 
-    // number of results during execution
-    uint32_t num_results = 0;
-
-    float coeff = 0.0;
+    float coeff;
     uint64_t fpidx;
-
-    uint32_t i = i_start;
-    while (i_end > i) {
+    for (uint32_t i = i_start; i < i_end; i++) {
         fpidx = i * qshape;
         switch (sim_type) {
         case 0: // tanimoto
@@ -201,19 +154,18 @@ py::array_t<Result> SimilaritySearch(py::array_t<uint64_t> py_query,
             (*results)[num_results].idx = i;
             (*results)[num_results].mol_id = dbptr[fpidx];
             (*results)[num_results].coeff = coeff;
-            num_results += 1;
-        }
-        if (num_results == results_length) {
-            // reallocate memory
-            results_length *= 1.12;
-            results->resize(results_length);
+            num_results++;
+            if (num_results == results_length) {
+                // reallocate memory
+                results_length *= 1.12;
+                results->resize(results_length);
+            }
         }
         common_popcnt = 0;
-        i++;
     }
     // set final size and sort
     results->resize(num_results);
-    std::sort(results->begin(), results->end(), cmp);
+    std::sort(results->begin(), results->end(), utils::cmp);
 
     // acquire the GIL before calling Python code
     py::gil_scoped_acquire acquire;

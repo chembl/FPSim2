@@ -36,13 +36,13 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         "FPSim2.FPSim2lib",
-        sources=sorted(["FPSim2/src/sim.cpp", "FPSim2/src/wraps.cpp"]),
+        sources=sorted(["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"]),
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
         ],
         language="c++",
-    )
+    ),
 ]
 
 

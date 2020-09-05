@@ -1,6 +1,6 @@
 from typing import Any, Iterable as IterableType, Dict, List, Tuple, Union
 from .base import BaseStorageBackend
-from FPSim2.FPSim2lib import PyPopcount
+from FPSim2.FPSim2lib.utils import PyPopcount
 from ..chem import (
     get_mol_supplier,
     get_fp_length,
