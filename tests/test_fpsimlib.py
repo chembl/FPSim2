@@ -1,7 +1,9 @@
 import numpy as np
-from FPSim2.FPSim2lib import (
+from FPSim2.FPSim2lib.utils import (
     PyPopcount,
     SortResults,
+)
+from FPSim2.FPSim2lib import (
     SimilaritySearch,
     SubstructureScreenout,
 )

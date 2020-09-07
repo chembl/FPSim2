@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, rdmol_to_efp
 from .io.backends import PyTablesStorageBackend
-from .FPSim2lib import PyPopcount
+from .FPSim2lib.utils import PyPopcount
 import numpy as np
 
 SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}

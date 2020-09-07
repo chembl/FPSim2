@@ -36,13 +36,13 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         "FPSim2.FPSim2lib",
-        sources=sorted(["FPSim2/src/sim.cpp", "FPSim2/src/wraps.cpp"]),
+        sources=sorted(["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"]),
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
         ],
         language="c++",
-    )
+    ),
 ]
 
 
@@ -86,7 +86,13 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
-    c_opts = {"msvc": ["/EHsc", "/arch:AVX"], "unix": ["-O3", "-march=native"]}
+    c_opts = {"msvc": ["/EHsc", "/arch:AVX"], "unix": ["-O3"]}
+    machine = platform.machine().lower()
+    if machine.startswith("x86"):
+        c_opts["unix"] += ["-msse4.2"]
+    else: # for manual rpi install
+        c_opts["unix"] += ["-march=native"]
+
     l_opts = {"msvc": [], "unix": []}
 
     if sys.platform == "darwin":
