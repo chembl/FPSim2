@@ -1,6 +1,6 @@
 [![Build Status](https://dev.azure.com/chembl/FPSim2/_apis/build/status/chembl.FPSim2?branchName=master)](https://dev.azure.com/chembl/FPSim2/_build/latest?definitionId=1&branchName=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Anaconda-Server Badge](https://anaconda.org/efelix/fpsim2/badges/platforms.svg)](https://anaconda.org/efelix/fpsim2)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/fpsim2/badges/platforms.svg)](https://anaconda.org/efelix/fpsim2)
 [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
 [![DOI](https://zenodo.org/badge/154705090.svg)](https://zenodo.org/badge/latestdoi/154705090)
 
