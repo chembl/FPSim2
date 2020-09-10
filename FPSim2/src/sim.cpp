@@ -45,17 +45,14 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
 
     // direct access to np arrays without checks
     const auto query = py_query.unchecked<1>();
-    const uint64_t *qptr = (uint64_t *)query.data(0);
+    const auto *qptr = (uint64_t *)query.data(0);
     const auto db = py_db.unchecked<2>();
-    const uint64_t *dbptr = (uint64_t *)db.data(0, 0);
+    const auto *dbptr = (uint64_t *)db.data(0, 0);
 
-    const ssize_t qshape = query.shape(0);
-    const size_t popcnt_idx = qshape - 1;
+    const auto qshape = query.shape(0);
+    const auto popcnt_idx = qshape - 1;
 
-    // initial results array size
-    uint32_t results_length = 256;
-    auto results = new std::vector<uint32_t>(results_length);
-    uint32_t num_results = 0;
+    auto results = new std::vector<uint32_t>();
 
     // relative complement and intersection popcounts
     uint64_t common_popcnt = 0;
@@ -63,7 +60,7 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
 
     uint32_t coeff;
     uint64_t fpidx;
-    for (uint32_t i = i_start; i < i_end; i++) {
+    for (auto i = i_start; i < i_end; i++) {
         fpidx = i * qshape;
         // calc count for intersection and relative complement
         for (size_t j = 1; j < popcnt_idx; j++) {
@@ -73,28 +70,16 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
         // calc optimised tversky with a=1, b=0
         coeff = SubstructCoeff(rel_co_popcnt, common_popcnt);
 
-        if (coeff == 1) {
-            (*results)[num_results] = dbptr[fpidx];
-            num_results++;
-            if (num_results == results_length) {
-                results_length *= 1.12;
-                results->resize(results_length);
-            }
-        }
+        if (coeff == 1)
+            results->push_back((uint32_t) dbptr[fpidx]);
+
         // reset values for next fp
         common_popcnt = 0;
         rel_co_popcnt = 0;
     }
-    results->resize(num_results);
-
     // acquire the GIL before calling Python code
     py::gil_scoped_acquire acquire;
-
-    // python object that will free the memory when destroyed
-    auto capsule = py::capsule(results, [](void *results) {
-        delete reinterpret_cast<std::vector<uint32_t> *>(results);
-    });
-    return py::array_t<uint32_t>(results->size(), results->data(), capsule);
+    return utils::Vector2NumPy<uint32_t>(results);
 }
 
 py::array_t<Result> SimilaritySearch(const py::array_t<uint64_t> py_query,
@@ -108,17 +93,14 @@ py::array_t<Result> SimilaritySearch(const py::array_t<uint64_t> py_query,
 
     // direct access to np arrays without checks
     const auto query = py_query.unchecked<1>();
-    const uint64_t *qptr = (uint64_t *)query.data(0);
+    const auto *qptr = (uint64_t *)query.data(0);
     const auto db = py_db.unchecked<2>();
-    const uint64_t *dbptr = (uint64_t *)db.data(0, 0);
+    const auto *dbptr = (uint64_t *)db.data(0, 0);
 
-    const ssize_t qshape = query.shape(0);
-    const size_t popcnt_idx = qshape - 1;
+    const auto qshape = query.shape(0);
+    const auto popcnt_idx = qshape - 1;
 
-    // initial results array size
-    uint32_t results_length = 256;
-    auto results = new std::vector<Result>(results_length);
-    uint32_t num_results = 0;
+    auto results = new std::vector<Result>();
 
     // relative complements and intersection popcounts
     uint64_t common_popcnt = 0;
@@ -127,7 +109,7 @@ py::array_t<Result> SimilaritySearch(const py::array_t<uint64_t> py_query,
 
     float coeff;
     uint64_t fpidx;
-    for (uint32_t i = i_start; i < i_end; i++) {
+    for (auto i = i_start; i < i_end; i++) {
         fpidx = i * qshape;
         switch (sim_type) {
         case 0: // tanimoto
@@ -150,29 +132,13 @@ py::array_t<Result> SimilaritySearch(const py::array_t<uint64_t> py_query,
             throw std::invalid_argument("Unknown simialirty type");
         }
 
-        if (coeff >= threshold) {
-            (*results)[num_results].idx = i;
-            (*results)[num_results].mol_id = dbptr[fpidx];
-            (*results)[num_results].coeff = coeff;
-            num_results++;
-            if (num_results == results_length) {
-                // reallocate memory
-                results_length *= 1.12;
-                results->resize(results_length);
-            }
-        }
+        if (coeff >= threshold)
+            results->push_back({i, (uint32_t) dbptr[fpidx], coeff});
         common_popcnt = 0;
     }
-    // set final size and sort
-    results->resize(num_results);
     std::sort(results->begin(), results->end(), utils::cmp);
 
     // acquire the GIL before calling Python code
     py::gil_scoped_acquire acquire;
-
-    // python object that will free the memory when destroyed
-    auto capsule = py::capsule(results, [](void *results) {
-        delete reinterpret_cast<std::vector<Result> *>(results);
-    });
-    return py::array_t<Result>(results->size(), results->data(), capsule);
+    return utils::Vector2NumPy<Result>(results);
 }

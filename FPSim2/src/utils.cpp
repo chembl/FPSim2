@@ -1,5 +1,5 @@
-#include "popcnt.hpp"
 #include "utils.hpp"
+#include "popcnt.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <string>

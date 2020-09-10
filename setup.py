@@ -38,6 +38,7 @@ ext_modules = [
         "FPSim2.FPSim2lib",
         sources=sorted(["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"]),
         include_dirs=[
+            "FPSim2/src/include",
             # Path to pybind11 headers
             get_pybind_include(),
         ],
