@@ -13,7 +13,7 @@ import rdkit
 import math
 import os
 
-BATCH_WRITE_SIZE = 10000
+BATCH_WRITE_SIZE = 128000
 
 
 def create_schema(fp_length: int) -> Any:
@@ -99,7 +99,7 @@ def create_db_file(
             if len(fps) == BATCH_WRITE_SIZE:
                 fps_table.append(fps)
                 fps = []
-        # append last batch < 10k
+        # append last batch < 128k
         if fps:
             fps_table.append(fps)
 
@@ -157,7 +157,7 @@ def sort_db_file(filename: str) -> None:
                 start=None,
                 stop=None,
                 step=None,
-                chunkshape="keep",
+                chunkshape="auto",
                 sortby="popcnt",
                 check_CSI=True,
                 propindexes=True,
@@ -283,6 +283,6 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 if len(fps) == BATCH_WRITE_SIZE:
                     fps_table.append(fps)
                     fps = []
-            # append last batch < 10k
+            # append last batch < 128k
             if fps:
                 fps_table.append(fps)

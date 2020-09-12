@@ -203,7 +203,6 @@ def it_mol_supplier(
                         "cosinder setting gen_ids=True when running "
                         "create_db_file to autogenerate them."
                     )
-                mol_string = mol[0]
         rdmol = load_molecule(mol_string)
         if rdmol:
             yield mol_id, rdmol
@@ -250,7 +249,7 @@ def smi_mol_supplier(
                             "cosinder setting gen_ids=True when running "
                             "create_db_file to autogenerate them."
                         )
-                    smiles = mol[0].strip()
+            smiles = smiles.strip()
             rdmol = Chem.MolFromSmiles(smiles)
             if rdmol:
                 yield mol_id, rdmol

@@ -542,11 +542,6 @@ class FPSim2Engine(BaseEngine):
                     rows.append(idx)
                     cols.append(r["idx"])
                     data.append(r["coeff"])
-                    # symmetry
-                    rows.append(r["idx"])
-                    cols.append(idx)
-                    data.append(r["coeff"])
-
         else:
             with cf.ThreadPoolExecutor(max_workers=n_workers) as executor:
                 future_to_idx = {
@@ -572,13 +567,10 @@ class FPSim2Engine(BaseEngine):
                         rows.append(idx)
                         cols.append(r["idx"])
                         data.append(r["coeff"])
-                        # symmetry
-                        rows.append(r["idx"])
-                        cols.append(idx)
-                        data.append(r["coeff"])
 
         csr_matrix = sparse.csr_matrix(
-            (data, (rows, cols)), shape=(self.fps.shape[0], self.fps.shape[0])
+            (data + data, (rows + cols, cols + rows)),
+            shape=(self.fps.shape[0], self.fps.shape[0]),
         )
 
         # similarity to distance
