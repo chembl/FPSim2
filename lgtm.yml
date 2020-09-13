@@ -1,0 +1,12 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - g++-7
+        - python3-pybind11
+    index:
+      build_command:
+        - python3 setup.py build_ext --inplace
+  python:
+    before_index:
+      - echo Indexing Python
