@@ -106,7 +106,7 @@ def nonnegative_float(s: str) -> float:
         raise argparse.ArgumentTypeError("must be a non-negative float")
     if value > 1000.0:
         raise argparse.ArgumentTypeError("must not be greater than 1000.0")
-    if value != value:
+    if np.isnan(value):
         raise argparse.ArgumentTypeError("must not be NaN")
     return value
         
