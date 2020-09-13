@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 
 #if defined(_MSC_VER) // windows intel
