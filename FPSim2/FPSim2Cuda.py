@@ -148,8 +148,6 @@ class FPSim2CudaEngine(BaseEngine):
         # init sims result array
         sims = cp.zeros(subset_size, dtype="f4")
 
-        # set the threshold variable and run the search
-        threshold = cp.asarray(threshold, dtype="f4")
         self.cupy_kernel(
             self.cuda_db[slice(*fp_range)],
             query,
