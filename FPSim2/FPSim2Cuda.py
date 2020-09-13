@@ -46,7 +46,7 @@ class FPSim2CudaEngine(BaseEngine):
                      const unsigned long long int* qcount,
                      const unsigned long long int* db,
                      const unsigned long long int* popcnts,
-                     float* threshold,
+                     const float* threshold,
                      float* out) {{
 
             // Shared block array. Only visible for threads in same block
