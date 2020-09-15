@@ -20,9 +20,9 @@ def on_disk_search(
     a: float,
     b: float,
     st: str,
-    chunk_range: Tuple[int, int],
+    chunk: Tuple[int, int],
 ) -> np.ndarray:
-    fps = storage.get_fps_chunk(chunk_range)
+    fps = storage.get_fps_chunk(chunk)
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
@@ -128,7 +128,7 @@ class FPSim2Engine(BaseEngine):
         query_string: str,
         threshold: float,
         n_workers: int = 1,
-        chunk_size: int = 250000,
+        chunk_size: int = None,
     ) -> np.ndarray:
         """Runs a on disk Tanimoto search.
 
@@ -151,6 +151,9 @@ class FPSim2Engine(BaseEngine):
         results : numpy array
             Similarity results.
         """
+        if not chunk_size:
+            chunk_size = self.storage.chunk_size
+
         return self._base_search(
             query=query_string,
             threshold=threshold,
@@ -223,7 +226,7 @@ class FPSim2Engine(BaseEngine):
         a: float,
         b: float,
         n_workers: int = 1,
-        chunk_size: int = 250000,
+        chunk_size: int = None,
     ) -> np.ndarray:
         """Runs a on disk Tversky search.
 
@@ -252,6 +255,9 @@ class FPSim2Engine(BaseEngine):
         results : numpy array
             Similarity results.
         """
+        if not chunk_size:
+            chunk_size = self.storage.chunk_size
+
         return self._base_search(
             query=query_string,
             threshold=threshold,
@@ -302,7 +308,7 @@ class FPSim2Engine(BaseEngine):
         )
 
     def on_disk_substructure(
-        self, query_string: str, n_workers: int = 1, chunk_size: int = 250000
+        self, query_string: str, n_workers: int = 1, chunk_size: int = None
     ) -> np.ndarray:
         """Run a on disk substructure screenout.
 
@@ -322,6 +328,9 @@ class FPSim2Engine(BaseEngine):
         results : numpy array
             Substructure results.
         """
+        if not chunk_size:
+            chunk_size = self.storage.chunk_size
+
         return self._base_search(
             query=query_string,
             threshold=1,
@@ -356,10 +365,8 @@ class FPSim2Engine(BaseEngine):
             if not on_disk:
                 chunk_size = int((i_end - i_start) / n_workers)
                 chunk_size = 1 if chunk_size == 0 else chunk_size
-            chunks_ranges = [
-                [x, x + chunk_size] for x in range(i_start, i_end, chunk_size)
-            ]
-            chunks_ranges[-1][1] = i_end
+            chunks = [[x, x + chunk_size] for x in range(i_start, i_end, chunk_size)]
+            chunks[-1][1] = i_end
             if on_disk:
                 future_ss = {
                     exe.submit(
@@ -370,9 +377,9 @@ class FPSim2Engine(BaseEngine):
                         a,
                         b,
                         SEARCH_TYPES[search_type],
-                        cr,
-                    ): cr_id
-                    for cr_id, cr in enumerate(chunks_ranges)
+                        chunk,
+                    ): chunk_id
+                    for chunk_id, chunk in enumerate(chunks)
                 }
             else:
                 future_ss = {
@@ -384,10 +391,10 @@ class FPSim2Engine(BaseEngine):
                         a,
                         b,
                         SEARCH_TYPES[search_type],
-                        cr[0],
-                        cr[1],
-                    ): cr_id
-                    for cr_id, cr in enumerate(chunks_ranges)
+                        chunk[0],
+                        chunk[1],
+                    ): chunk_id
+                    for chunk_id, chunk in enumerate(chunks)
                 }
             for future in cf.as_completed(future_ss):
                 m = future_ss[future]
@@ -434,15 +441,24 @@ class FPSim2Engine(BaseEngine):
         if fp_range:
             if n_workers == 1:
                 if on_disk:
-                    np_res = search_func(
-                        np_query,
-                        self.storage,
-                        threshold,
-                        a,
-                        b,
-                        SEARCH_TYPES[search_type],
-                        fp_range,
+                    chunks = (
+                        (x, x + chunk_size)
+                        for x in range(fp_range[0], fp_range[1], chunk_size)
                     )
+                    results = []
+                    for chunk in chunks:
+                        res = search_func(
+                            np_query,
+                            self.storage,
+                            threshold,
+                            a,
+                            b,
+                            SEARCH_TYPES[search_type],
+                            chunk,
+                        )
+                        if len(res) > 0:
+                            results.append(res)
+                    np_res = np.concatenate(results)
                 else:
                     np_res = search_func(
                         np_query,

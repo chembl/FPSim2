@@ -40,4 +40,4 @@ It is also possible to run on disk similarity searches (i.e. without loading the
     fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
     query = 'CC(=O)Oc1ccccc1C(=O)O'
-    results = fpe.on_disk_tversky(query, 0.7, 0.5, 0.5, chunk_size=250000, n_workers=1)
+    results = fpe.on_disk_tversky(query, 0.7, 0.5, 0.5, n_workers=1)

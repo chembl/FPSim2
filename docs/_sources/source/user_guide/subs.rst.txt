@@ -37,4 +37,4 @@ It is also possible to run on disk substructure screenouts (i.e. without loading
     fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
     query = 'CC(=O)Oc1ccccc1C(=O)O'
-    results = fpe.on_disk_substructure(query, chunk_size=250000, n_workers=1)
+    results = fpe.on_disk_substructure(query, n_workers=1)

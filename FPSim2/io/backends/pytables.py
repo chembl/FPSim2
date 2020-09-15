@@ -187,6 +187,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
         if in_memory_fps:
             self.load_fps(in_memory_fps, fps_sort)
         self.load_popcnt_bins(fps_sort)
+        with tb.open_file(self.fp_filename, mode="r") as fp_file:
+            self.chunk_size = fp_file.root.fps.chunkshape[0] * 120
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
