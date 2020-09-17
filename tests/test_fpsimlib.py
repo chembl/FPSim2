@@ -4,7 +4,8 @@ from FPSim2.FPSim2lib.utils import (
     SortResults,
 )
 from FPSim2.FPSim2lib import (
-    SimilaritySearch,
+    TanimotoSearch,
+    TverskySearch,
     SubstructureScreenout,
 )
 from FPSim2 import FPSim2Engine
@@ -21,8 +22,8 @@ def test_PyPopcount():
     assert PyPopcount(fpe.fps[2]) == 43
 
 
-def test_tanimoto_SimilaritySearch():
-    res = SimilaritySearch(fpe.fps[0], fpe.fps, 0.0, 0.0, 0.0, 0, 0, fpe.fps.shape[0])
+def test_TanimotoSearch():
+    res = TanimotoSearch(fpe.fps[0], fpe.fps, 0.0, 0, fpe.fps.shape[0])
     np.testing.assert_array_almost_equal(
         res[0:5]["coeff"],
         np.array(
@@ -36,12 +37,12 @@ def test_tanimoto_SimilaritySearch():
             dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")],
         )["coeff"],
     )
-    res = SimilaritySearch(fpe.fps[0], fpe.fps, 0.6, 0.0, 0.0, 0, 0, fpe.fps.shape[0])
+    res = TanimotoSearch(fpe.fps[0], fpe.fps, 0.6, 0, fpe.fps.shape[0])
     assert res.shape[0] == 3
 
 
-def test_tversky_SimilaritySearch():
-    res = SimilaritySearch(fpe.fps[0], fpe.fps, 0.0, 0.5, 0.5, 1, 0, fpe.fps.shape[0])
+def test_TverskySearch():
+    res = TverskySearch(fpe.fps[0], fpe.fps, 0.0, 0.5, 0.5, 0, fpe.fps.shape[0])
     np.testing.assert_array_almost_equal(
         res[0:5]["coeff"],
         np.array(
@@ -55,17 +56,17 @@ def test_tversky_SimilaritySearch():
             dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")],
         )["coeff"],
     )
-    res = SimilaritySearch(fpe.fps[0], fpe.fps, 0.6, 0.5, 0.5, 1, 0, fpe.fps.shape[0])
+    res = TverskySearch(fpe.fps[0], fpe.fps, 0.6, 0.5, 0.5, 0, fpe.fps.shape[0])
     assert res.shape[0] == 9
 
 
 def test_SubstructureScreenout():
-    res = SubstructureScreenout(fpe.fps[0], fpe.fps, 1, 0, 0, 2, 0, fpe.fps.shape[0])
+    res = SubstructureScreenout(fpe.fps[0], fpe.fps, 0, fpe.fps.shape[0])
     np.testing.assert_array_equal(res, np.array([4], dtype=np.uint32))
 
 
 def test_SortResults():
-    res = SimilaritySearch(fpe.fps[0], fpe.fps, 0.6, 0.0, 0.0, 0, 0, fpe.fps.shape[0])
+    res = TanimotoSearch(fpe.fps[0], fpe.fps, 0.6, 0, fpe.fps.shape[0])
     res.sort(order="coeff")
     SortResults(res)
     np.testing.assert_array_almost_equal(

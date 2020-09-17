@@ -2,8 +2,8 @@ from setuptools import setup, Extension, distutils, find_packages
 from setuptools.command.build_ext import build_ext
 import platform
 import codecs
-import os.path
 import sys
+import os
 
 
 def read(rel_path):
@@ -54,7 +54,6 @@ def has_flag(compiler, flagname):
     the specified compiler.
     """
     import tempfile
-    import os
 
     with tempfile.NamedTemporaryFile("w", suffix=".cpp", delete=False) as f:
         f.write("int main (int argc, char **argv) { return 0; }")
@@ -87,12 +86,13 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
-    c_opts = {"msvc": ["/EHsc", "/arch:AVX"], "unix": ["-O3"]}
+    c_opts = {"msvc": ["/EHsc", "/arch:SSE2"], "unix": ["-O3"]}
     machine = platform.machine().lower()
-    if machine.startswith("x86"):
-        c_opts["unix"] += ["-msse4.2"]
-    else: # for manual rpi install
+    if os.getenv("FPSIM2_MARCH_NATIVE") == '1':
         c_opts["unix"] += ["-march=native"]
+    else:
+        if machine.startswith("x86"):
+            c_opts["unix"] += ["-msse3"]
 
     l_opts = {"msvc": [], "unix": []}
 

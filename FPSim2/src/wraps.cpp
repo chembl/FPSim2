@@ -29,11 +29,18 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Runs a Tversky (a=1, b=0) substructure screenout.
     )pbdoc");
 
-    m.def("SimilaritySearch", &SimilaritySearch,
+    m.def("TanimotoSearch", &TanimotoSearch,
         py::call_guard<py::gil_scoped_release>(), R"pbdoc(
-        Similarity search
+        Tanimoto search
 
-        Runs a similarity (Tanimoto or Tversky) search.
+        Runs a Tanimoto similarity search.
+    )pbdoc");
+
+    m.def("TverskySearch", &TverskySearch,
+        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+        Tversky search
+
+        Runs a Tversky similarity search.
     )pbdoc");
 
     auto mutils = m.def_submodule("utils");

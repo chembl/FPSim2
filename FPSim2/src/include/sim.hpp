@@ -20,14 +20,19 @@ inline float TverskyCoeff(const uint32_t &common_popcnt,
 
 py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query,
                                             const py::array_t<uint64_t> py_db,
-                                            const float threshold, const float a,
-                                            const float b, const uint8_t sim_type,
-                                            const uint32_t i_start,
-                                            const uint32_t i_end);
+                                            const uint32_t start,
+                                            const uint32_t end);
 
-py::array_t<Result> SimilaritySearch(const py::array_t<uint64_t> py_query,
-                                     const py::array_t<uint64_t> py_db,
-                                     const float threshold, const float a,
-                                     const float b, const uint8_t sim_type,
-                                     const uint32_t i_start,
-                                     const uint32_t i_end);
+py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
+                                   const py::array_t<uint64_t> py_db,
+                                   const float threshold,
+                                   const uint32_t start,
+                                   const uint32_t end);
+
+py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
+                                  const py::array_t<uint64_t> py_db,
+                                  const float threshold,
+                                  const float a,
+                                  const float b,
+                                  const uint32_t start,
+                                  const uint32_t end);
