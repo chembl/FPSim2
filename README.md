@@ -24,6 +24,13 @@ From source:
  - clone the repo
  - `pip install FPSim2/`
 
+ clang 10 is able to apply some Auto-vectorization in AVX2 capable CPUs improving by ~25% the performance in Tanimoto searches. To get the boost set "FPSIM2_MARCH_NATIVE" to 1.
+
+ ```bash
+ export FPSIM2_MARCH_NATIVE=1
+ pip install FPSim2/
+ ```
+
 From a conda environment:
 
 ```bash

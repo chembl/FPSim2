@@ -139,12 +139,12 @@ def get_fp_length(fp_type: str, fp_params: Dict[str, Any]) -> int:
 
 def get_bounds_range(
     query: np.ndarray,
-    threshold: float,
-    a: float,
-    b: float,
+    threshold: Union[float, None],
+    a: Union[float, None],
+    b: Union[float, None],
     ranges: list,
     search_type: str,
-) -> Union[Tuple[int, int], list]:
+) -> Union[Tuple[int, int], Tuple]:
     query_count = query[-1]
     range_to_keep = []
 
@@ -164,7 +164,7 @@ def get_bounds_range(
             range_to_keep.append(c_range)
     if range_to_keep:
         range_to_keep = (range_to_keep[0][0], range_to_keep[len(range_to_keep) - 1][1])
-    return range_to_keep
+    return tuple(range_to_keep)
 
 
 def it_mol_supplier(
