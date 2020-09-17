@@ -344,7 +344,7 @@ class FPSim2Engine(BaseEngine):
                 results = SubstructureScreenout(np_query, self.fps, *bounds)
             else:
                 results = self._parallel(
-                    search_func=TanimotoSearch,
+                    search_func=SubstructureScreenout,
                     executor=cf.ThreadPoolExecutor,
                     query=np_query,
                     db=self.fps,

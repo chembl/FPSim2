@@ -176,18 +176,20 @@ def test_load_fps_sort():
     assert fpe.popcnt_bins == fpe2.popcnt_bins
 
 
-def test_similarity():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_similarity(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
-    results = fpe.similarity(query_smi, 0.7, n_workers=1)
+    results = fpe.similarity(query_smi, 0.7, n_workers=n_workers)
     assert results.shape[0] == 4
     assert list(results[0]) == [1, 1.0]
 
 
-def test_tversky():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_tversky(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
-    results = fpe.tversky(query_smi, 0.85, 0.5, 0.5, n_workers=1)
+    results = fpe.tversky(query_smi, 0.85, 0.5, 0.5, n_workers=n_workers)
     res = np.array(
         [(1, 1.0), (6, 0.85057473)],
         dtype={"names": ["mol_id", "coeff"], "formats": ["<u4", "<f4"]},
@@ -195,34 +197,30 @@ def test_tversky():
     np.testing.assert_array_equal(results, res)
 
 
-def test_substructure():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_substructure(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
-    results = fpe.substructure(query_smi, n_workers=1)
+    results = fpe.substructure(query_smi, n_workers=n_workers)
     res = np.array(np.array([1], dtype="<u4"))
     np.testing.assert_array_equal(results, res)
 
 
-def test_single_core_matrix():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_single_core_matrix(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
-    csr_matrix = fpe.symmetric_distance_matrix(0.0, n_workers=1)
+    csr_matrix = fpe.symmetric_distance_matrix(0.0, n_workers=n_workers)
     np.testing.assert_array_equal(MATRIX, csr_matrix.todense())
 
 
-def test_multi_core_matrix():
-    in_file = os.path.join(TESTS_DIR, "data/test.h5")
-    fpe = FPSim2Engine(in_file, storage_backend="pytables")
-    csr_matrix = fpe.symmetric_distance_matrix(0.0, n_workers=2)
-    np.testing.assert_array_equal(MATRIX, csr_matrix.todense())
-
-
-def test_on_disk_similarity():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_on_disk_similarity(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, in_memory_fps=False, storage_backend="pytables")
     with pytest.raises(Exception):
         fpe.fps
-    results = fpe.on_disk_similarity(query_smi, 0.7, n_workers=1)
+    results = fpe.on_disk_similarity(query_smi, 0.7, n_workers=n_workers)
     r = np.array(
         [(1, 1.0), (6, 0.74), (7, 0.735849), (5, 0.72549)],
         dtype={
@@ -235,12 +233,13 @@ def test_on_disk_similarity():
     np.testing.assert_array_almost_equal(results["coeff"], r["coeff"])
 
 
-def test_on_disk_tversky():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_on_disk_tversky(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, in_memory_fps=False, storage_backend="pytables")
     with pytest.raises(Exception):
         fpe.fps
-    results = fpe.on_disk_tversky(query_smi, 0.85, 0.5, 0.5, n_workers=1)
+    results = fpe.on_disk_tversky(query_smi, 0.85, 0.5, 0.5, n_workers=n_workers)
     res = np.array(
         [(1, 1.0), (6, 0.85057473)],
         dtype={"names": ["mol_id", "coeff"], "formats": ["<u4", "<f4"]},
@@ -248,12 +247,12 @@ def test_on_disk_tversky():
     np.testing.assert_array_equal(results, res)
 
 
-def test_on_disk_substructure():
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_on_disk_substructure(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, in_memory_fps=False, storage_backend="pytables")
-    results = fpe.on_disk_substructure(query_smi, n_workers=1)
+    results = fpe.on_disk_substructure(query_smi, n_workers=n_workers)
     res = np.array(np.array([1], dtype="<u4"))
     np.testing.assert_array_equal(results, res)
     with pytest.raises(Exception):
         fpe.fps
-
