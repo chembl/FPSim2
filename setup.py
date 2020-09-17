@@ -54,7 +54,6 @@ def has_flag(compiler, flagname):
     the specified compiler.
     """
     import tempfile
-    import os
 
     with tempfile.NamedTemporaryFile("w", suffix=".cpp", delete=False) as f:
         f.write("int main (int argc, char **argv) { return 0; }")
