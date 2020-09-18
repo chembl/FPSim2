@@ -207,7 +207,7 @@ def test_substructure(n_workers):
 
 
 @pytest.mark.parametrize("n_workers", (1, 2, 4))
-def test_single_core_matrix(n_workers):
+def test_symmetric_matrix(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
     csr_matrix = fpe.symmetric_distance_matrix(0.0, n_workers=n_workers)

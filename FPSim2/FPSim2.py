@@ -444,7 +444,7 @@ class FPSim2Engine(BaseEngine):
         results = []
         with executor(max_workers=n_workers) as exe:
             if not on_disk:
-                chunk_size = int((end - start) / n_workers)
+                chunk_size = (end - start) // n_workers
                 chunk_size = 1 if chunk_size == 0 else chunk_size
             chunks = [[x, x + chunk_size] for x in range(start, end, chunk_size)]
             chunks[-1][1] = end
@@ -534,36 +534,27 @@ class FPSim2Engine(BaseEngine):
         idxs = np.arange(self.fps.shape[0], dtype=np.uint32)
         np.random.shuffle(idxs)
 
+        def run(idx):
+            np_query = self.fps[idx]
+            bounds = get_bounds_range(
+                np_query, threshold, a, b, self.popcnt_bins, search_type
+            )
+            sym_bounds = (max(idx + 1, bounds[0]), bounds[1])
+            return search_func(np_query, self.fps, *args, *sym_bounds)
+
         rows = []
         cols = []
         data = []
         if n_workers == 1:
             for idx in tqdm(idxs, total=idxs.shape[0]):
-                np_query = self.fps[idx]
-                bounds = get_bounds_range(
-                    np_query, threshold, a, b, self.popcnt_bins, search_type
-                )
-                sym_bounds = (max(idx + 1, bounds[0]), bounds[1])
-                np_res = search_func(np_query, self.fps, *args, *sym_bounds)
+                np_res = run(idx)
                 for r in np_res:
                     rows.append(idx)
                     cols.append(r["idx"])
                     data.append(r["coeff"])
         else:
             with cf.ThreadPoolExecutor(max_workers=n_workers) as executor:
-                future_to_idx = {}
-                for idx in idxs:
-                    np_query = self.fps[idx]
-                    bounds = get_bounds_range(
-                        np_query, threshold, a, b, self.popcnt_bins, search_type
-                    )
-                    sym_bounds = (max(idx + 1, bounds[0]), bounds[1])
-                    future_to_idx[
-                        executor.submit(
-                            search_func, np_query, self.fps, *args, *sym_bounds
-                        )
-                    ] = idx
-
+                future_to_idx = {executor.submit(run, idx,): idx for idx in idxs}
                 for future in tqdm(cf.as_completed(future_to_idx), total=idxs.shape[0]):
                     idx = future_to_idx[future]
                     np_res = future.result()

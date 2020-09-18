@@ -4,8 +4,6 @@ from .io.backends import PyTablesStorageBackend
 from .FPSim2lib.utils import PyPopcount
 import numpy as np
 
-SEARCH_TYPES = {"tanimoto": 0, "tversky": 1, "substructure": 2}
-
 
 class BaseEngine(ABC):
 
