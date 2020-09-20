@@ -1,10 +1,9 @@
 from typing import Any, Iterable as IterableType, Dict, List, Tuple, Union
 from .base import BaseStorageBackend
-from FPSim2.FPSim2lib.utils import PyPopcount
 from ..chem import (
+    build_fp,
     get_mol_supplier,
     get_fp_length,
-    rdmol_to_efp,
     FP_FUNC_DEFAULTS,
 )
 import tables as tb
@@ -93,9 +92,8 @@ def create_db_file(
 
         fps = []
         for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
-            efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-            popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-            fps.append((mol_id, *efp, popcnt))
+            fp = build_fp(rdmol, fp_type, fp_params, mol_id)
+            fps.append(fp)
             if len(fps) == BATCH_WRITE_SIZE:
                 fps_table.append(fps)
                 fps = []
@@ -279,9 +277,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
             for mol_id, rdmol in supplier(mols_source, False, mol_id_prop=mol_id_prop):
                 if not rdmol:
                     continue
-                efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-                popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-                fps.append((mol_id, *efp, popcnt))
+                fp = build_fp(rdmol, fp_type, fp_params, mol_id)
+                fps.append(fp)
                 if len(fps) == BATCH_WRITE_SIZE:
                     fps_table.append(fps)
                     fps = []

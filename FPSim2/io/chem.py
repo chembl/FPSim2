@@ -1,5 +1,5 @@
 from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, Union
-from FPSim2.FPSim2lib.utils import BitStrToIntList
+from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Avalon import pyAvalonTools
@@ -86,6 +86,11 @@ def rdmol_to_efp(
     fp = FP_FUNCS[fp_func](rdmol, **fp_params)
     return BitStrToIntList(fp.ToBitString())
 
+def build_fp(rdmol, fp_type, fp_params, mol_id):
+    efp = rdmol_to_efp(rdmol, fp_type, fp_params)
+    popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
+    fp = (mol_id, *efp, popcnt)
+    return fp
 
 def load_molecule(mol_string: str) -> Chem.Mol:
     """Reads SMILES, molblock or InChI and returns a RDKit mol.

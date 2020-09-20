@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from .io.chem import load_molecule, rdmol_to_efp
+from .io.chem import load_molecule, build_fp
 from .io.backends import PyTablesStorageBackend
 from .FPSim2lib.utils import PyPopcount
 import numpy as np
@@ -62,9 +62,8 @@ class BaseEngine(ABC):
             Numpy array query molecule.
         """
         rdmol = load_molecule(query_string)
-        efp = rdmol_to_efp(rdmol, self.fp_type, self.fp_params)
-        popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-        return np.array((0, *efp, popcnt), dtype=np.uint64)
+        fp = build_fp(rdmol, self.fp_type, self.fp_params, 0)
+        return np.array(fp, dtype=np.uint64)
 
     @abstractmethod
     def similarity(

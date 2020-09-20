@@ -4,6 +4,7 @@ from FPSim2.io.chem import (
     it_mol_supplier,
     get_mol_supplier,
     get_bounds_range,
+    build_fp,
 )
 from rdkit import Chem
 import tables as tb
@@ -69,3 +70,44 @@ def test_get_bounds_range():
         ranges=popcnt_bins,
         search_type="tanimoto",
     ) == (0, 10)
+
+
+def test_build_fp():
+    rdmol = Chem.MolFromSmiles(smiles_list[0])
+    fp = build_fp(rdmol, "Morgan", {"radius": 2, "nBits": 2048}, 42)
+    assert fp == (
+        42,
+        18014398510563328,
+        1152991873351024640,
+        0,
+        4194304,
+        4398046511136,
+        8798240636960,
+        0,
+        0,
+        18432,
+        0,
+        9007199254740992,
+        512,
+        16777216,
+        70368745226240,
+        16778240,
+        562949953421312,
+        1610612736,
+        9223372174293729280,
+        98304,
+        4398046511104,
+        1152921504606846976,
+        17592320327680,
+        16777216,
+        1,
+        0,
+        0,
+        17593259786272,
+        72567767433216,
+        1073741832,
+        70368744177668,
+        0,
+        72057594037927936,
+        45,
+    )
