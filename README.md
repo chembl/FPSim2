@@ -7,7 +7,7 @@
 
 # FPSim2: Simple package for fast molecular similarity searches
 
-FPSim2 is a small NumPy centric Python/C++ package to run fast compound similarity searches. FPSim2 performs better with high search thresholds (>=0.7). Currently used in the [ChEMBL](http://www.ebi.ac.uk/chembl/) interface.
+FPSim2 is a small NumPy centric Python/C++ RDKit based package to run fast compound similarity searches. FPSim2 performs better with high search thresholds (>=0.7). Currently used in the [ChEMBL](http://www.ebi.ac.uk/chembl/) interface.
 
 Highlights:
 - Using CPU POPCNT instruction
@@ -17,21 +17,7 @@ Highlights:
 - In memory and on disk search modes
 - Distance matrix calculation
 
-## Installation (it requires RDKit to work)
-
-From source:
-
- - clone the repo
- - `pip install FPSim2/`
-
- clang 10 and above is able to apply some Auto-vectorization in AVX2 capable CPUs improving by ~25% the performance on Tanimoto searches. To get the boost set **FPSIM2_MARCH_NATIVE** env variable to 1.
-
- ```bash
- export FPSIM2_MARCH_NATIVE=1
- pip install FPSim2/
- ```
-
-From a conda environment:
+## Installation
 
 ```bash
 conda install -c conda-forge fpsim2
