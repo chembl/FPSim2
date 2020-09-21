@@ -421,7 +421,8 @@ class FPSim2Engine(BaseEngine):
                 results.append(res)
         if len(results):
             results = np.concatenate(results)
-            SortResults(results)
+            if not search_func.__name__ == "SubstructureScreenout":
+                SortResults(results)
         else:
             if not search_func.__name__ == "SubstructureScreenout":
                 results = self.empty_sim
