@@ -136,30 +136,33 @@ class FPSim2CudaEngine(BaseEngine):
         fp_range = get_bounds_range(
             np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
         )
+        if fp_range:
+            # copy query and threshold to GPU
+            query = cp.asarray(np_query)
+            cuda_threshold = cp.asarray(threshold, dtype="f4")
 
-        # copy query and threshold to GPU
-        query = cp.asarray(np_query)
-        cuda_threshold = cp.asarray(threshold, dtype="f4")
+            # get the subset of molecule ids
+            subset_size = int(fp_range[1] - fp_range[0])
+            ids = self.cuda_db[:, 0][slice(*fp_range)]
 
-        # get the subset of molecule ids
-        ids = self.cuda_db[:, 0][slice(*fp_range)]
-        subset_size = int(fp_range[1] - fp_range[0])
+            # init sims result array
+            sims = cp.zeros(subset_size, dtype="f4")
 
-        # init sims result array
-        sims = cp.zeros(subset_size, dtype="f4")
+            self.cupy_kernel(
+                self.cuda_db[slice(*fp_range)],
+                query,
+                self.cuda_db.shape[1],
+                cuda_threshold,
+                sims,
+                size=subset_size,
+            )
 
-        self.cupy_kernel(
-            self.cuda_db[slice(*fp_range)],
-            query,
-            self.cuda_db.shape[1],
-            cuda_threshold,
-            sims,
-            size=subset_size,
-        )
-
-        mask = sims.nonzero()[0]
-        np_sim = cp.asnumpy(sims[mask])
-        np_ids = cp.asnumpy(ids[mask])
+            mask = sims.nonzero()[0]
+            np_sim = cp.asnumpy(sims[mask])
+            np_ids = cp.asnumpy(ids[mask])
+        else:
+            np_sim = np.ndarray(0)
+            np_ids = np.ndarray(0)
 
         return np_ids, np_sim
 
@@ -172,37 +175,41 @@ class FPSim2CudaEngine(BaseEngine):
             np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
         )
 
-        # copy query and threshold to GPU
-        cuda_threshold = cp.asarray(threshold, dtype="f4")
-        query = cp.asarray(np_query[1:-1])
-        popcount = cp.asarray(np_query[-1])
+        if fp_range:
+            # copy query and threshold to GPU
+            cuda_threshold = cp.asarray(threshold, dtype="f4")
+            query = cp.asarray(np_query[1:-1])
+            popcount = cp.asarray(np_query[-1])
 
-        # get the subset of molecule ids
-        subset_size = int(fp_range[1] - fp_range[0])
-        ids = self.cuda_ids[slice(*fp_range)]
+            # get the subset of molecule ids
+            subset_size = int(fp_range[1] - fp_range[0])
+            ids = self.cuda_ids[slice(*fp_range)]
 
-        # init sims result array
-        sims = cp.zeros(subset_size, dtype=cp.float32)
+            # init sims result array
+            sims = cp.zeros(subset_size, dtype=cp.float32)
 
-        # run in the search, it compiles the kernel only the first time it runs
-        # grid, block and arguments
-        self.cupy_kernel(
-            (subset_size,),
-            (self.cuda_db.shape[1],),
-            (
-                query,
-                popcount,
-                self.cuda_db[slice(*fp_range)],
-                self.cuda_popcnts[slice(*fp_range)],
-                cuda_threshold,
-                sims,
-            ),
-        )
+            # run in the search, it compiles the kernel only the first time it runs
+            # grid, block and arguments
+            self.cupy_kernel(
+                (subset_size,),
+                (self.cuda_db.shape[1],),
+                (
+                    query,
+                    popcount,
+                    self.cuda_db[slice(*fp_range)],
+                    self.cuda_popcnts[slice(*fp_range)],
+                    cuda_threshold,
+                    sims,
+                ),
+            )
 
-        # get all non 0 values and ids
-        mask = sims.nonzero()[0]
-        np_sim = cp.asnumpy(sims[mask])
-        np_ids = cp.asnumpy(ids[mask])
+            # get all non 0 values and ids
+            mask = sims.nonzero()[0]
+            np_sim = cp.asnumpy(sims[mask])
+            np_ids = cp.asnumpy(ids[mask])
+        else:
+            np_sim = np.ndarray(0)
+            np_ids = np.ndarray(0)
 
         return np_ids, np_sim
 
