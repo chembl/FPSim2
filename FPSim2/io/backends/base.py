@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 
 class BaseStorageBackend(ABC):
 
-    def __init__(self, fp_filename):
-        self.fp_filename = fp_filename
+    def __init__(self):
+        pass
 
     @staticmethod
     def calc_popcnt_bins(fps: np.ndarray) -> list:

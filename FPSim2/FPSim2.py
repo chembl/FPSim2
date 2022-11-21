@@ -63,16 +63,20 @@ class FPSim2Engine(BaseEngine):
 
     def __init__(
         self,
-        fp_filename: str,
+        fp_filename: str = "",
         in_memory_fps: bool = True,
         fps_sort: bool = False,
         storage_backend: str = "pytables",
+        conn_url: str = "",
+        table_name: str = ""
     ) -> None:
         super(FPSim2Engine, self).__init__(
             fp_filename=fp_filename,
             storage_backend=storage_backend,
             in_memory_fps=in_memory_fps,
             fps_sort=fps_sort,
+            conn_url=conn_url,
+            table_name=table_name
         )
         self.empty_sim = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
         self.empty_subs = np.ndarray((0,), dtype="<u4")

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp
 from .io.backends import PyTablesStorageBackend
-from .FPSim2lib.utils import PyPopcount
+from .io.backends import MySQLStorageBackend
 import numpy as np
 
 
@@ -16,6 +16,8 @@ class BaseEngine(ABC):
         storage_backend: str,
         in_memory_fps: bool,
         fps_sort: bool,
+        conn_url: str,
+        table_name: str,
     ) -> None:
 
         self.fp_filename = fp_filename
@@ -24,6 +26,8 @@ class BaseEngine(ABC):
             self.storage = PyTablesStorageBackend(
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
             )
+        elif storage_backend == "mysql":
+            self.storage = MySQLStorageBackend(conn_url, table_name)
 
     @property
     def fps(self):
@@ -69,4 +73,4 @@ class BaseEngine(ABC):
     def similarity(
         self, query_string: str, threshold: float, n_workers=1
     ) -> np.ndarray:
-        """Tanimoto similarity search """
+        """Tanimoto similarity search"""
