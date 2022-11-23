@@ -138,7 +138,6 @@ setup(
         "scipy>=1.9.3",
         "sqlalchemy>=2.0",
     ],
-    setup_requires=["pybind11>=2.2"],
     cmdclass={"build_ext": BuildExt},
     zip_safe=False,
     classifiers=[
