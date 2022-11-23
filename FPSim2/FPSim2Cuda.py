@@ -90,16 +90,19 @@ class FPSim2CudaEngine(BaseEngine):
 
     def __init__(
         self,
-        fp_filename: str,
-        fps_sort: bool = False,
+        fp_filename: str = "",
         storage_backend: str = "pytables",
         kernel: str = "raw",
+        conn_url: str = "",
+        table_name: str = "",
     ) -> None:
         super(FPSim2CudaEngine, self).__init__(
             fp_filename=fp_filename,
             storage_backend=storage_backend,
             in_memory_fps=True,
             fps_sort=False,
+            conn_url=conn_url,
+            table_name=table_name,
         )
         self.kernel = kernel
         if kernel == "raw":
