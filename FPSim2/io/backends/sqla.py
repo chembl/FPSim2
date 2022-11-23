@@ -6,7 +6,16 @@ from ..chem import (
     get_fp_length,
     FP_FUNC_DEFAULTS,
 )
-from sqlalchemy import BIGINT, Column, select, insert, delete, create_engine, func, MetaData
+from sqlalchemy import (
+    BIGINT,
+    Column,
+    select,
+    insert,
+    delete,
+    create_engine,
+    func,
+    MetaData,
+)
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
 from itertools import chain
 import numpy as np
@@ -19,9 +28,11 @@ BATCH_WRITE_SIZE = 32000
 
 def build_fp_record(rdmol, fp_type, fp_params, mol_id) -> Dict:
     fp = build_fp(rdmol, fp_type, fp_params, mol_id)
-    # ugly but enables PostgreSQL (PostgreSQL has no unsigned types) 
-    # with the same code that works for MySQL 
-    record = {f"fp_{idx}": int(np.uint64(fp).astype("i8")) for idx, fp in enumerate(fp[1:-1])}
+    # ugly but enables PostgreSQL (PostgreSQL has no unsigned types)
+    # with the same code that works for MySQL
+    record = {
+        f"fp_{idx}": int(np.uint64(fp).astype("i8")) for idx, fp in enumerate(fp[1:-1])
+    }
     record.update({"mol_id": fp[0], "popcnt": fp[-1]})
     return record
 
@@ -35,9 +46,7 @@ def create_mapping(table_name: str, fp_length: int, base) -> DeclarativeMeta:
             for idx in range(math.ceil(fp_length / 64))
         }
     )
-    clsdict.update(
-        {"popcnt": Column(BIGINT(), primary_key=False, index=True)}
-    )
+    clsdict.update({"popcnt": Column(BIGINT(), primary_key=False, index=True)})
     return type(table_name, (base,), clsdict)
 
 
