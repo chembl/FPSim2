@@ -66,19 +66,20 @@ def create_db_table(
     Base.metadata.create_all(engine)
 
     # fill the table
-    with engine.begin() as conn:
-        fps = []
-        for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
-            fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
-            fps.append(fp)
-            if len(fps) == BATCH_WRITE_SIZE:
+    fps = []
+    for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
+        fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
+        fps.append(fp)
+        if len(fps) == BATCH_WRITE_SIZE:
+            with engine.begin() as conn:
                 conn.execute(
                     insert(FingerprintsTable),
                     fps,
                 )
-                fps = []
-        # append last batch < 32k
-        if fps:
+            fps = []
+    # append last batch < 32k
+    if fps:
+        with engine.begin() as conn:
             conn.execute(
                 insert(FingerprintsTable),
                 fps,
@@ -114,7 +115,7 @@ class MySQLStorageBackend(BaseStorageBackend):
     def load_fps(self) -> None:
         """Loads FP db table into memory"""
         engine = create_engine(self.conn_url)
-        with engine.begin() as conn:
+        with engine.connect() as conn:
             count = conn.scalar(select(func.count()).select_from(self.sqla_table))
             res = conn.execute(select(self.sqla_table))
             fps = np.fromiter(chain.from_iterable(res.fetchall()), dtype="<u8")
@@ -156,19 +157,20 @@ class MySQLStorageBackend(BaseStorageBackend):
         supplier = get_mol_supplier(mols_source)
         fp_type, fp_params, _ = self.read_parameters()
         engine = create_engine(self.conn_url)
-        with engine.begin() as conn:
-            fps = []
-            for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
-                fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
-                fps.append(fp)
-                if len(fps) == BATCH_WRITE_SIZE:
+        fps = []
+        for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
+            fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
+            fps.append(fp)
+            if len(fps) == BATCH_WRITE_SIZE:
+                with engine.begin() as conn:
                     conn.execute(
                         insert(self.sqla_table),
                         fps,
                     )
-                    fps = []
-            # append last batch < 32k
-            if fps:
+                fps = []
+        # append last batch < 32k
+        if fps:
+            with engine.begin() as conn:
                 conn.execute(
                     insert(self.sqla_table),
                     fps,
