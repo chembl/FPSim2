@@ -1,2 +1,2 @@
 from .pytables import PyTablesStorageBackend
-from .mysql import MySQLStorageBackend
+from .sqla import SqlaStorageBackend

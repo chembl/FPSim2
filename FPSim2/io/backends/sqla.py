@@ -6,9 +6,8 @@ from ..chem import (
     get_fp_length,
     FP_FUNC_DEFAULTS,
 )
-from sqlalchemy import Column, select, insert, delete, create_engine, func, MetaData
+from sqlalchemy import BIGINT, Column, select, insert, delete, create_engine, func, MetaData
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
-from sqlalchemy.dialects.mysql import BIGINT
 from itertools import chain
 import numpy as np
 import rdkit
@@ -20,22 +19,24 @@ BATCH_WRITE_SIZE = 32000
 
 def build_fp_record(rdmol, fp_type, fp_params, mol_id) -> Dict:
     fp = build_fp(rdmol, fp_type, fp_params, mol_id)
-    record = {f"fp_{idx}": fp for idx, fp in enumerate(fp[1:-1])}
+    # ugly but enables PostgreSQL (PostgreSQL has no unsigned types) 
+    # with the same code that works for MySQL 
+    record = {f"fp_{idx}": int(np.uint64(fp).astype("i8")) for idx, fp in enumerate(fp[1:-1])}
     record.update({"mol_id": fp[0], "popcnt": fp[-1]})
     return record
 
 
 def create_mapping(table_name: str, fp_length: int, base) -> DeclarativeMeta:
     clsdict = {"__tablename__": table_name}
-    clsdict.update({"mol_id": Column(BIGINT(unsigned=False), primary_key=True)})
+    clsdict.update({"mol_id": Column(BIGINT(), primary_key=True)})
     clsdict.update(
         {
-            f"fp_{idx}": Column(BIGINT(unsigned=True), primary_key=False)
+            f"fp_{idx}": Column(BIGINT(), primary_key=False)
             for idx in range(math.ceil(fp_length / 64))
         }
     )
     clsdict.update(
-        {"popcnt": Column(BIGINT(unsigned=False), primary_key=False, index=True)}
+        {"popcnt": Column(BIGINT(), primary_key=False, index=True)}
     )
     return type(table_name, (base,), clsdict)
 
@@ -86,9 +87,9 @@ def create_db_table(
             )
 
 
-class MySQLStorageBackend(BaseStorageBackend):
+class SqlaStorageBackend(BaseStorageBackend):
     def __init__(self, conn_url: str, table_name: str = "fpsim2_fingerprints") -> None:
-        super(MySQLStorageBackend, self).__init__()
+        super(SqlaStorageBackend, self).__init__()
         self.conn_url = conn_url
 
         engine = create_engine(conn_url)
@@ -97,7 +98,7 @@ class MySQLStorageBackend(BaseStorageBackend):
         self.sqla_table = metadata.tables[table_name]
 
         self.in_memory_fps = True
-        self.name = "mysql"
+        self.name = "sqla"
         self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         self.load_fps()
         self.load_popcnt_bins()
@@ -123,7 +124,7 @@ class MySQLStorageBackend(BaseStorageBackend):
         self.fps = fps[fps[:, -1].argsort()]
 
     def delete_fps(self, ids_list: List[int]) -> None:
-        """Delete FPs from MySQL table given a list of mol ids
+        """Delete FPs from MySQL/PostgreSQL table given a list of mol ids
 
         Parameters
         ----------
@@ -143,7 +144,7 @@ class MySQLStorageBackend(BaseStorageBackend):
     def append_fps(
         self, mols_source: Union[str, IterableType], mol_id_prop: str = "mol_id"
     ) -> None:
-        """Appends FPs to MySQL table.
+        """Appends FPs to MySQL/PostgreSQL table.
 
         Parameters
         ----------

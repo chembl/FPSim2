@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp
 from .io.backends import PyTablesStorageBackend
-from .io.backends import MySQLStorageBackend
+from .io.backends import SqlaStorageBackend
 import numpy as np
 
 
@@ -26,8 +26,8 @@ class BaseEngine(ABC):
             self.storage = PyTablesStorageBackend(
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
             )
-        elif storage_backend == "mysql":
-            self.storage = MySQLStorageBackend(conn_url, table_name)
+        elif storage_backend == "sqla":
+            self.storage = SqlaStorageBackend(conn_url, table_name)
 
     @property
     def fps(self):
