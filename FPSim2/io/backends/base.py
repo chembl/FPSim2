@@ -4,9 +4,6 @@ from abc import ABC, abstractmethod
 
 class BaseStorageBackend(ABC):
 
-    def __init__(self):
-        pass
-
     @staticmethod
     def calc_popcnt_bins(fps: np.ndarray) -> list:
         """Calcs popcount bins.
@@ -41,35 +38,3 @@ class BaseStorageBackend(ABC):
     @abstractmethod
     def load_popcnt_bins(self):
         """Loads popcnt bins info"""
-
-    @abstractmethod
-    def get_fps_chunk(self, chunk_range):
-        """Loads a contiguous chunk of data from the storage into memory"""
-
-    @abstractmethod
-    def delete_fps(self, ids_list):
-        """Delete FPs given a list of ids.
-
-        Parameters
-        ----------
-        ids_list : list
-            ids to delete.
-
-        Returns
-        -------
-        None
-        """
-
-    @abstractmethod
-    def append_fps(self, io_source, mol_id_prop):
-        """Appends FPs to the file.
-
-        Parameters
-        ----------
-        mols_source : str or iterable
-            .smi or .sdf filename or iterable.
-
-        Returns
-        -------
-        None
-        """
