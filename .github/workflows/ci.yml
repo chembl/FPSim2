@@ -10,7 +10,7 @@ on:
     tags: '*'
 jobs:
   test:
-    name: chembl_structure_pipeline (${{ matrix.os }}, ${{ matrix.python-version }}, ${{ matrix.rdkit-version }})
+    name: FPSim2 (${{ matrix.os }}, ${{ matrix.python-version }}, ${{ matrix.rdkit-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
