@@ -1,9 +1,9 @@
 jobs:
 
 - job:
-  displayName: ubuntu-18.04
+  displayName: ubuntu-latest
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-latest'
   strategy:
     matrix:
       Python37:
@@ -42,9 +42,9 @@ jobs:
 
 
 - job:
-  displayName: macOS-10.15
+  displayName: macos-latest
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-latest'
   strategy:
     matrix:
       Python37:
