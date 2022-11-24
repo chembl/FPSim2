@@ -7,8 +7,8 @@ from .FPSim2lib import (
     SubstructureScreenout,
 )
 from .FPSim2lib.utils import SortResults
+from scipy.sparse import csr_matrix
 from .base import BaseEngine
-from scipy import sparse
 import numpy as np
 
 
@@ -500,7 +500,7 @@ class FPSim2Engine(BaseEngine):
         a: float = 0,
         b: float = 0,
         n_workers: int = 4,
-    ) -> sparse.csr.csr_matrix:
+    ) -> csr_matrix:
         """Computes the Tanimoto similarity matrix of the set.
 
         Parameters
@@ -569,11 +569,11 @@ class FPSim2Engine(BaseEngine):
                         cols.append(r["idx"])
                         data.append(r["coeff"])
 
-        csr_matrix = sparse.csr_matrix(
+        sparse_matrix = csr_matrix(
             (data + data, (rows + cols, cols + rows)),
             shape=(self.fps.shape[0], self.fps.shape[0]),
         )
 
         # similarity to distance
-        csr_matrix.data = 1 - csr_matrix.data
-        return csr_matrix
+        sparse_matrix.data = 1 - sparse_matrix.data
+        return sparse_matrix

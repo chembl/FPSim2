@@ -135,8 +135,10 @@ setup(
     install_requires=[
         "rdkit>=2022.3.3",
         "tables>=3.4.4",
-        "scipy>=1.9.3",
+        "numpy >=1.14",
         "sqlalchemy>=1.4",
+        "scipy",
+        "tqdm",
     ],
     cmdclass={"build_ext": BuildExt},
     zip_safe=False,
