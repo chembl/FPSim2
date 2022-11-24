@@ -23,10 +23,18 @@ class BaseEngine(ABC):
         self.fp_filename = fp_filename
         self.in_memory_fps = in_memory_fps
         if storage_backend == "pytables":
+            if not fp_filename:
+                raise ValueError(
+                    "Missing required 'fp_filename' param for the pytables backend"
+                )
             self.storage = PyTablesStorageBackend(
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
             )
         elif storage_backend == "sqla":
+            if not conn_url or not table_name:
+                raise ValueError(
+                    "Missing required 'conn_url' or 'table_name' param for the sqla backend"
+                )
             self.storage = SqlaStorageBackend(conn_url, table_name)
 
     @property
