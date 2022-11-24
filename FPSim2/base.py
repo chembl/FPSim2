@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp
 from .io.backends import PyTablesStorageBackend
-from .FPSim2lib.utils import PyPopcount
+from .io.backends import SqlaStorageBackend
 import numpy as np
 
 
@@ -16,14 +16,26 @@ class BaseEngine(ABC):
         storage_backend: str,
         in_memory_fps: bool,
         fps_sort: bool,
+        conn_url: str,
+        table_name: str,
     ) -> None:
 
         self.fp_filename = fp_filename
         self.in_memory_fps = in_memory_fps
         if storage_backend == "pytables":
+            if not fp_filename:
+                raise ValueError(
+                    "Missing required 'fp_filename' param for the pytables backend"
+                )
             self.storage = PyTablesStorageBackend(
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
             )
+        elif storage_backend == "sqla":
+            if not conn_url or not table_name:
+                raise ValueError(
+                    "Missing required 'conn_url' or 'table_name' param for the sqla backend"
+                )
+            self.storage = SqlaStorageBackend(conn_url, table_name)
 
     @property
     def fps(self):
@@ -69,4 +81,4 @@ class BaseEngine(ABC):
     def similarity(
         self, query_string: str, threshold: float, n_workers=1
     ) -> np.ndarray:
-        """Tanimoto similarity search """
+        """Tanimoto similarity search"""

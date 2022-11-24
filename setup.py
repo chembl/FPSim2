@@ -25,7 +25,7 @@ class get_pybind_include(object):
     """Helper class to determine the pybind11 include path
     The purpose of this class is to postpone importing pybind11
     until it is actually installed, so that the ``get_include()``
-    method can be invoked. """
+    method can be invoked."""
 
     def __str__(self):
         import pybind11
@@ -36,7 +36,9 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         "FPSim2.FPSim2lib",
-        sources=sorted(["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"]),
+        sources=sorted(
+            ["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"]
+        ),
         include_dirs=[
             "FPSim2/src/include",
             # Path to pybind11 headers
@@ -88,7 +90,7 @@ class BuildExt(build_ext):
 
     c_opts = {"msvc": ["/EHsc", "/arch:AVX"], "unix": ["-O3"]}
     machine = platform.machine().lower()
-    if os.getenv("FPSIM2_MARCH_NATIVE") == '1':
+    if os.getenv("FPSIM2_MARCH_NATIVE") == "1":
         c_opts["unix"] += ["-march=native"]
     else:
         if machine.startswith("x86"):
@@ -130,14 +132,17 @@ setup(
     description="Simple package for fast molecular similarity searching",
     long_description=open("README.md", encoding="utf-8").read(),
     ext_modules=ext_modules,
-    install_requires=["pybind11>=2.2"],
-    setup_requires=["pybind11>=2.2"],
+    install_requires=[
+        "rdkit>=2022.3.3",
+        "tables>=3.4.4",
+        "scipy>=1.9.3",
+        "sqlalchemy>=1.4",
+    ],
     cmdclass={"build_ext": BuildExt},
     zip_safe=False,
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

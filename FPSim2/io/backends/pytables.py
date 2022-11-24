@@ -179,8 +179,9 @@ def sort_db_file(filename: str) -> None:
 
 class PyTablesStorageBackend(BaseStorageBackend):
     def __init__(self, fp_filename: str, in_memory_fps: bool = True, fps_sort: bool = False) -> None:
-        super(PyTablesStorageBackend, self).__init__(fp_filename)
+        super(PyTablesStorageBackend, self).__init__()
         self.name = "pytables"
+        self.fp_filename = fp_filename
         self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         if in_memory_fps:
             self.load_fps(in_memory_fps, fps_sort)

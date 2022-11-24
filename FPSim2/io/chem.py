@@ -107,10 +107,10 @@ def load_molecule(mol_string: str) -> Chem.Mol:
     """
     if re.search(INCHI_RE, mol_string, flags=re.IGNORECASE):
         rdmol = Chem.MolFromInchi(mol_string)
-    elif re.match(SMILES_RE, mol_string, flags=0):
-        rdmol = Chem.MolFromSmiles(mol_string)
-    else:
+    elif "V2000" in mol_string or "V3000" in mol_string:
         rdmol = Chem.MolFromMolBlock(mol_string)
+    else:
+        rdmol = Chem.MolFromSmiles(mol_string)
     return rdmol
 
 
