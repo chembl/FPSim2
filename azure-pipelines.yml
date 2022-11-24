@@ -110,7 +110,7 @@ jobs:
 
   - script: |
       call activate testenv
-      python setup.py install
+      pip install -e .
     displayName: Build and install the package
 
   - script: |
