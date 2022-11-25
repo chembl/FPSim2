@@ -9,6 +9,8 @@ on:
   release:
     types:
       - published
+  # Manual run
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,12 +35,69 @@ jobs:
 
 
   build_wheels:
-    name: Wheels on ${{ matrix.os }}
+    name: Wheels on ${{ matrix.os }}  ${{ matrix.platform_id }} ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          # Window 64 bit
+          - os: windows-latest
+            python: 39
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 310
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 311
+            platform_id: win_amd64
+
+          # Linux 64 bit manylinux2014
+          - os: ubuntu-latest
+            python: 38
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 39
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+          - os: ubuntu-latest
+            python: 310
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+          - os: ubuntu-latest
+            python: 311
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+          # MacOS x86_64
+          - os: macos-latest
+            python: 38
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 310
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 311
+            platform_id: macosx_x86_64
+
+          # MacOS arm64
+          - os: macos-latest
+            python: 38
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 310
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 311
+            platform_id: macosx_arm64
 
     steps:
     - uses: actions/checkout@v3
