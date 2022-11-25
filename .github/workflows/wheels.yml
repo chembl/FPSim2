@@ -9,8 +9,6 @@ on:
   release:
     types:
       - published
-  # Manual run
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
