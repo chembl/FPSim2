@@ -178,7 +178,8 @@ class FPSim2CudaEngine(BaseEngine):
         )
 
         if fp_range:
-            # copy query to GPU
+            # copy query and threshold to GPU
+            cuda_threshold = cp.asarray(threshold, dtype="f4")
             query = cp.asarray(np_query[1:-1])
             popcount = cp.asarray(np_query[-1])
 
@@ -199,7 +200,7 @@ class FPSim2CudaEngine(BaseEngine):
                     popcount,
                     self.cuda_db[slice(*fp_range)],
                     self.cuda_popcnts[slice(*fp_range)],
-                    threshold,
+                    cuda_threshold,
                     sims,
                 ),
             )
