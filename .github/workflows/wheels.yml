@@ -1,4 +1,4 @@
-name: Wheels
+name: build wheels
 
 on:
   workflow_dispatch:
@@ -32,7 +32,6 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         path: dist/*.tar.gz
-
 
   build_wheels:
     name: Wheels on ${{ matrix.os }}  ${{ matrix.platform_id }} ${{ matrix.python }}
