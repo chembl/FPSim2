@@ -38,7 +38,9 @@ jobs:
     name: Wheels on ${{ matrix.os }}  ${{ matrix.platform_id }} ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
+      # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
+      matrix:
         include:
           # Window 64 bit
           - os: windows-latest
