@@ -1,4 +1,4 @@
-from typing import Iterable as IterableType, Dict, List, Tuple, Union
+from typing import Iterable as IterableType, Dict, Tuple, Union
 from .base import BaseStorageBackend
 from ..chem import (
     build_fp,
@@ -11,7 +11,6 @@ from sqlalchemy import (
     Column,
     select,
     insert,
-    delete,
     create_engine,
     func,
     MetaData,
