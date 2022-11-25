@@ -105,7 +105,6 @@ jobs:
       env:
         CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-        CIBW_TEST_SKIP: "*-macosx_arm64"
         CIBW_TEST_REQUIRES: pytest
         CIBW_BUILD_VERBOSITY: 1
 
