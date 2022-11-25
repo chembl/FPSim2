@@ -115,7 +115,6 @@ jobs:
           CIBW_TEST_SKIP: "*-macosx_arm64"
           CIBW_TEST_REQUIRES: pytest
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ARCHS_MACOS: auto universal2
 
     - name: Verify clean directory
       run: git diff --exit-code
