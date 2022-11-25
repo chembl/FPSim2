@@ -105,15 +105,15 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.2
-          env:
-            CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
-            # CIBW_ARCHS_MACOS: x86_64 arm64
-            # CIBW_ARCHS_WINDOWS: AMD64
-            # CIBW_ARCHS_LINUX: x86_64 aarch64
-            CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-            CIBW_TEST_SKIP: "*-macosx_arm64"
-            CIBW_TEST_REQUIRES: pytest
-            CIBW_BUILD_VERBOSITY: 1
+        env:
+          CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+          # CIBW_ARCHS_MACOS: x86_64 arm64
+          # CIBW_ARCHS_WINDOWS: AMD64
+          # CIBW_ARCHS_LINUX: x86_64 aarch64
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_BUILD_VERBOSITY: 1
 
     - name: Verify clean directory
       run: git diff --exit-code
