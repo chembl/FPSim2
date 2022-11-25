@@ -39,7 +39,7 @@ class BaseEngine(ABC):
             engine = create_mock_engine(conn_url, ())
             if engine.dialect.name not in ("postgresql", "mysql"):
                 raise ValueError(
-                    "FPSim2 only sqla engine works for PostgreSQL and MySQL"
+                    "FPSim2 sqla engine only works for PostgreSQL and MySQL"
                 )
             self.storage = SqlaStorageBackend(conn_url, table_name)
 
