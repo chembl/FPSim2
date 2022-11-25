@@ -131,6 +131,7 @@ setup(
     packages=find_packages(),
     description="Simple package for fast molecular similarity searching",
     long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
     ext_modules=ext_modules,
     install_requires=[
         "rdkit>=2022.3.3",
