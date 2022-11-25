@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp
 from .io.backends import PyTablesStorageBackend
 from .io.backends import SqlaStorageBackend
+from sqlalchemy import create_mock_engine
 import numpy as np
 
 
@@ -34,6 +35,11 @@ class BaseEngine(ABC):
             if not conn_url or not table_name:
                 raise ValueError(
                     "Missing required 'conn_url' or 'table_name' param for the sqla backend"
+                )
+            engine = create_mock_engine(conn_url, ())
+            if engine.dialect.name not in ("postgresql", "mysql"):
+                raise ValueError(
+                    "FPSim2 only sqla engine works for PostgreSQL and MySQL"
                 )
             self.storage = SqlaStorageBackend(conn_url, table_name)
 
