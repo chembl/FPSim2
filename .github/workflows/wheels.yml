@@ -53,67 +53,18 @@ jobs:
             python: 311
             platform_id: win_amd64
 
-          # Linux 64 bit manylinux2014
-          - os: ubuntu-latest
-            python: 38
-            platform_id: manylinux_x86_64
-            manylinux_image: manylinux2014
-          - os: ubuntu-latest
-            python: 39
-            platform_id: manylinux_x86_64
-            manylinux_image: manylinux2014
-          - os: ubuntu-latest
-            python: 310
-            platform_id: manylinux_x86_64
-            manylinux_image: manylinux2014
-          - os: ubuntu-latest
-            python: 311
-            platform_id: manylinux_x86_64
-            manylinux_image: manylinux2014
-
-          # MacOS x86_64
-          - os: macos-latest
-            python: 38
-            platform_id: macosx_x86_64
-          - os: macos-latest
-            python: 39
-            platform_id: macosx_x86_64
-          - os: macos-latest
-            python: 310
-            platform_id: macosx_x86_64
-          - os: macos-latest
-            python: 311
-            platform_id: macosx_x86_64
-
-          # MacOS arm64
-          - os: macos-latest
-            python: 38
-            platform_id: macosx_arm64
-          - os: macos-latest
-            python: 39
-            platform_id: macosx_arm64
-          - os: macos-latest
-            python: 310
-            platform_id: macosx_arm64
-          - os: macos-latest
-            python: 311
-            platform_id: macosx_arm64
-
     steps:
-      - name: Checkout FPSim2
-        uses: actions/checkout@v3
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.2
-        env:
-          CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
-          # CIBW_ARCHS_MACOS: x86_64 arm64
-          # CIBW_ARCHS_WINDOWS: AMD64
-          # CIBW_ARCHS_LINUX: x86_64 aarch64
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-          CIBW_TEST_SKIP: "*-macosx_arm64"
-          CIBW_TEST_REQUIRES: pytest
-          CIBW_BUILD_VERBOSITY: 1
+    - uses: actions/checkout@v3
+    - uses: pypa/cibuildwheel@v2.11.2
+      env:
+        CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+        # CIBW_ARCHS_MACOS: x86_64 arm64
+        # CIBW_ARCHS_WINDOWS: AMD64
+        # CIBW_ARCHS_LINUX: x86_64 aarch64
+        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+        CIBW_TEST_SKIP: "*-macosx_arm64"
+        CIBW_TEST_REQUIRES: pytest
+        CIBW_BUILD_VERBOSITY: 1
 
     - name: Verify clean directory
       run: git diff --exit-code
