@@ -1,0 +1,143 @@
+name: build wheels
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+     - master
+  release:
+    types:
+      - published
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_sdist:
+    name: Build SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
+
+    - uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.tar.gz
+
+  build_wheels:
+    name: Wheels on ${{ matrix.os }}  ${{ matrix.platform_id }} ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Ensure that a wheel builder finishes even if another fails
+      fail-fast: false
+      matrix:
+        include:
+          # Windows 64 bit
+          - os: windows-2019
+            python: 38
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 39
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 310
+            platform_id: win_amd64
+          # - os: windows-latest
+          #   python: 311
+          #   platform_id: win_amd64
+
+          # Linux 64 bit manylinux2014
+          - os: ubuntu-latest
+            python: 38
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 39
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 310
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          # - os: ubuntu-latest
+          #   python: 311
+          #   platform_id: manylinux_x86_64
+          #   manylinux_image: manylinux2014
+
+          # MacOS x86_64
+          - os: macos-latest
+            python: 38
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 310
+            platform_id: macosx_x86_64
+          # - os: macos-latest
+          #   python: 311
+          #   platform_id: macosx_x86_64
+
+          # MacOS arm64
+          - os: macos-latest
+            python: 38
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 310
+            platform_id: macosx_arm64
+          # - os: macos-latest
+          #   python: 311
+          #   platform_id: macosx_arm64
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: pypa/cibuildwheel@v2.11.2
+      env:
+        CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+        CIBW_ARCHS_LINUX: x86_64 aarch64
+        CIBW_ARCHS_MACOS: x86_64 arm64
+        CIBW_ARCHS_WINDOWS: AMD64
+        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+        CIBW_TEST_REQUIRES: pytest
+        CIBW_TEST_COMMAND: "pytest {project}/tests"
+        CIBW_BUILD_VERBOSITY: 1
+
+    - name: Verify clean directory
+      run: git diff --exit-code
+      shell: bash
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        path: wheelhouse/*.whl
+
+  upload_all:
+    name: Upload if release
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifact
+        path: dist
+
+    - uses: pypa/gh-action-pypi-publish@v1.5.1
+      with:
+        user: __token__
+        password: ${{ secrets.pypi_password }}
