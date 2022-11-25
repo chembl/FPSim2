@@ -109,7 +109,7 @@ jobs:
         CIBW_ARCHS_WINDOWS: AMD64
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
         CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: pytest {project}/tests
+        CIBW_TEST_COMMAND: "pytest {project}/tests"
         CIBW_BUILD_VERBOSITY: 1
 
     - name: Verify clean directory
