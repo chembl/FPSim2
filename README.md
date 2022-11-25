@@ -1,7 +1,7 @@
 [![CI Testing](https://github.com/chembl/FPSim2/workflows/CI/badge.svg)](https://github.com/chembl/FPSim2/actions?query=workflow%3ACI+branch%3Amaster)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/fpsim2/badges/platforms.svg)](https://anaconda.org/conda-forge/fpsim2)
-[![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
+[![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/fpsim2.svg)](https://anaconda.org/conda-forge/fpsim2)
+[![PyPI downloads](https://img.shields.io/pypi/dm/fpsim2.svg)](https://pypistats.org/packages/fpsim2)
 [![DOI](https://zenodo.org/badge/154705090.svg)](https://zenodo.org/badge/latestdoi/154705090)
 
 
@@ -18,6 +18,12 @@ Highlights:
 - Distance matrix calculation
 
 ## Installation
+
+```bash
+pip install fpsim2
+```
+
+or
 
 ```bash
 conda install -c conda-forge fpsim2
