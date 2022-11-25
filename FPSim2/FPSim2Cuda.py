@@ -120,7 +120,7 @@ class FPSim2CudaEngine(BaseEngine):
             # copy the database to the GPU
             self.cuda_db = cp.asarray(self.fps)
             self.cupy_kernel = cp.ElementwiseKernel(
-                in_params="raw T db, raw U query, uint64 in_width, float32 threshold",
+                in_params="raw T db, raw U query, raw T in_width, raw T threshold",
                 out_params="raw V out",
                 operation=self.ew_kernel,
                 name="taniEW",
@@ -142,7 +142,6 @@ class FPSim2CudaEngine(BaseEngine):
         if fp_range:
             # copy query and threshold to GPU
             query = cp.asarray(np_query)
-            cuda_threshold = cp.asarray(threshold, dtype="f4")
 
             # get the subset of molecule ids
             subset_size = int(fp_range[1] - fp_range[0])
@@ -155,7 +154,7 @@ class FPSim2CudaEngine(BaseEngine):
                 self.cuda_db[slice(*fp_range)],
                 query,
                 self.cuda_db.shape[1],
-                cuda_threshold,
+                threshold,
                 sims,
                 size=subset_size,
             )
@@ -179,8 +178,7 @@ class FPSim2CudaEngine(BaseEngine):
         )
 
         if fp_range:
-            # copy query and threshold to GPU
-            cuda_threshold = cp.asarray(threshold, dtype="f4")
+            # copy query to GPU
             query = cp.asarray(np_query[1:-1])
             popcount = cp.asarray(np_query[-1])
 
@@ -201,7 +199,7 @@ class FPSim2CudaEngine(BaseEngine):
                     popcount,
                     self.cuda_db[slice(*fp_range)],
                     self.cuda_popcnts[slice(*fp_range)],
-                    cuda_threshold,
+                    threshold,
                     sims,
                 ),
             )
