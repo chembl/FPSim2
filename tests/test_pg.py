@@ -13,7 +13,7 @@ except:
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 FP_TYPE = "Morgan"
 FP_PARAMS = {"radius": 2, "nBits": 2048}
-PG_URL = "postgresql://postgres:postgres@postgres:5432/postgres"
+DB_URL = "postgresql://postgres:postgres@postgres:5432/postgres"
 
 
 with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
@@ -27,9 +27,9 @@ with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
 @pytest.mark.skipif("psycopg2" not in sys.modules, reason="requires psycopg2")
 def test_create_db_file_smi():
     in_file = os.path.join(TESTS_DIR, "data/10mols.smi")
-    create_db_table(in_file, PG_URL, "fpsim2_fp_smi", FP_TYPE, FP_PARAMS)
+    create_db_table(in_file, DB_URL, "fpsim2_fp_smi", FP_TYPE, FP_PARAMS)
     fpe = FPSim2Engine(
-        conn_url=PG_URL, table_name="fpsim2_fp_smi", storage_backend="sqla"
+        conn_url=DB_URL, table_name="fpsim2_fp_smi", storage_backend="sqla"
     )
     fp_type, fp_params, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
@@ -44,10 +44,10 @@ def test_create_db_file_smi():
 def test_create_db_file_sdf():
     in_file = os.path.join(TESTS_DIR, "data/10mols.sdf")
     create_db_table(
-        in_file, PG_URL, "fpsim2_fp_sdf", FP_TYPE, FP_PARAMS, mol_id_prop="mol_id"
+        in_file, DB_URL, "fpsim2_fp_sdf", FP_TYPE, FP_PARAMS, mol_id_prop="mol_id"
     )
     fpe = FPSim2Engine(
-        conn_url=PG_URL, table_name="fpsim2_fp_sdf", storage_backend="sqla"
+        conn_url=DB_URL, table_name="fpsim2_fp_sdf", storage_backend="sqla"
     )
     fp_type, fp_params, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
@@ -61,13 +61,13 @@ def test_create_db_file_sdf():
 def test_create_db_file_list():
     create_db_table(
         [["CC", 1], ["CCC", 2], ["CCCC", 3]],
-        PG_URL,
+        DB_URL,
         "fpsim2_fp_list",
         FP_TYPE,
         FP_PARAMS,
     )
     fpe = FPSim2Engine(
-        conn_url=PG_URL, table_name="fpsim2_fp_list", storage_backend="sqla"
+        conn_url=DB_URL, table_name="fpsim2_fp_list", storage_backend="sqla"
     )
     fp_type, fp_params, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
