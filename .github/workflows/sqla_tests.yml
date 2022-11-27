@@ -55,7 +55,7 @@ jobs:
           pip install pytest psycopg2 mysqlclient
           pip install -e .
 
-      - name: Run PostgreSQL tests
+      - name: Run PostgreSQL and MySQL tests
         run: |
           pytest
         # Environment variables used by the tests
