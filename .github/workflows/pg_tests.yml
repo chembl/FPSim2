@@ -1,55 +1,55 @@
-# name: FPSim2 PotgreSQL tests
-# on:
-#   workflow_dispatch:
-#   pull_request:
-#     branches:
-#       - master
-#   push:
-#     branches:
-#       - '*'
-#     tags: '*'
+name: FPSim2 PotgreSQL tests
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - '*'
+    tags: '*'
 
-# jobs:
-#   # Label of the container job
-#   container-job:
-#     # Containers must run in Linux based operating systems
-#     runs-on: ubuntu-latest
-#     # Docker Hub image that `container-job` executes in
-#     container: python:3.10-bullseye
+jobs:
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: python:3.10-bullseye
 
-#     # Service containers to run with `container-job`
-#     services:
-#       # Label used to access the service container
-#       postgres:
-#         # Docker Hub image
-#         image: postgres
-#         # Provide the password for postgres
-#         env:
-#           POSTGRES_PASSWORD: postgres
-#         # Set health checks to wait until postgres has started
-#         options: >-
-#           --health-cmd pg_isready
-#           --health-interval 10s
-#           --health-timeout 5s
-#           --health-retries 5
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-#     steps:
-#       # Downloads a copy of the code in your repository before running CI tests
-#       - name: Check out repository code
-#         uses: actions/checkout@v3
+    steps:
+      # Downloads a copy of the code in your repository before running CI tests
+      - name: Check out repository code
+        uses: actions/checkout@v3
 
-#       - name: Install dependencies
-#         run: |
-#           python -m pip install --upgrade pip
-#           pip install pytest psycopg2
-#           pip install -e .
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest psycopg2
+          pip install -e .
 
-#       - name: Run PostgreSQL tests
-#         run: |
-#           pytest
-#         # Environment variables used by the tests
-#         env:
-#           # The hostname used to communicate with the PostgreSQL service container
-#           POSTGRES_HOST: postgres
-#           # The default PostgreSQL port
-#           POSTGRES_PORT: 5432
+      - name: Run PostgreSQL tests
+        run: |
+          pytest
+        # Environment variables used by the tests
+        env:
+          # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_HOST: postgres
+          # The default PostgreSQL port
+          POSTGRES_PORT: 5432
