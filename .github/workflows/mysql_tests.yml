@@ -23,9 +23,8 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          DB_USER: root
-          DB_PASSWORD: root
-          DB_DATABASE: mysql
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mysql
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=10s
