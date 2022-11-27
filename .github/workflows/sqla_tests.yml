@@ -1,4 +1,4 @@
-name: FPSim2 PotgreSQL tests
+name: FPSim2 SQLAlchemy tests
 on:
   workflow_dispatch:
   pull_request:
