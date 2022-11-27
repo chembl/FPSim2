@@ -31,10 +31,6 @@ jobs:
           --health-timeout=5s
           --health-retries=3
     steps:
-      - name: Set up MySQL
-        run: |
-          sudo systemctl start mysql
-          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
         uses: actions/checkout@v3
