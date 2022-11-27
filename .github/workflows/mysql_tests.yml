@@ -1,0 +1,52 @@
+name: FPSim2 MySQL tests
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - '*'
+    tags: '*'
+
+jobs:
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: python:3.10-bullseye
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      mysql:
+        image: mysql:8.0
+        env:
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_DATABASE: mysql
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    steps:
+      - name: Set up MySQL
+        run: |
+          sudo systemctl start mysql
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+      # Downloads a copy of the code in your repository before running CI tests
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      # For more information, see https://docs.npmjs.com/cli/ci.html
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest mysqlclient
+          pip install -e .
+
+      - name: Run PostgreSQL tests
+        run: |
+          pytest
