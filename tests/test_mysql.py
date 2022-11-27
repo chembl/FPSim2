@@ -13,7 +13,7 @@ except:
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 FP_TYPE = "Morgan"
 FP_PARAMS = {"radius": 2, "nBits": 2048}
-PG_URL = "mysql://root:root@localhost:3306/mysql"
+PG_URL = "mysql://root:root@mysql:3306/mysql"
 
 
 with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
@@ -24,7 +24,7 @@ with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
     popcnt_bins = fp_file.root.config[3]
 
 
-@pytest.mark.skipif("psycopg2" not in sys.modules, reason="requires psycopg2")
+@pytest.mark.skipif("mysqlclient" not in sys.modules, reason="requires mysqlclient")
 def test_create_db_file_smi():
     in_file = os.path.join(TESTS_DIR, "data/10mols.smi")
     create_db_table(in_file, PG_URL, "fpsim2_fp_smi", FP_TYPE, FP_PARAMS)
@@ -40,7 +40,7 @@ def test_create_db_file_smi():
     assert fpe.fps.all() == fps.all()
 
 
-@pytest.mark.skipif("psycopg2" not in sys.modules, reason="requires psycopg2")
+@pytest.mark.skipif("mysqlclient" not in sys.modules, reason="requires mysqlclient")
 def test_create_db_file_sdf():
     in_file = os.path.join(TESTS_DIR, "data/10mols.sdf")
     create_db_table(
@@ -57,7 +57,7 @@ def test_create_db_file_sdf():
     assert fpe.popcnt_bins == popcnt_bins
     assert fpe.fps.all() == fps.all()
 
-@pytest.mark.skipif("psycopg2" not in sys.modules, reason="requires psycopg2")
+@pytest.mark.skipif("mysqlclient" not in sys.modules, reason="requires mysqlclient")
 def test_create_db_file_list():
     create_db_table(
         [["CC", 1], ["CCC", 2], ["CCCC", 3]],

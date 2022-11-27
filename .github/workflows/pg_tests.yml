@@ -38,8 +38,6 @@
 #       - name: Check out repository code
 #         uses: actions/checkout@v3
 
-#       # Performs a clean installation of all dependencies in the `package.json` file
-#       # For more information, see https://docs.npmjs.com/cli/ci.html
 #       - name: Install dependencies
 #         run: |
 #           python -m pip install --upgrade pip
@@ -49,7 +47,7 @@
 #       - name: Run PostgreSQL tests
 #         run: |
 #           pytest
-#         # Environment variables used by the `client.js` script to create a new PostgreSQL table.
+#         # Environment variables used by the tests
 #         env:
 #           # The hostname used to communicate with the PostgreSQL service container
 #           POSTGRES_HOST: postgres
