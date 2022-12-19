@@ -184,7 +184,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
         self.fp_filename = fp_filename
         self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         if in_memory_fps:
-            self.load_fps(in_memory_fps, fps_sort)
+            self.load_fps(fps_sort)
         self.load_popcnt_bins(fps_sort)
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             self.chunk_size = fp_file.root.fps.chunkshape[0] * 120
@@ -210,14 +210,11 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 popcnt_bins = fp_file.root.config[3]
         self.popcnt_bins = popcnt_bins
 
-    def load_fps(self, in_memory_fps, fps_sort) -> None:
+    def load_fps(self, fps_sort) -> None:
         """Loads FP db file into memory.
 
         Parameters
         ----------
-        in_memory_fps : bool
-            Whether if the FPs should be loaded into memory or not.
-
         fps_sort: bool
             Whether if the FPs should be sorted or not.
 
