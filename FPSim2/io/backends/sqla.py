@@ -128,6 +128,6 @@ class SqlaStorageBackend(BaseStorageBackend):
         with engine.connect() as conn:
             count = conn.scalar(select(func.count()).select_from(self.sqla_table))
             res = conn.execute(select(self.sqla_table))
-            fps = np.fromiter(chain.from_iterable(res.fetchall()), dtype="<u8")
+            fps = np.fromiter(chain.from_iterable(res.fetchall()), dtype="<i8").view("<u8")
             fps = fps.reshape(count, len(self.sqla_table.columns))
         self.fps = fps[fps[:, -1].argsort()]
