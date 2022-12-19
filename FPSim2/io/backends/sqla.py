@@ -71,28 +71,29 @@ def create_db_table(
     FingerprintsTable.__table__.comment = comment
 
     # create the table
-    engine = create_engine(conn_url)
+    engine = create_engine(conn_url, future=True)
     Base.metadata.create_all(engine)
 
     # fill the table
-    fps = []
-    for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
-        fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
-        fps.append(fp)
-        if len(fps) == BATCH_WRITE_SIZE:
-            with engine.begin() as conn:
+    with engine.connect() as conn:
+        fps = []
+        for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
+            fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
+            fps.append(fp)
+            if len(fps) == BATCH_WRITE_SIZE:
                 conn.execute(
                     insert(FingerprintsTable),
                     fps,
                 )
-            fps = []
-    # append last batch < 32k
-    if fps:
-        with engine.begin() as conn:
+                conn.commit()
+                fps = []
+        # append last batch < 32k
+        if fps:
             conn.execute(
                 insert(FingerprintsTable),
                 fps,
             )
+            conn.commit()
 
 
 class SqlaStorageBackend(BaseStorageBackend):
