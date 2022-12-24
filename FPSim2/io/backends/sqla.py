@@ -125,12 +125,17 @@ class SqlaStorageBackend(BaseStorageBackend):
         """Loads FP db table into memory"""
         engine = create_engine(self.conn_url, future=True)
         with engine.connect() as conn:
-            count = conn.scalar(select(func.count()).select_from(self.sqla_table))
-            fps = np.zeros([count, len(self.sqla_table.columns)], dtype="<i8")
-            stmt = select(self.sqla_table).order_by(self.sqla_table.columns.popcnt)
+            n_molecules = conn.scalar(select(func.count()).select_from(self.sqla_table))
+            n_columns = len(self.sqla_table.columns)
+            fps = np.zeros([n_molecules, n_columns], dtype="<i8")
+            stmt = select(self.sqla_table)
             conn.execution_options(yield_per=BATCH_SIZE)
             res = conn.execute(stmt)
             for p_idx, partition in enumerate(res.partitions()):
                 start = p_idx * BATCH_SIZE
-                fps[start:start + BATCH_SIZE] = partition
+                fps[start : start + BATCH_SIZE] = partition
+        dtype = [("mol_id", "<i8"), ("fps", "<i8", n_columns - 2), ("popcnt", "<i8")]
+        fps = fps.view(dtype)
+        # fps sorting do not need to be stable
+        fps.sort(order="popcnt", kind="heapsort", axis=0)
         self.fps = fps.view("<u8")
