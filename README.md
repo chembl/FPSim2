@@ -1,7 +1,7 @@
 [![CI Testing](https://github.com/chembl/FPSim2/workflows/CI/badge.svg)](https://github.com/chembl/FPSim2/actions?query=workflow%3ACI+branch%3Amaster)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/fpsim2.svg)](https://anaconda.org/conda-forge/fpsim2)
-[![PyPI downloads](https://img.shields.io/pypi/dm/fpsim2.svg)](https://pypistats.org/packages/fpsim2)
+[![Downloads](https://pepy.tech/badge/fpsim2)](https://pepy.tech/project/fpsim2)
 [![DOI](https://zenodo.org/badge/154705090.svg)](https://zenodo.org/badge/latestdoi/154705090)
 
 
