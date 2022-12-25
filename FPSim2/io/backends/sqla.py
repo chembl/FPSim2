@@ -135,6 +135,6 @@ class SqlaStorageBackend(BaseStorageBackend):
                 fps[start : start + BATCH_SIZE] = partition
         dtype = [("mol_id", "<i8"), ("fps", "<i8", n_columns - 2), ("popcnt", "<i8")]
         fps = fps.view(dtype)
-        # fps sorting do not need to be stable
+        # fps sorting does not need to be stable
         fps.sort(order="popcnt", kind="heapsort", axis=0)
         self.fps = fps.view("<u8")
