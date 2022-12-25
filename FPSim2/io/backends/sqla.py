@@ -21,7 +21,7 @@ import rdkit
 import math
 import ast
 
-BATCH_SIZE = 32000
+BATCH_SIZE = 64000
 
 
 def build_fp_record(rdmol, fp_type, fp_params, mol_id) -> Dict:
@@ -128,9 +128,8 @@ class SqlaStorageBackend(BaseStorageBackend):
             n_molecules = conn.scalar(select(func.count()).select_from(self.sqla_table))
             n_columns = len(self.sqla_table.columns)
             fps = np.zeros([n_molecules, n_columns], dtype="<i8")
-            stmt = select(self.sqla_table)
             conn.execution_options(yield_per=BATCH_SIZE)
-            res = conn.execute(stmt)
+            res = conn.execute(select(self.sqla_table))
             for p_idx, partition in enumerate(res.partitions()):
                 start = p_idx * BATCH_SIZE
                 fps[start : start + BATCH_SIZE] = partition
