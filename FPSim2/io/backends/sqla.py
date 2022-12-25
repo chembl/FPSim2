@@ -7,22 +7,21 @@ from ..chem import (
     FP_FUNC_DEFAULTS,
 )
 from sqlalchemy import (
+    create_engine,
+    MetaData,
     BIGINT,
     Column,
     select,
     insert,
-    create_engine,
     func,
-    MetaData,
 )
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
-from itertools import chain
 import numpy as np
 import rdkit
 import math
 import ast
 
-BATCH_WRITE_SIZE = 32000
+BATCH_SIZE = 64000
 
 
 def build_fp_record(rdmol, fp_type, fp_params, mol_id) -> Dict:
@@ -80,7 +79,7 @@ def create_db_table(
         for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
             fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
             fps.append(fp)
-            if len(fps) == BATCH_WRITE_SIZE:
+            if len(fps) == BATCH_SIZE:
                 conn.execute(
                     insert(FingerprintsTable),
                     fps,
@@ -124,10 +123,18 @@ class SqlaStorageBackend(BaseStorageBackend):
 
     def load_fps(self) -> None:
         """Loads FP db table into memory"""
-        engine = create_engine(self.conn_url)
+        engine = create_engine(self.conn_url, future=True)
         with engine.connect() as conn:
-            count = conn.scalar(select(func.count()).select_from(self.sqla_table))
+            n_molecules = conn.scalar(select(func.count()).select_from(self.sqla_table))
+            n_columns = len(self.sqla_table.columns)
+            fps = np.zeros([n_molecules, n_columns], dtype="<i8")
+            conn.execution_options(yield_per=BATCH_SIZE)
             res = conn.execute(select(self.sqla_table))
-            fps = np.fromiter(chain.from_iterable(res.fetchall()), dtype="<i8").view("<u8")
-            fps = fps.reshape(count, len(self.sqla_table.columns))
-        self.fps = fps[fps[:, -1].argsort()]
+            for p_idx, partition in enumerate(res.partitions()):
+                start = p_idx * BATCH_SIZE
+                fps[start : start + BATCH_SIZE] = partition
+        dtype = [("mol_id", "<i8"), ("fps", "<i8", n_columns - 2), ("popcnt", "<i8")]
+        fps = fps.view(dtype)
+        # fps sorting does not need to be stable
+        fps.sort(order="popcnt", kind="heapsort", axis=0)
+        self.fps = fps.view("<u8")
