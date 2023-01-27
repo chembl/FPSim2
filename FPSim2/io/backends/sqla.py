@@ -9,7 +9,7 @@ from ..chem import (
 from sqlalchemy import (
     create_engine,
     MetaData,
-    BIGINT,
+    BigInteger,
     Column,
     select,
     insert,
@@ -37,14 +37,14 @@ def build_fp_record(rdmol, fp_type, fp_params, mol_id) -> Dict:
 
 def create_mapping(table_name: str, fp_length: int, base) -> DeclarativeMeta:
     clsdict = {"__tablename__": table_name}
-    clsdict.update({"mol_id": Column(BIGINT(), primary_key=True)})
+    clsdict.update({"mol_id": Column(BigInteger(), primary_key=True)})
     clsdict.update(
         {
-            f"fp_{idx}": Column(BIGINT(), primary_key=False)
+            f"fp_{idx}": Column(BigInteger(), primary_key=False)
             for idx in range(math.ceil(fp_length / 64))
         }
     )
-    clsdict.update({"popcnt": Column(BIGINT(), primary_key=False, index=True)})
+    clsdict.update({"popcnt": Column(BigInteger(), primary_key=False, index=True)})
     return type(table_name, (base,), clsdict)
 
 
