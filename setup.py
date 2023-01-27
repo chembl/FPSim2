@@ -137,7 +137,7 @@ setup(
         "rdkit>=2022.3.3",
         "tables>=3.4.4",
         "numpy >=1.14",
-        "sqlalchemy>=1.4.45",
+        "sqlalchemy>=2.0",
         "scipy",
         "tqdm",
     ],
