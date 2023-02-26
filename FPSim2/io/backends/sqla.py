@@ -129,7 +129,7 @@ class SqlaStorageBackend(BaseStorageBackend):
         """Loads FP db table into memory"""
         engine = create_engine(self.conn_url, future=True)
         with engine.connect() as conn:
-            if engine.dialect.name == "postgresql":
+            if engine.dialect.name == "postgresql" and pg_schema:
                 conn.execute(text(f"SET SESSION search_path={self.pg_schema}"))
             n_molecules = conn.scalar(select(func.count()).select_from(self.sqla_table))
             n_columns = len(self.sqla_table.columns)
