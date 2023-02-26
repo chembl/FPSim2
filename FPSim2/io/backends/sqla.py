@@ -102,7 +102,7 @@ class SqlaStorageBackend(BaseStorageBackend):
         self.pg_schema = pg_schema
 
         engine = create_engine(conn_url)
-        if engine.dialect.name == "postgresql":
+        if engine.dialect.name == "postgresql" and pg_schema:
             metadata = MetaData(schema=pg_schema)
         else:
             metadata = MetaData()
