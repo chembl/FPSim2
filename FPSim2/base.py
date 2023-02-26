@@ -37,9 +37,9 @@ class BaseEngine(ABC):
                     "Missing required 'conn_url' or 'table_name' param for the sqla backend"
                 )
             engine = create_mock_engine(conn_url, ())
-            if engine.dialect.name not in ("postgresql", "mysql"):
+            if engine.dialect.name not in ("postgresql", "mysql", "oracle"):
                 raise ValueError(
-                    "FPSim2 sqla engine only works for PostgreSQL and MySQL"
+                    "FPSim2 sqla engine only works for PostgreSQL, MySQL and Oracle (experimental)"
                 )
             self.storage = SqlaStorageBackend(conn_url, table_name)
 
