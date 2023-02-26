@@ -107,7 +107,10 @@ class SqlaStorageBackend(BaseStorageBackend):
         else:
             metadata = MetaData()
         metadata.reflect(engine)
-        self.sqla_table = metadata.tables[table_name]
+        if engine.dialect.name == "postgresql" and pg_schema:
+            self.sqla_table = metadata.tables[f"{pg_schema}.{table_name}"]
+        else:
+            self.sqla_table = metadata.tables[table_name]
 
         self.in_memory_fps = True
         self.name = "sqla"
