@@ -14,6 +14,7 @@ from sqlalchemy import (
     select,
     insert,
     func,
+    text,
 )
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
 import numpy as np
@@ -94,16 +95,22 @@ def create_db_table(
             )
             conn.commit()
 
-
 class SqlaStorageBackend(BaseStorageBackend):
-    def __init__(self, conn_url: str, table_name: str = "fpsim2_fingerprints") -> None:
+    def __init__(self, conn_url: str, table_name: str, pg_schema: str) -> None:
         super(SqlaStorageBackend, self).__init__()
         self.conn_url = conn_url
+        self.pg_schema = pg_schema
 
         engine = create_engine(conn_url)
-        metadata = MetaData()
+        if engine.dialect.name == "postgresql" and pg_schema:
+            metadata = MetaData(schema=pg_schema)
+        else:
+            metadata = MetaData()
         metadata.reflect(engine)
-        self.sqla_table = metadata.tables[table_name]
+        if engine.dialect.name == "postgresql" and pg_schema:
+            self.sqla_table = metadata.tables[f"{pg_schema}.{table_name}"]
+        else:
+            self.sqla_table = metadata.tables[table_name]
 
         self.in_memory_fps = True
         self.name = "sqla"
