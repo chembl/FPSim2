@@ -68,8 +68,8 @@ class FPSim2Engine(BaseEngine):
         fps_sort: bool = False,
         storage_backend: str = "pytables",
         conn_url: str = "",
-        table_name: str = "",
-        pg_schema: str = ""
+        table_name: str = "fpsim2_fingerprints",
+        pg_schema: str = "public"
     ) -> None:
         super(FPSim2Engine, self).__init__(
             fp_filename=fp_filename,

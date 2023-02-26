@@ -96,13 +96,16 @@ def create_db_table(
             conn.commit()
 
 class SqlaStorageBackend(BaseStorageBackend):
-    def __init__(self, conn_url: str, table_name: str = "fpsim2_fingerprints", pg_schema: str = "public") -> None:
+    def __init__(self, conn_url: str, table_name: str, pg_schema: str) -> None:
         super(SqlaStorageBackend, self).__init__()
         self.conn_url = conn_url
         self.pg_schema = pg_schema
 
         engine = create_engine(conn_url)
-        metadata = MetaData(schema=pg_schema)
+        if engine.dialect.name == "postgresql":
+            metadata = MetaData(schema=pg_schema)
+        else:
+            metadata = MetaData()
         metadata.reflect(engine)
         self.sqla_table = metadata.tables[table_name]
 
