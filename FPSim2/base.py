@@ -19,6 +19,7 @@ class BaseEngine(ABC):
         fps_sort: bool,
         conn_url: str,
         table_name: str,
+        pg_schema: str,
     ) -> None:
 
         self.fp_filename = fp_filename
@@ -41,7 +42,7 @@ class BaseEngine(ABC):
                 raise ValueError(
                     "FPSim2 sqla engine only works for PostgreSQL, MySQL and Oracle (experimental)"
                 )
-            self.storage = SqlaStorageBackend(conn_url, table_name)
+            self.storage = SqlaStorageBackend(conn_url, table_name, pg_schema)
 
     @property
     def fps(self):

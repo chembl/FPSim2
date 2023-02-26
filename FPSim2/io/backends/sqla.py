@@ -14,6 +14,7 @@ from sqlalchemy import (
     select,
     insert,
     func,
+    text,
 )
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
 import numpy as np
@@ -94,14 +95,14 @@ def create_db_table(
             )
             conn.commit()
 
-
 class SqlaStorageBackend(BaseStorageBackend):
-    def __init__(self, conn_url: str, table_name: str = "fpsim2_fingerprints") -> None:
+    def __init__(self, conn_url: str, table_name: str = "fpsim2_fingerprints", pg_schema: str = "public") -> None:
         super(SqlaStorageBackend, self).__init__()
         self.conn_url = conn_url
+        self.pg_schema = pg_schema
 
         engine = create_engine(conn_url)
-        metadata = MetaData()
+        metadata = MetaData(schema=pg_schema)
         metadata.reflect(engine)
         self.sqla_table = metadata.tables[table_name]
 
@@ -125,6 +126,8 @@ class SqlaStorageBackend(BaseStorageBackend):
         """Loads FP db table into memory"""
         engine = create_engine(self.conn_url, future=True)
         with engine.connect() as conn:
+            if engine.dialect.name == "postgresql":
+                conn.execute(text(f"SET SESSION search_path={self.pg_schema}"))
             n_molecules = conn.scalar(select(func.count()).select_from(self.sqla_table))
             n_columns = len(self.sqla_table.columns)
             fps = np.zeros([n_molecules, n_columns], dtype="<i8")
