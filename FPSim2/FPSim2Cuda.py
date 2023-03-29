@@ -95,6 +95,7 @@ class FPSim2CudaEngine(BaseEngine):
         kernel: str = "raw",
         conn_url: str = "",
         table_name: str = "",
+        pg_schema: str = "",
     ) -> None:
         super(FPSim2CudaEngine, self).__init__(
             fp_filename=fp_filename,
@@ -103,6 +104,7 @@ class FPSim2CudaEngine(BaseEngine):
             fps_sort=False,
             conn_url=conn_url,
             table_name=table_name,
+            pg_schema=pg_schema,
         )
         self.kernel = kernel
         if kernel == "raw":

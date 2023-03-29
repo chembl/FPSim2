@@ -106,7 +106,10 @@ def load_molecule(mol_string: str) -> Chem.Mol:
     if re.search(MOLFILE_RE, mol_string, flags=re.MULTILINE):
         rdmol = Chem.MolFromMolBlock(mol_string)
     elif mol_string.startswith("InChI="):
-        rdmol = Chem.MolFromInchi(mol_string)
+        try:
+            rdmol = Chem.MolFromInchi(mol_string)
+        except:
+            rdmol = None
     else:
         rdmol = Chem.MolFromSmiles(mol_string)
     return rdmol
