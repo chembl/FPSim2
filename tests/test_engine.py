@@ -1,5 +1,7 @@
 from FPSim2 import FPSim2Engine
 from rdkit import Chem, DataStructs
+from rdkit.Chem import rdMolDescriptors
+from FPSim2.io import create_db_file
 import numpy as np
 import pytest
 import math
@@ -174,6 +176,29 @@ def test_load_fps_sort():
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
     fpe2 = FPSim2Engine(in_file, fps_sort=True)
     assert fpe.popcnt_bins == fpe2.popcnt_bins
+
+
+def test_query_fp():
+    query = 'CC(=O)Oc1ccccc1C(=O)O'
+    radius = 2
+    n_bits = 4096
+    index_pth = os.path.join(TESTS_DIR, 'data/test_fp_query_index.h5')
+    threshold = 0.01
+    fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(query), radius=radius, nBits=n_bits)
+
+    create_db_file([
+        query,
+        'C1C(N=C(S1)C2=NC3=C(S2)C=C(C=C3)O)C(=O)O',
+        '[H][C@@]12[C@@H](CC[C@]3(C)C1C(C)=CC[C@@]23[H])C(C)C'
+    ], index_pth, 'Morgan', {'radius': radius, 'nBits': n_bits})
+    fpe = FPSim2Engine(index_pth)
+
+    result_smi = fpe.similarity(query, threshold)
+    result_fp = fpe.similarity(fp, threshold)
+    os.remove(index_pth)
+
+    assert result_fp[0][0] == result_fp[0][1] == 1
+    assert (result_smi == result_fp).all()
 
 
 @pytest.mark.parametrize("n_workers", (1, 2, 4))

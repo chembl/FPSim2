@@ -1,4 +1,5 @@
 import concurrent.futures as cf
+from rdkit.DataStructs import ExplicitBitVect
 from .io.chem import get_bounds_range
 from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
@@ -84,14 +85,14 @@ class FPSim2Engine(BaseEngine):
         self.empty_subs = np.ndarray((0,), dtype="<u4")
 
     def similarity(
-        self, query_string: str, threshold: float, n_workers=1
+        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
     ) -> np.ndarray:
         """Runs a Tanimoto search.
 
         Parameters
         ----------
-        query_string : str
-            SMILES, InChI or molblock.
+        query : Union[str, ExplicitBitVect]
+            SMILES, InChI, molblock or fingerprint as ExplicitBitVect.
 
         threshold: float
             Similarity threshold.
@@ -109,21 +110,21 @@ class FPSim2Engine(BaseEngine):
                 "Load the fingerprints into memory before running a in memory search"
             )
 
-        np_query = self.load_query(query_string)
+        query = self.load_query(query)
         bounds = get_bounds_range(
-            np_query, threshold, None, None, self.popcnt_bins, "tanimoto"
+            query, threshold, None, None, self.popcnt_bins, "tanimoto"
         )
 
         if not bounds:
             results = self.empty_sim
         else:
             if n_workers == 1:
-                results = TanimotoSearch(np_query, self.fps, threshold, *bounds)
+                results = TanimotoSearch(query, self.fps, threshold, *bounds)
             else:
                 results = self._parallel(
                     search_func=TanimotoSearch,
                     executor=cf.ThreadPoolExecutor,
-                    query=np_query,
+                    query=query,
                     db=self.fps,
                     args=(threshold,),
                     bounds=bounds,

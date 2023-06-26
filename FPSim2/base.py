@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from .io.chem import load_molecule, build_fp
+from .io.chem import load_molecule, build_fp, process_fp
 from .io.backends import PyTablesStorageBackend
 from .io.backends import SqlaStorageBackend
 from sqlalchemy import create_mock_engine
+from rdkit.DataStructs import ExplicitBitVect
+from typing import Union
 import numpy as np
 
 
@@ -67,21 +69,25 @@ class BaseEngine(ABC):
     def rdkit_ver(self):
         return self.storage.rdkit_ver
 
-    def load_query(self, query_string: str) -> np.ndarray:
-        """Loads the query molecule from SMILES, molblock or InChI.
+    def load_query(self, query: Union[str, ExplicitBitVect]) -> np.ndarray:
+        """Loads the query fingerprint from SMILES, molblock, InChI or ExplicitBitVect fingerprint.
 
         Parameters
         ----------
-        query_string : str
-            SMILES, InChi or molblock.
+        query : Union[str, ExplicitBitVect]
+            SMILES, InChi, molblock or fingerprint as ExplicitBitVect.
 
         Returns
         -------
         query : numpy array
             Numpy array query molecule.
         """
-        rdmol = load_molecule(query_string)
-        fp = build_fp(rdmol, self.fp_type, self.fp_params, 0)
+
+        if isinstance(query, ExplicitBitVect):
+            fp = process_fp(query, 0)
+        else:
+            rdmol = load_molecule(query)
+            fp = build_fp(rdmol, self.fp_type, self.fp_params, 0)
         return np.array(fp, dtype=np.uint64)
 
     @abstractmethod

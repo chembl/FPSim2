@@ -2,6 +2,7 @@ from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, U
 from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
 from rdkit.Chem import rdMolDescriptors
+from rdkit.DataStructs import ExplicitBitVect
 from rdkit.Avalon import pyAvalonTools
 from rdkit import Chem
 import numpy as np
@@ -78,16 +79,19 @@ FP_FUNC_DEFAULTS = {
 }
 
 
-def rdmol_to_efp(rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]) -> List[int]:
-    fp = FP_FUNCS[fp_func](rdmol, **fp_params)
-    return BitStrToIntList(fp.ToBitString())
+def rdmol_to_efp(rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]) -> ExplicitBitVect:
+    return FP_FUNCS[fp_func](rdmol, **fp_params)
 
 
 def build_fp(rdmol, fp_type, fp_params, mol_id):
     efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-    popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-    fp = (mol_id, *efp, popcnt)
-    return fp
+    return process_fp(efp, mol_id)
+
+
+def process_fp(fp, mol_id):
+    fp = BitStrToIntList(fp.ToBitString())
+    popcnt = PyPopcount(np.array(fp, dtype=np.uint64))
+    return mol_id, *fp, popcnt
 
 
 def load_molecule(mol_string: str) -> Chem.Mol:
