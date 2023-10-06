@@ -196,7 +196,7 @@ def it_mol_supplier(
             mol_id = new_mol_id
         else:
             if gen_ids:
-                mol_string = mol[0]
+                mol_string = mol
                 mol_id = new_mol_id
             else:
                 try:
