@@ -90,28 +90,27 @@ def build_fp(rdmol, fp_type, fp_params, mol_id):
     return fp
 
 
-def load_molecule(mol_string: str) -> Chem.Mol:
+def load_molecule(molecule: Any) -> Chem.Mol:
     """Reads SMILES, molblock or InChI and returns a RDKit mol.
 
     Parameters
     ----------
-    mol_string : str
-         SMILES, molblock or InChI.
+    molecule : Any
+         Chem.Mol, SMILES, molblock or InChI.
 
     Returns
     -------
     mol: ROMol
         RDKit molecule.
     """
-    if re.search(MOLFILE_RE, mol_string, flags=re.MULTILINE):
-        rdmol = Chem.MolFromMolBlock(mol_string)
-    elif mol_string.startswith("InChI="):
-        try:
-            rdmol = Chem.MolFromInchi(mol_string)
-        except:
-            rdmol = None
+    if isinstance(molecule, Chem.Mol):
+        return molecule
+    if re.search(MOLFILE_RE, molecule, flags=re.MULTILINE):
+        rdmol = Chem.MolFromMolBlock(molecule)
+    elif molecule.startswith("InChI="):
+        rdmol = Chem.MolFromInchi(molecule)
     else:
-        rdmol = Chem.MolFromSmiles(mol_string)
+        rdmol = Chem.MolFromSmiles(molecule)
     return rdmol
 
 

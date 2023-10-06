@@ -134,7 +134,7 @@ setup(
     long_description_content_type="text/markdown",
     ext_modules=ext_modules,
     install_requires=[
-        "rdkit>=2022.3.3",
+        "rdkit>=2023.03.2",
         "tables>=3.4.4",
         "numpy >=1.14",
         "sqlalchemy>=1.4.47",
