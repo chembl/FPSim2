@@ -51,7 +51,18 @@ def test_suppliers():
     it_mols = [
         Chem.MolToSmiles(x[1]) for x in it_mol_supplier(smiles_list, gen_ids=True)
     ]
-    assert smi_mols == sdf_mols == sdfgz_mols == it_mols
+    mols = [Chem.MolFromSmiles(x) for x in smiles_list]
+    rd_it_mols = [Chem.MolToSmiles(x[1]) for x in it_mol_supplier(mols, gen_ids=True)]
+
+    assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
+    assert (
+        len(smi_mols)
+        == len(sdf_mols)
+        == len(sdfgz_mols)
+        == len(it_mols)
+        == len(rd_it_mols)
+        == len(smiles_list)
+    )
 
 
 def test_get_mol_supplier():

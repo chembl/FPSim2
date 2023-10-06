@@ -206,8 +206,11 @@ def test_similarity(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
     results = fpe.similarity(query_smi, 0.7, n_workers=n_workers)
-    assert results.shape[0] == 4
-    assert list(results[0]) == [1, 1.0]
+    results_romol = fpe.similarity(
+        Chem.MolFromSmiles(query_smi), 0.7, n_workers=n_workers
+    )
+    assert results.shape[0] == results_romol.shape[0] == 4
+    assert list(results[0]) == list(results_romol[0]) == [1, 1.0]
 
 
 @pytest.mark.parametrize("n_workers", (1, 2, 4))
