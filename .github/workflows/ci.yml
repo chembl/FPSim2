@@ -6,8 +6,8 @@ on:
       - master
   push:
     branches:
-      - '*'
-    tags: '*'
+      - master
+
 jobs:
   test:
     name: FPSim2 (${{ matrix.os }}, ${{ matrix.python-version }}, ${{ matrix.rdkit-version }})
@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
