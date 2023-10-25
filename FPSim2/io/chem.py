@@ -2,6 +2,7 @@ from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, U
 from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
 from rdkit.Chem import rdMolDescriptors
+from rdkit.DataStructs import ExplicitBitVect
 from rdkit.Avalon import pyAvalonTools
 from rdkit import Chem
 import numpy as np
@@ -78,40 +79,42 @@ FP_FUNC_DEFAULTS = {
 }
 
 
-def rdmol_to_efp(rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]) -> List[int]:
-    fp = FP_FUNCS[fp_func](rdmol, **fp_params)
-    return BitStrToIntList(fp.ToBitString())
+def rdmol_to_efp(rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]) -> ExplicitBitVect:
+    return FP_FUNCS[fp_func](rdmol, **fp_params)
 
 
 def build_fp(rdmol, fp_type, fp_params, mol_id):
     efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-    popcnt = PyPopcount(np.array(efp, dtype=np.uint64))
-    fp = (mol_id, *efp, popcnt)
-    return fp
+    return process_fp(efp, mol_id)
 
 
-def load_molecule(mol_string: str) -> Chem.Mol:
+def process_fp(fp, mol_id):
+    fp = BitStrToIntList(fp.ToBitString())
+    popcnt = PyPopcount(np.array(fp, dtype=np.uint64))
+    return mol_id, *fp, popcnt
+
+
+def load_molecule(molecule: Any) -> Chem.Mol:
     """Reads SMILES, molblock or InChI and returns a RDKit mol.
 
     Parameters
     ----------
-    mol_string : str
-         SMILES, molblock or InChI.
+    molecule : Any
+         Chem.Mol, SMILES, molblock or InChI.
 
     Returns
     -------
     mol: ROMol
         RDKit molecule.
     """
-    if re.search(MOLFILE_RE, mol_string, flags=re.MULTILINE):
-        rdmol = Chem.MolFromMolBlock(mol_string)
-    elif mol_string.startswith("InChI="):
-        try:
-            rdmol = Chem.MolFromInchi(mol_string)
-        except:
-            rdmol = None
+    if isinstance(molecule, Chem.Mol):
+        return molecule
+    if re.search(MOLFILE_RE, molecule, flags=re.MULTILINE):
+        rdmol = Chem.MolFromMolBlock(molecule)
+    elif molecule.startswith("InChI="):
+        rdmol = Chem.MolFromInchi(molecule)
     else:
-        rdmol = Chem.MolFromSmiles(mol_string)
+        rdmol = Chem.MolFromSmiles(molecule)
     return rdmol
 
 
@@ -197,7 +200,7 @@ def it_mol_supplier(
             mol_id = new_mol_id
         else:
             if gen_ids:
-                mol_string = mol[0]
+                mol_string = mol
                 mol_id = new_mol_id
             else:
                 try:
