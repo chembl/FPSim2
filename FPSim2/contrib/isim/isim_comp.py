@@ -204,7 +204,7 @@ def calculate_comp_sim(fpe, n_ary="RR"):
         comp_sims = np.sum(a, axis=1) / (m * n_objects * (n_objects - 1) / 2)
 
     elif n_ary == "JT":
-        comp_sims = np.sum(a / (a + comp_matrix * (n_objects - comp_matrix)), axis=1)
+        comp_sims = np.sum(a, axis = 1)/np.sum((a + comp_matrix * (n_objects - comp_matrix)), axis = 1)
 
     elif n_ary == "SM":
         comp_sims = np.sum(
