@@ -115,62 +115,12 @@ def _gen_sim_dict(data, n_objects, k=1):
 
 
 def calculate_medoid(fpe, n_ary="RR"):
-    """Calculate the medoid of a set
-
-    Arguments
-     --------
-
-     fpe: FPSim2.FPSim2Engine
-         FPSim2 engine
-
-     n_ary: string
-         string with the initials of the desired similarity index to calculate the medoid from.
-         See gen_sim_dict description for keys
-
-     c_total:
-         np.array with the columnwise sums, not necessary to provide"""
-
-    data = unpack_fpe(fpe)
-    c_total = np.sum(data, axis=0)
-    n_objects = fpe.fps.shape[0]
-    index = n_objects + 1
-    min_sim = 1.01
-    comp_sums = c_total - data
-    for i, obj in enumerate(comp_sums):
-        sim_index = _gen_sim_dict(obj, n_objects=n_objects - 1)[n_ary]
-        if sim_index < min_sim:
-            min_sim = sim_index
-            index = i
-        else:
-            pass
+    index = np.argmin(calculate_comp_sim(fpe, n_ary=n_ary)["index"])
     return fpe.fps[index][0]
 
 
 def calculate_outlier(fpe, n_ary="RR"):
-    """Calculate the outlier of a set
-    Arguments
-    --------
-     fpe: FPSim2.FPSim2Engine
-         FPSim2 engine
-
-    n_ary: string
-        string with the initials of the desired similarity index to calculate the medoid from.
-        See gen_sim_dict description for keys
-    """
-
-    data = unpack_fpe(fpe)
-    c_total = np.sum(data, axis=0)
-    n_objects = fpe.fps.shape[0]
-    index = n_objects + 1
-    max_sim = -0.01
-    comp_sums = c_total - data
-    for i, obj in enumerate(comp_sums):
-        sim_index = _gen_sim_dict(obj, n_objects=n_objects - 1)[n_ary]
-        if sim_index > max_sim:
-            max_sim = sim_index
-            index = i
-        else:
-            pass
+    index = np.argmax(calculate_comp_sim(fpe, n_ary=n_ary)["index"])
     return fpe.fps[index][0]
 
 
@@ -194,7 +144,7 @@ def calculate_comp_sim(fpe, n_ary="RR"):
 
     data = unpack_fpe(fpe)
     c_total = np.sum(data, axis=0)
-    n_objects = fpe.fps.shape[0]
+    n_objects = fpe.fps.shape[0] - 1
     m = len(c_total)
 
     comp_matrix = c_total - data
@@ -204,11 +154,12 @@ def calculate_comp_sim(fpe, n_ary="RR"):
         comp_sims = np.sum(a, axis=1) / (m * n_objects * (n_objects - 1) / 2)
 
     elif n_ary == "JT":
-        comp_sims = np.sum(a, axis = 1)/np.sum((a + comp_matrix * (n_objects - comp_matrix)), axis = 1)
+        comp_sims = np.sum(a, axis=1) / np.sum(
+            (a + comp_matrix * (n_objects - comp_matrix)), axis=1
+        )
 
     elif n_ary == "SM":
         comp_sims = np.sum(
-            (a + (n_objects - comp_matrix) * (n_objects - comp_matrix - 1)), axis=1
+            (a + (n_objects - comp_matrix) * (n_objects - comp_matrix - 1) / 2), axis=1
         ) / (m * n_objects * (n_objects - 1) / 2)
-
-    return comp_sims
+    return np.rec.fromarrays([fpe.fps[:, 0], comp_sims], names=("mol_id", "index"))
