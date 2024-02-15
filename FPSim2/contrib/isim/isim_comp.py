@@ -35,10 +35,7 @@ def _calculate_counters(data, n_objects, k=1):
         Dictionary with the weighted and non-weighted counters.
 
     """
-    if data.ndim == 1:
-        c_total = data
-    else:
-        c_total = np.sum(data, axis=0)
+    c_total = np.sum(data, axis=0)
 
     # Calculate a, d, b + c
     a_array = c_total * (c_total - 1) / 2

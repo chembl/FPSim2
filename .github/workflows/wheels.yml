@@ -120,7 +120,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: pypa/cibuildwheel@v2.16.2
+    - uses: pypa/cibuildwheel@v2.16.5
       env:
         CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
         CIBW_ARCHS_LINUX: x86_64 aarch64
