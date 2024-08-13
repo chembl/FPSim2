@@ -135,7 +135,7 @@ setup(
     ext_modules=ext_modules,
     install_requires=[
         "rdkit>=2022.3.3",
-        "tables>=3.9.1",
+        "tables>=3.10",
         "numpy >=1.14",
         "sqlalchemy>=1.4.47",
         "scipy",
