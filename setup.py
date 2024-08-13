@@ -136,7 +136,7 @@ setup(
     install_requires=[
         "rdkit>=2022.3.3",
         "tables>=3.10",
-        "numpy >=1.14",
+        "numpy >=2.0",
         "sqlalchemy>=1.4.47",
         "scipy",
         "tqdm",
@@ -147,7 +147,6 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
