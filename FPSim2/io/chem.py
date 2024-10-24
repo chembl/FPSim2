@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterable as IterableType, Dict, List, Tuple, Union
+from typing import Any, Callable, Iterable as IterableType, Dict, Tuple, Union
 from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
 from rdkit.Chem import rdMolDescriptors
