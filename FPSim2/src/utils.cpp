@@ -23,8 +23,13 @@ namespace utils {
 
     py::list BitStrToIntList(const std::string &bit_string) {
         py::list efp;
-        for (size_t i = 0; i < bit_string.length(); i += 64) {
-            efp.append(std::stoull(bit_string.substr(i, 64), 0, 2));
+        size_t len = bit_string.length();
+        for (size_t i = 0; i < len; i += 64) {
+            uint64_t value = 0;
+            for (size_t j = 0; j < 64 && (i + j) < len; ++j) {
+                value = (value << 1) | (bit_string[i + j] - '0');
+            }
+            efp.append(value);
         }
         return efp;
     }
