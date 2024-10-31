@@ -7,7 +7,7 @@
 
 # FPSim2: Simple package for fast molecular similarity searches
 
-FPSim2 is a small NumPy centric Python/C++ RDKit based package to run fast compound similarity searches. FPSim2 performs better with high search thresholds (>=0.7). Currently used in the [ChEMBL](http://www.ebi.ac.uk/chembl/) interface.
+FPSim2 is a small NumPy centric Python/C++ RDKit based package to run fast compound similarity searches. FPSim2 performs better with high search thresholds (>=0.7). Currently used in the [ChEMBL](http://www.ebi.ac.uk/chembl/) and [SureChEMBL](https://www.surechembl.org/) interfaces.
 
 Highlights:
 - Using CPU POPCNT instruction
