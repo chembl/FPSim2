@@ -6,7 +6,8 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(FPSim2lib, m) {
+PYBIND11_MODULE(FPSim2lib, m)
+{
     m.doc() = R"pbdoc(
         FPSim2lib
         ---------
@@ -23,21 +24,21 @@ PYBIND11_MODULE(FPSim2lib, m) {
     PYBIND11_NUMPY_DTYPE(Result, idx, mol_id, coeff);
 
     m.def("SubstructureScreenout", &SubstructureScreenout,
-        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+          py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Substructure search
 
         Runs a Tversky (a=1, b=0) substructure screenout.
     )pbdoc");
 
     m.def("TanimotoSearch", &TanimotoSearch,
-        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+          py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Tanimoto search
 
         Runs a Tanimoto similarity search.
     )pbdoc");
 
     m.def("TverskySearch", &TverskySearch,
-        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+          py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Tversky search
 
         Runs a Tversky similarity search.
@@ -46,21 +47,21 @@ PYBIND11_MODULE(FPSim2lib, m) {
     auto mutils = m.def_submodule("utils");
 
     mutils.def("PyPopcount", &utils::PyPopcount, py::call_guard<py::gil_scoped_release>(),
-        R"pbdoc(
+               R"pbdoc(
         Calc popcount
         
         Calcs the popcount of a NumPy int array.
     )pbdoc");
 
     mutils.def("BitStrToIntList", &utils::BitStrToIntList,
-        R"pbdoc(
+               R"pbdoc(
         Bitstring to Python int list
 
         Converts RDKit FP bitstring into a Python int list.
     )pbdoc");
 
     mutils.def("SortResults", &utils::SortResults, py::call_guard<py::gil_scoped_release>(),
-        R"pbdoc(
+               R"pbdoc(
         Sort results
         
         Sort, inplace, the results NumPy array.
