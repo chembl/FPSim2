@@ -36,3 +36,9 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
                                   const float b,
                                   const uint32_t start,
                                   const uint32_t end);
+
+py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
+                                       const py::array_t<uint64_t>& py_db,
+                                       const uint32_t k,
+                                       const uint32_t start,
+                                       const uint32_t end);
