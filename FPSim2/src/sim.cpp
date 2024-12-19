@@ -10,8 +10,8 @@ namespace py = pybind11;
 
 py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query,
                                             const py::array_t<uint64_t> py_db,
-                                            uint32_t start,
-                                            uint32_t end)
+                                            const uint32_t start,
+                                            const uint32_t end)
 {
 
     // direct access to np arrays without checks
