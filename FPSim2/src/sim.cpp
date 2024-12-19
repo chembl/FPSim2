@@ -64,6 +64,7 @@ py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
 
     const size_t fp_shape = query.shape(0);
     const size_t popcnt_idx = fp_shape - 1;
+    const size_t batch_size = 128;
 
     auto results = new std::vector<Result>();
     results->reserve((end - start) / 8); // Estimate initial capacity
@@ -71,22 +72,26 @@ py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
     const uint64_t qcount = qptr[popcnt_idx];
     const uint64_t *db_row = dbptr;
 
-    for (uint32_t i = start; i < end; i++)
+    for (uint32_t i = start; i < end; i += batch_size)
     {
-        uint64_t common_popcnt = 0;
-
-        for (size_t j = 1; j < popcnt_idx; j++)
+        uint32_t batch_end = std::min(static_cast<uint32_t>(i + batch_size), end);
+        for (uint32_t j = i; j < batch_end; ++j)
         {
-            common_popcnt += popcntll(qptr[j] & db_row[j]);
-        }
+            uint64_t common_popcnt = 0;
 
-        float coeff = TanimotoCoeff(common_popcnt, qcount, db_row[popcnt_idx]);
-        if (coeff >= threshold)
-        {
-            results->push_back({i, static_cast<uint32_t>(db_row[0]), coeff});
-        }
+            for (size_t k = 1; k < popcnt_idx; k++)
+            {
+                common_popcnt += popcntll(qptr[k] & db_row[k]);
+            }
 
-        db_row += fp_shape;
+            float coeff = TanimotoCoeff(common_popcnt, qcount, db_row[popcnt_idx]);
+            if (coeff >= threshold)
+            {
+                results->push_back({j, static_cast<uint32_t>(db_row[0]), coeff});
+            }
+
+            db_row += fp_shape;
+        }
     }
 
     std::sort(results->begin(), results->end(), utils::cmp);
