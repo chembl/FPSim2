@@ -22,7 +22,7 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
     const size_t popcnt_idx = fp_shape - 1;
 
     auto results = new std::vector<uint32_t>();
-    results->reserve((end - start) / 4); // Estimate initial capacity
+    results->reserve((end - start) / 8);
 
     const uint64_t *db_row = dbptr;
     for (uint32_t i = start; i < end; i++)
@@ -57,43 +57,33 @@ py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
                                    uint32_t start,
                                    uint32_t end) noexcept
 {
-    const auto query = py_query.unchecked<1>();
-    const uint64_t *qptr = query.data(0);
-    const auto db = py_db.unchecked<2>();
-    const uint64_t *dbptr = db.data(start, 0);
-
-    const size_t fp_shape = query.shape(0);
+    const uint64_t *qptr = py_query.unchecked<1>().data(0);
+    const uint64_t *dbptr = py_db.unchecked<2>().data(start, 0);
+    const size_t fp_shape = py_query.shape(0);
     const size_t popcnt_idx = fp_shape - 1;
-    const size_t batch_size = 128;
 
     auto results = new std::vector<Result>();
-    results->reserve((end - start) / 8); // Estimate initial capacity
+    results->reserve((end - start) / 8);
 
     const uint64_t qcount = qptr[popcnt_idx];
     const uint64_t *db_row = dbptr;
 
-    for (uint32_t i = start; i < end; i += batch_size)
+    for (uint32_t i = start; i < end; i++)
     {
-        uint32_t batch_end = std::min(static_cast<uint32_t>(i + batch_size), end);
-        for (uint32_t j = i; j < batch_end; ++j)
+        uint64_t common_popcnt = 0;
+
+        for (size_t k = 1; k < popcnt_idx; k++)
         {
-            uint64_t common_popcnt = 0;
-
-            for (size_t k = 1; k < popcnt_idx; k++)
-            {
-                common_popcnt += popcntll(qptr[k] & db_row[k]);
-            }
-
-            float coeff = TanimotoCoeff(common_popcnt, qcount, db_row[popcnt_idx]);
-            if (coeff >= threshold)
-            {
-                results->push_back({j, static_cast<uint32_t>(db_row[0]), coeff});
-            }
-
-            db_row += fp_shape;
+            common_popcnt += popcntll(qptr[k] & db_row[k]);
         }
-    }
 
+        const float coeff = TanimotoCoeff(common_popcnt, qptr[popcnt_idx], dbptr[popcnt_idx]);
+        if (coeff >= threshold)
+        {
+            results->push_back({i, static_cast<uint32_t>(db_row[0]), coeff});
+        }
+        db_row += fp_shape;
+    }
     std::sort(results->begin(), results->end(), utils::cmp);
 
     py::gil_scoped_acquire acquire;
@@ -117,7 +107,7 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     const size_t popcnt_idx = fp_shape - 1;
 
     auto results = new std::vector<Result>();
-    results->reserve((end - start) / 8); // Estimate initial capacity
+    results->reserve((end - start) / 8);
 
     const uint64_t *db_row = dbptr;
     for (uint32_t i = start; i < end; i++)

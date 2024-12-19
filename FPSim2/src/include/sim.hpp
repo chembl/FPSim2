@@ -5,25 +5,25 @@
 
 namespace py = pybind11;
 
-inline uint32_t __attribute__((always_inline)) SubstructCoeff(uint32_t rel_co_popcnt,
-                                                              uint32_t common_popcnt) noexcept
+inline uint32_t SubstructCoeff(uint32_t rel_co_popcnt,
+                               uint32_t common_popcnt) noexcept
 {
     uint32_t sum = rel_co_popcnt + common_popcnt;
     return sum ? common_popcnt / sum : 0;
 }
 
-inline float __attribute__((always_inline)) TanimotoCoeff(uint32_t common_popcnt,
-                                                          uint32_t qcount,
-                                                          uint32_t ocount) noexcept
+inline float TanimotoCoeff(uint32_t common_popcnt,
+                           uint32_t qcount,
+                           uint32_t ocount) noexcept
 {
     return static_cast<float>(common_popcnt) / (qcount + ocount - common_popcnt);
 }
 
-inline float __attribute__((always_inline)) TverskyCoeff(uint32_t common_popcnt,
-                                                         uint32_t rel_co_popcnt,
-                                                         uint32_t rel_co_popcnt2,
-                                                         float a,
-                                                         float b) noexcept
+inline float TverskyCoeff(uint32_t common_popcnt,
+                          uint32_t rel_co_popcnt,
+                          uint32_t rel_co_popcnt2,
+                          float a,
+                          float b) noexcept
 {
     float denominator = common_popcnt + a * rel_co_popcnt + b * rel_co_popcnt2;
     return denominator > 0.0f ? common_popcnt / denominator : 0.0f;
