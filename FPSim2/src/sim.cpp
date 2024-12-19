@@ -77,7 +77,7 @@ py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
             common_popcnt += popcntll(qptr[k] & db_row[k]);
         }
 
-        const float coeff = TanimotoCoeff(common_popcnt, qptr[popcnt_idx], dbptr[popcnt_idx]);
+        const float coeff = TanimotoCoeff(common_popcnt, qcount, dbptr[popcnt_idx]);
         if (coeff >= threshold)
         {
             results->push_back({i, static_cast<uint32_t>(db_row[0]), coeff});
