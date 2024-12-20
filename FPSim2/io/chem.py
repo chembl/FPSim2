@@ -79,7 +79,9 @@ FP_FUNC_DEFAULTS = {
 }
 
 
-def rdmol_to_efp(rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]) -> ExplicitBitVect:
+def rdmol_to_efp(
+    rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]
+) -> ExplicitBitVect:
     return FP_FUNCS[fp_func](rdmol, **fp_params)
 
 
@@ -176,61 +178,69 @@ def get_bounds_range(
     return tuple(range_to_keep)
 
 
+def minimal_sanitization(mol):
+    """
+    Performs minimal sanitization of an RDKit molecule object.
+
+    Reference:
+        Adapted from https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
+
+    Args:
+        mol (rdkit.Chem.rdchem.Mol): The RDKit molecule object to be minimally sanitized
+
+    Returns:
+        rdkit.Chem.rdchem.Mol: The input molecule with updated property cache
+    """
+    # from https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
+    mol.UpdatePropertyCache()
+    return mol
+
+
 def it_mol_supplier(
-    iterable: IterableType, gen_ids: bool, **kwargs
+    iterable: IterableType, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from iterables.
 
     Parameters
     ----------
     iterable : iterable
-         Python iterable storing molecules.
-
-    gen_ids: bool
-        generate ids or not.
+         Python iterable storing tuples of (molecule_string, molecule_id).
 
     Yields
     -------
     tuple
         int id and rdkit mol.
     """
-    for new_mol_id, mol in enumerate(iterable, 1):
-        if isinstance(mol, str):
-            mol_string = mol
-            mol_id = new_mol_id
-        else:
-            if gen_ids:
-                mol_string = mol
-                mol_id = new_mol_id
-            else:
-                try:
-                    mol_string = mol[0]
-                    mol_id = int(mol[1])
-                except ValueError:
-                    raise Exception(
-                        "FPSim only supports integer ids for molecules, "
-                        "cosinder setting gen_ids=True when running "
-                        "create_db_file to autogenerate them."
-                    )
-        rdmol = load_molecule(mol_string)
+    mol_funcs = {
+        "smiles": Chem.MolFromSmiles,
+        "inchi": Chem.MolFromInchi,
+        "molfile": Chem.MolFromMolBlock,
+    }
+
+    if kwargs["mol_format"].lower() not in mol_funcs:
+        raise ValueError("mol_format must be one of: 'smiles', 'inchi', 'molfile'")
+
+    mol_func = mol_funcs[kwargs["mol_format"].lower()]
+
+    for mol_string, mol_id in iterable:
+        try:
+            mol_id = int(mol_id)
+        except ValueError:
+            raise Exception("FPSim2 only supports integer ids for molecules")
+
+        rdmol = mol_func(mol_string, sanitize=False)
         if rdmol:
+            rdmol = minimal_sanitization(rdmol)
             yield mol_id, rdmol
-        else:
-            continue
 
 
-def smi_mol_supplier(
-    filename: str, gen_ids: bool, **kwargs
-) -> IterableType[Tuple[int, Chem.Mol]]:
+def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from a .smi file.
 
     Parameters
     ----------
     filename : str
-         .smi file name.
-
-    gen_ids: bool
-        generate ids or not.
+            .smi file name.
 
     Yields
     -------
@@ -238,46 +248,29 @@ def smi_mol_supplier(
         int id and rdkit mol.
     """
     with open(filename, "r") as f:
-        for new_mol_id, mol in enumerate(f, 1):
-            # if .smi with single smiles column just add the id
-            mol = mol.split()
-            if len(mol) == 1:
-                smiles = mol[0]
-                mol_id = new_mol_id
-            else:
-                if gen_ids:
-                    smiles = mol[0]
-                    mol_id = new_mol_id
-                else:
-                    try:
-                        smiles = mol[0]
-                        mol_id = int(mol[1])
-                    except ValueError:
-                        raise Exception(
-                            "FPSim only supports integer ids for molecules, "
-                            "cosinder setting gen_ids=True when running "
-                            "create_db_file to autogenerate them."
-                        )
-            smiles = smiles.strip()
-            rdmol = Chem.MolFromSmiles(smiles)
-            if rdmol:
-                yield mol_id, rdmol
-            else:
+        for line in f:
+            mol = line.strip().split()
+            if len(mol) < 2:
                 continue
+            try:
+                smiles = mol[0]
+                mol_id = int(mol[1])
+            except ValueError:
+                raise Exception("FPSim2 only supports integer ids for molecules")
+
+            rdmol = Chem.MolFromSmiles(smiles, sanitize=False)
+            if rdmol:
+                rdmol = minimal_sanitization(rdmol)
+                yield mol_id, rdmol
 
 
-def sdf_mol_supplier(
-    filename: str, gen_ids: bool, **kwargs
-) -> IterableType[Tuple[int, Chem.Mol]]:
+def sdf_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from a .sdf file.
 
     Parameters
     ----------
     filename : str
         .sdf filename.
-
-    gen_ids: bool
-        generate ids or not.
 
     Yields
     -------
@@ -288,26 +281,18 @@ def sdf_mol_supplier(
         import gzip
 
         gzf = gzip.open(filename)
-        suppl = Chem.ForwardSDMolSupplier(gzf)
+        suppl = Chem.ForwardSDMolSupplier(gzf, sanitize=False)
     else:
-        suppl = Chem.ForwardSDMolSupplier(filename)
-    for new_mol_id, rdmol in enumerate(suppl, 1):
+        suppl = Chem.ForwardSDMolSupplier(filename, sanitize=False)
+
+    for rdmol in suppl:
         if rdmol:
-            if gen_ids:
-                mol_id = new_mol_id
-            else:
-                mol_id = rdmol.GetProp(kwargs["mol_id_prop"])
             try:
-                int(mol_id)
+                mol_id = int(rdmol.GetProp(kwargs["mol_id_prop"]))
             except ValueError:
-                raise Exception(
-                    "FPSim only supports integer ids for molecules, "
-                    "cosinder setting gen_ids=True when running "
-                    "create_db_file to autogenerate them."
-                )
+                raise Exception("FPSim2 only supports integer ids for molecules")
+            rdmol = minimal_sanitization(rdmol)
             yield mol_id, rdmol
-        else:
-            continue
 
 
 def get_mol_supplier(

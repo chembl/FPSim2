@@ -53,10 +53,10 @@ def create_db_table(
     mols_source: Union[str, IterableType],
     conn_url: str,
     table_name: str,
+    mol_format: str,
     fp_type: str,
     fp_params: dict = {},
     mol_id_prop: str = "mol_id",
-    gen_ids: bool = False,
 ) -> None:
     # if params dict is empty use defaults
     if not fp_params:
@@ -77,7 +77,8 @@ def create_db_table(
     # fill the table
     with engine.connect() as conn:
         fps = []
-        for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
+        iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
+        for mol_id, rdmol in iterable:
             fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
             fps.append(fp)
             if len(fps) == BATCH_SIZE:

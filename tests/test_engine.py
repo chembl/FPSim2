@@ -190,7 +190,7 @@ def test_query_fp():
         query,
         'C1C(N=C(S1)C2=NC3=C(S2)C=C(C=C3)O)C(=O)O',
         '[H][C@@]12[C@@H](CC[C@]3(C)C1C(C)=CC[C@@]23[H])C(C)C'
-    ], index_pth, 'Morgan', {'radius': radius, 'nBits': n_bits})
+    ], index_pth, 'smiles', 'Morgan', {'radius': radius, 'nBits': n_bits})
     fpe = FPSim2Engine(index_pth)
 
     result_smi = fpe.similarity(query, threshold)

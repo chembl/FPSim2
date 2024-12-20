@@ -28,7 +28,7 @@ with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
 @pytest.mark.parametrize("db_url", (PG_URL, MYSQL_URL))
 def test_create_db_file_smi(db_url):
     in_file = os.path.join(TESTS_DIR, "data/10mols.smi")
-    create_db_table(in_file, db_url, "fpsim2_fp_smi", FP_TYPE, FP_PARAMS)
+    create_db_table(in_file, db_url, "fpsim2_fp_smi", None, FP_TYPE, FP_PARAMS)
     fpe = FPSim2Engine(
         conn_url=db_url, table_name="fpsim2_fp_smi", storage_backend="sqla"
     )
@@ -47,7 +47,7 @@ def test_create_db_file_smi(db_url):
 def test_create_db_file_sdf(db_url):
     in_file = os.path.join(TESTS_DIR, "data/10mols.sdf")
     create_db_table(
-        in_file, db_url, "fpsim2_fp_sdf", FP_TYPE, FP_PARAMS, mol_id_prop="mol_id"
+        in_file, db_url, "fpsim2_fp_sdf", None, FP_TYPE, FP_PARAMS, mol_id_prop="mol_id"
     )
     fpe = FPSim2Engine(
         conn_url=db_url, table_name="fpsim2_fp_sdf", storage_backend="sqla"
@@ -68,6 +68,7 @@ def test_create_db_file_list(db_url):
         [["CC", 1], ["CCC", 2], ["CCCC", 3]],
         db_url,
         "fpsim2_fp_list",
+        "smiles",
         FP_TYPE,
         FP_PARAMS,
     )
