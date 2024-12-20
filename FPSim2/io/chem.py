@@ -193,6 +193,7 @@ def minimal_sanitization(mol):
     """
     # from https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
     mol.UpdatePropertyCache()
+    Chem.FastFindRings(mol)
     return mol
 
 
@@ -222,16 +223,19 @@ def it_mol_supplier(
 
     mol_func = mol_funcs[kwargs["mol_format"].lower()]
 
-    for mol_string, mol_id in iterable:
+    for mol, mol_id in iterable:
         try:
             mol_id = int(mol_id)
         except ValueError:
             raise Exception("FPSim2 only supports integer ids for molecules")
 
-        rdmol = mol_func(mol_string, sanitize=False)
-        if rdmol:
-            rdmol = minimal_sanitization(rdmol)
-            yield mol_id, rdmol
+        if isinstance(mol, Chem.Mol):
+            rdmol = mol
+        else:           
+            rdmol = mol_func(mol, sanitize=False)
+            if rdmol:
+                rdmol = minimal_sanitization(rdmol)
+        yield mol_id, rdmol
 
 
 def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
@@ -249,7 +253,7 @@ def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
     """
     with open(filename, "r") as f:
         for line in f:
-            mol = line.strip().split()
+            mol = line.strip().split(",")
             if len(mol) < 2:
                 continue
             try:
@@ -257,7 +261,6 @@ def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
                 mol_id = int(mol[1])
             except ValueError:
                 raise Exception("FPSim2 only supports integer ids for molecules")
-
             rdmol = Chem.MolFromSmiles(smiles, sanitize=False)
             if rdmol:
                 rdmol = minimal_sanitization(rdmol)

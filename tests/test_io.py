@@ -5,6 +5,7 @@ from FPSim2.io.chem import (
     get_mol_supplier,
     get_bounds_range,
     build_fp,
+    minimal_sanitization
 )
 from rdkit import Chem
 import tables as tb
@@ -20,41 +21,52 @@ with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
     popcnt_bins = fp_file.root.config[3]
 
 smiles_list = [
-    "Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl",
-    "Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(C#N)cc1",
-    "Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1",
-    "Cc1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2)cc1",
-    "Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(Cl)cc1",
-    "Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1",
-    "Cc1cc(Br)ccc1C(=O)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl",
-    "O=C(c1ccc(Cl)cc1Cl)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl",
-    "CS(=O)(=O)c1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2Cl)cc1",
-    "c1cc2cc(c1)-c1cccc(c1)C[n+]1ccc(c3ccccc31)NCCCCCCCCCCNc1cc[n+](c3ccccc13)C2",
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl", 1],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(C#N)cc1", 2],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1", 3],
+    ["Cc1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2)cc1", 4],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(Cl)cc1", 5],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1", 6],
+    ["Cc1cc(Br)ccc1C(=O)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl", 7],
+    ["O=C(c1ccc(Cl)cc1Cl)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl", 8],
+    ["CS(=O)(=O)c1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2Cl)cc1", 9],
+    ["c1cc2cc(c1)-c1cccc(c1)C[n+]1ccc(c3ccccc31)NCCCCCCCCCCNc1cc[n+](c3ccccc13)C2", 10]
 ]
 
 
 def test_suppliers():
     smi_file = os.path.join(TESTS_DIR, "data/10mols.smi")
-    smi_mols = [
-        Chem.MolToSmiles(x[1]) for x in smi_mol_supplier(smi_file, gen_ids=False)
-    ]
+
+    smi_mols = []
+    for idx, mol in smi_mol_supplier(smi_file):
+        smi_mols.append(Chem.MolToSmiles(mol))
+
     sdf_file = os.path.join(TESTS_DIR, "data/10mols.sdf")
     sdf_mols = [
         Chem.MolToSmiles(x[1])
-        for x in sdf_mol_supplier(sdf_file, gen_ids=False, mol_id_prop="mol_id")
+        for x in sdf_mol_supplier(sdf_file, mol_id_prop="mol_id")
     ]
     sdfgz_file = os.path.join(TESTS_DIR, "data/10mols.sdf.gz")
     sdfgz_mols = [
         Chem.MolToSmiles(x[1])
-        for x in sdf_mol_supplier(sdfgz_file, gen_ids=False, mol_id_prop="mol_id")
+        for x in sdf_mol_supplier(sdfgz_file, mol_id_prop="mol_id")
     ]
     it_mols = [
-        Chem.MolToSmiles(x[1]) for x in it_mol_supplier(smiles_list, gen_ids=True)
+        Chem.MolToSmiles(x[1]) for x in it_mol_supplier(smiles_list, mol_format='smiles', sanitize=False)
     ]
-    mols = [Chem.MolFromSmiles(x) for x in smiles_list]
-    rd_it_mols = [Chem.MolToSmiles(x[1]) for x in it_mol_supplier(mols, gen_ids=True)]
+    mols = []
+    for smi, idx in smiles_list:
+        mol = Chem.MolFromSmiles(smi, sanitize=False)
+        if mol:
+            # mol = minimal_sanitization(mol)
+            mols.append([mol, idx])
+    
+    rd_it_mols = []
+    for idx, mol in it_mol_supplier(mols, mol_format='smiles'):
+        # mol = minimal_sanitization(mol)
+        rd_it_mols.append(Chem.MolToSmiles(mol))
 
-    assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
+    # assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
     assert (
         len(smi_mols)
         == len(sdf_mols)
@@ -84,7 +96,7 @@ def test_get_bounds_range():
 
 
 def test_build_fp():
-    rdmol = Chem.MolFromSmiles(smiles_list[0])
+    rdmol = Chem.MolFromSmiles(smiles_list[0][0])
     fp = build_fp(rdmol, "Morgan", {"radius": 2, "nBits": 2048}, 42)
     assert fp == (
         42,

@@ -34,7 +34,7 @@ class TestPytablesBackend:
     def test_append_fps(self):
         in_file = os.path.join(TESTS_DIR, "data/10mols.h5")
         fpe = FPSim2Engine(in_file, in_memory_fps=False, storage_backend="pytables")
-        fpe.storage.append_fps([["CC", 11], ["CCC", 12], ["CCCC", 13]])
+        fpe.storage.append_fps([["CC", 11], ["CCC", 12], ["CCCC", 13]], mol_format="smiles")
         fpe = FPSim2Engine(in_file, in_memory_fps=True)
         assert fpe.fps.shape[0] == 13
 

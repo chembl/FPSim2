@@ -4,6 +4,7 @@ from ..chem import (
     build_fp,
     get_mol_supplier,
     get_fp_length,
+    it_mol_supplier,
     FP_FUNC_DEFAULTS,
 )
 import tables as tb
@@ -256,7 +257,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 ]
                 fps_table.remove_row(to_delete[0])
 
-    def append_fps(self, mols_source: Union[str, IterableType], mol_id_prop: str = "mol_id") -> None:
+    def append_fps(self, mols_source: Union[str, IterableType], mol_format) -> None:
         """Appends FPs to the file.
 
         Parameters
@@ -268,12 +269,11 @@ class PyTablesStorageBackend(BaseStorageBackend):
         -------
         None
         """
-        supplier = get_mol_supplier(mols_source)
         fp_type, fp_params, _ = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
             fps = []
-            for mol_id, rdmol in supplier(mols_source, False, mol_id_prop=mol_id_prop):
+            for mol_id, rdmol in it_mol_supplier(mols_source, mol_format=mol_format):
                 if not rdmol:
                     continue
                 fp = build_fp(rdmol, fp_type, fp_params, mol_id)
