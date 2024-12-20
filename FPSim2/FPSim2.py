@@ -617,17 +617,17 @@ class FPSim2Engine(BaseEngine):
             results = self.empty_sim
         else:
             if n_workers == 1:
-                results = TanimotoSearchTopK(query, self.fps, k, *bounds)
+                results = TanimotoSearchTopK(query, self.fps, k, threshold, *bounds)
             else:
                 results = self._parallel(
                     search_func=TanimotoSearchTopK,
                     executor=cf.ThreadPoolExecutor,
                     query=query,
                     db=self.fps,
-                    args=(k,),
+                    args=(k, threshold,),
                     bounds=bounds,
                     on_disk=False,
                     n_workers=n_workers,
                     chunk_size=0,
                 )
-        return results[["mol_id", "coeff"]][0:k]
+        return results[['mol_id', 'coeff']][:k]
