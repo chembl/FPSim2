@@ -63,7 +63,7 @@ def test_suppliers():
     for idx, mol in it_mol_supplier(mols, mol_format='smiles'):
         rd_it_mols.append(Chem.MolToSmiles(mol))
 
-    # assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
+    assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
     assert (
         len(smi_mols)
         == len(sdf_mols)
