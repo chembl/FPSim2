@@ -16,6 +16,19 @@ FP_PARAMS = {"radius": 2, "nBits": 2048}
 PG_URL = "postgresql://postgres:postgres@postgres:5432/postgres"
 MYSQL_URL = "mysql://root:root@mysql:3306/mysql"
 
+smiles_list = [
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl", 1],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(C#N)cc1", 2],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1", 3],
+    ["Cc1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2)cc1", 4],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(Cl)cc1", 5],
+    ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1", 6],
+    ["Cc1cc(Br)ccc1C(=O)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl", 7],
+    ["O=C(c1ccc(Cl)cc1Cl)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl", 8],
+    ["CS(=O)(=O)c1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2Cl)cc1", 9],
+    ["c1cc2cc(c1)-c1cccc(c1)C[n+]1ccc(c3ccccc31)NCCCCCCCCCCNc1cc[n+](c3ccccc13)C2", 10]
+]
+
 with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
     fps = fp_file.root.fps[:]
     num_fields = len(fps[0])
@@ -65,7 +78,7 @@ def test_create_db_file_sdf(db_url):
 @pytest.mark.parametrize("db_url", (PG_URL, MYSQL_URL))
 def test_create_db_file_list(db_url):
     create_db_table(
-        [["CC", 1], ["CCC", 2], ["CCCC", 3]],
+        smiles_list,
         db_url,
         "fpsim2_fp_list",
         "smiles",
