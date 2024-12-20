@@ -1,6 +1,5 @@
 from typing import Iterable as IterableType, Dict, Tuple, Union
 from .base import BaseStorageBackend
-from .. import __version__ as FPSim2_version
 from ..chem import (
     build_fp,
     get_mol_supplier,
@@ -66,7 +65,7 @@ def create_db_table(
 
     # define the table
     Base = declarative_base()
-    comment = f"{fp_type}||{repr(fp_params)}||{rdkit.__version__}||{FPSim2_version}"
+    comment = f"{fp_type}||{repr(fp_params)}||{rdkit.__version__}"
     FingerprintsTable = create_mapping(table_name, fp_length=fp_length, base=Base)
     FingerprintsTable.__table__.comment = comment
 
@@ -115,19 +114,17 @@ class SqlaStorageBackend(BaseStorageBackend):
 
         self.in_memory_fps = True
         self.name = "sqla"
-        self.fp_type, self.fp_params, self.rdkit_ver, self.fpsim2_ver = self.read_parameters()
+        self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         self.load_fps()
         self.load_popcnt_bins()
-        if self.fpsim2_ver != FPSim2_version:
-            print(f"Warning: Database was created with FPSim2 version {self.fpsim2_ver} but installed version is {FPSim2_version}")
         if self.rdkit_ver != rdkit.__version__:
             print(f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}")
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
-        fp_type, fp_params, rdkit_ver, fpsim2_ver = self.sqla_table.comment.split("||")
+        fp_type, fp_params, rdkit_ver = self.sqla_table.comment.split("||")
         fp_params = ast.literal_eval(fp_params)
-        return fp_type, fp_params, rdkit_ver, fpsim2_ver
+        return fp_type, fp_params, rdkit_ver
 
     def load_popcnt_bins(self) -> None:
         popcnt_bins = self.calc_popcnt_bins(self.fps)

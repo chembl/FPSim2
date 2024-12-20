@@ -1,5 +1,4 @@
 from typing import Any, Iterable as IterableType, Dict, List, Tuple, Union
-from .. import __version__ as FPSim2_version
 from .base import BaseStorageBackend
 from ..chem import (
     build_fp,
@@ -91,7 +90,6 @@ def create_db_file(
         param_table.append(fp_type)
         param_table.append(fp_params)
         param_table.append(rdkit.__version__)
-        param_table.append(FPSim2_version)
 
         fps = []
         iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
@@ -192,8 +190,6 @@ class PyTablesStorageBackend(BaseStorageBackend):
         self.load_popcnt_bins(fps_sort)
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             self.chunk_size = fp_file.root.fps.chunkshape[0] * 120
-        if self.fpsim2_ver != FPSim2_version:
-            print(f"Warning: Database was created with FPSim2 version {self.fpsim2_ver} but installed version is {FPSim2_version}")
         if self.rdkit_ver != rdkit.__version__:
             print(f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}")
 
@@ -203,8 +199,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
             fp_type = fp_file.root.config[0]
             fp_params = fp_file.root.config[1]
             rdkit_ver = fp_file.root.config[2]
-            fpsim2_ver = fp_file.root.config[3]
-        return fp_type, fp_params, rdkit_ver, fpsim2_ver
+        return fp_type, fp_params, rdkit_ver
 
     def get_fps_chunk(self, chunk_range: Tuple[int, int]) -> np.asarray:
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
