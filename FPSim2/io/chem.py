@@ -253,7 +253,7 @@ def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
     """
     with open(filename, "r") as f:
         for line in f:
-            mol = line.strip().split(",")
+            mol = line.strip().split()
             if len(mol) < 2:
                 continue
             try:
