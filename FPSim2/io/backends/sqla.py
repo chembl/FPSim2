@@ -14,7 +14,6 @@ from sqlalchemy import (
     select,
     insert,
     func,
-    text,
 )
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
 import numpy as np
