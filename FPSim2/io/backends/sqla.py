@@ -73,13 +73,16 @@ def create_db_table(
     engine = create_engine(conn_url, future=True)
     Base.metadata.create_all(engine)
 
+    print(mols_source)
+
     # fill the table
     with engine.connect() as conn:
         fps = []
         iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
         for mol_id, rdmol in iterable:
             fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
-            print(fp)
+            from rdkit import Chem
+            print(fp, Chem.MolToSmiles(rdmol))
             fps.append(fp)
             if len(fps) == BATCH_SIZE:
                 conn.execute(
