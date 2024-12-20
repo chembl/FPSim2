@@ -79,6 +79,7 @@ def create_db_table(
         iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
         for mol_id, rdmol in iterable:
             fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
+            print(fp)
             fps.append(fp)
             if len(fps) == BATCH_SIZE:
                 conn.execute(
