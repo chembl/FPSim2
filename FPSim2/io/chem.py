@@ -6,6 +6,7 @@ from rdkit.DataStructs import ExplicitBitVect
 from rdkit.Avalon import pyAvalonTools
 from rdkit import Chem
 import numpy as np
+import gzip
 import re
 
 
@@ -191,7 +192,6 @@ def minimal_sanitization(mol):
     Returns:
         rdkit.Chem.rdchem.Mol: The input molecule with updated property cache
     """
-    # from https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
     mol.UpdatePropertyCache()
     Chem.FastFindRings(mol)
     return mol
@@ -281,12 +281,10 @@ def sdf_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
         int id and rdkit mol.
     """
     if filename.endswith(".gz"):
-        import gzip
-
         gzf = gzip.open(filename)
-        suppl = Chem.ForwardSDMolSupplier(gzf, sanitize=False)
+        suppl = Chem.ForwardSDMolSupplier(gzf)
     else:
-        suppl = Chem.ForwardSDMolSupplier(filename, sanitize=False)
+        suppl = Chem.ForwardSDMolSupplier(filename)
 
     for rdmol in suppl:
         if rdmol:
@@ -294,7 +292,6 @@ def sdf_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
                 mol_id = int(rdmol.GetProp(kwargs["mol_id_prop"]))
             except ValueError:
                 raise Exception("FPSim2 only supports integer ids for molecules")
-            rdmol = minimal_sanitization(rdmol)
             yield mol_id, rdmol
 
 
