@@ -4,6 +4,7 @@ from ..chem import (
     build_fp,
     get_mol_supplier,
     get_fp_length,
+    it_mol_supplier,
     FP_FUNC_DEFAULTS,
 )
 import tables as tb
@@ -32,10 +33,10 @@ def create_schema(fp_length: int) -> Any:
 def create_db_file(
     mols_source: Union[str, IterableType],
     filename: str,
+    mol_format: str,
     fp_type: str,
     fp_params: dict = {},
     mol_id_prop: str = "mol_id",
-    gen_ids: bool = False,
     sort_by_popcnt: bool = True,
 ) -> None:
     """Creates FPSim2 FPs db file from .smi, .sdf files or from an iterable.
@@ -91,7 +92,8 @@ def create_db_file(
         param_table.append(rdkit.__version__)
 
         fps = []
-        for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
+        iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
+        for mol_id, rdmol in iterable:
             fp = build_fp(rdmol, fp_type, fp_params, mol_id)
             fps.append(fp)
             if len(fps) == BATCH_WRITE_SIZE:
@@ -188,6 +190,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
         self.load_popcnt_bins(fps_sort)
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             self.chunk_size = fp_file.root.fps.chunkshape[0] * 120
+        if self.rdkit_ver != rdkit.__version__:
+            print(f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}")
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
@@ -255,7 +259,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
                 ]
                 fps_table.remove_row(to_delete[0])
 
-    def append_fps(self, mols_source: Union[str, IterableType], mol_id_prop: str = "mol_id") -> None:
+    def append_fps(self, mols_source: Union[str, IterableType], mol_format) -> None:
         """Appends FPs to the file.
 
         Parameters
@@ -267,12 +271,11 @@ class PyTablesStorageBackend(BaseStorageBackend):
         -------
         None
         """
-        supplier = get_mol_supplier(mols_source)
         fp_type, fp_params, _ = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
             fps = []
-            for mol_id, rdmol in supplier(mols_source, False, mol_id_prop=mol_id_prop):
+            for mol_id, rdmol in it_mol_supplier(mols_source, mol_format=mol_format):
                 if not rdmol:
                     continue
                 fp = build_fp(rdmol, fp_type, fp_params, mol_id)

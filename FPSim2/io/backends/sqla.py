@@ -14,7 +14,6 @@ from sqlalchemy import (
     select,
     insert,
     func,
-    text,
 )
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
 import numpy as np
@@ -53,10 +52,10 @@ def create_db_table(
     mols_source: Union[str, IterableType],
     conn_url: str,
     table_name: str,
+    mol_format: str,
     fp_type: str,
     fp_params: dict = {},
     mol_id_prop: str = "mol_id",
-    gen_ids: bool = False,
 ) -> None:
     # if params dict is empty use defaults
     if not fp_params:
@@ -77,7 +76,8 @@ def create_db_table(
     # fill the table
     with engine.connect() as conn:
         fps = []
-        for mol_id, rdmol in supplier(mols_source, gen_ids, mol_id_prop=mol_id_prop):
+        iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
+        for mol_id, rdmol in iterable:
             fp = build_fp_record(rdmol, fp_type, fp_params, mol_id)
             fps.append(fp)
             if len(fps) == BATCH_SIZE:
@@ -117,6 +117,8 @@ class SqlaStorageBackend(BaseStorageBackend):
         self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
         self.load_fps()
         self.load_popcnt_bins()
+        if self.rdkit_ver != rdkit.__version__:
+            print(f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}")
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""

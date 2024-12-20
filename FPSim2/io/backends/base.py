@@ -21,10 +21,10 @@ class BaseStorageBackend(ABC):
         popcnt_bins = []
         idx = np.unique(fps[:, -1], return_index=True)
         for i, k in enumerate(zip(*idx)):
-            if k[0] == idx[0][-1]:
-                popcnt_bins.append((k[0], (k[1], fps.shape[0])))
+            if i + 1 < len(idx[0]):
+                popcnt_bins.append((int(k[0]), (np.int64(k[1]), np.int64(idx[1][i + 1]))))
             else:
-                popcnt_bins.append((k[0], (k[1], idx[1][int(i + 1)])))
+                popcnt_bins.append((int(k[0]), (np.int64(k[1]), np.int64(fps.shape[0]))))
         return popcnt_bins
 
     @abstractmethod
