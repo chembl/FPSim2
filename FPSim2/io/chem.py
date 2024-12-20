@@ -179,24 +179,6 @@ def get_bounds_range(
     return tuple(range_to_keep)
 
 
-def minimal_sanitization(mol):
-    """
-    Performs minimal sanitization of an RDKit molecule object.
-
-    Reference:
-        Adapted from https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
-
-    Args:
-        mol (rdkit.Chem.rdchem.Mol): The RDKit molecule object to be minimally sanitized
-
-    Returns:
-        rdkit.Chem.rdchem.Mol: The input molecule with updated property cache
-    """
-    mol.UpdatePropertyCache()
-    Chem.FastFindRings(mol)
-    return mol
-
-
 def it_mol_supplier(
     iterable: IterableType, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
@@ -232,10 +214,9 @@ def it_mol_supplier(
         if isinstance(mol, Chem.Mol):
             rdmol = mol
         else:           
-            rdmol = mol_func(mol, sanitize=False)
+            rdmol = mol_func(mol)
             if rdmol:
-                rdmol = minimal_sanitization(rdmol)
-        yield mol_id, rdmol
+                yield mol_id, rdmol
 
 
 def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
@@ -261,9 +242,8 @@ def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
                 mol_id = int(mol[1])
             except ValueError:
                 raise Exception("FPSim2 only supports integer ids for molecules")
-            rdmol = Chem.MolFromSmiles(smiles, sanitize=False)
+            rdmol = Chem.MolFromSmiles(smiles)
             if rdmol:
-                rdmol = minimal_sanitization(rdmol)
                 yield mol_id, rdmol
 
 

@@ -2,7 +2,6 @@ from FPSim2 import FPSim2Engine
 from rdkit import Chem, DataStructs
 from rdkit.Chem import rdMolDescriptors
 from FPSim2.io import create_db_file
-from FPSim2.io.chem import minimal_sanitization
 import numpy as np
 import pytest
 import math
@@ -147,9 +146,8 @@ def test_validate_against_rdkit():
         smiles = f.readlines()
     fps = []
     for smi in smiles:
-        mol = Chem.MolFromSmiles(smi, sanitize=False)
+        mol = Chem.MolFromSmiles(smi)
         if mol is not None:
-            mol = minimal_sanitization(mol)
             fp = Chem.rdMolDescriptors.GetMorganFingerprintAsBitVect(mol, **FP_PARAMS)
             fps.append(fp)
 

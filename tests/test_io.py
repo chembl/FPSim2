@@ -5,7 +5,6 @@ from FPSim2.io.chem import (
     get_mol_supplier,
     get_bounds_range,
     build_fp,
-    minimal_sanitization
 )
 from rdkit import Chem
 import tables as tb
@@ -52,18 +51,16 @@ def test_suppliers():
         for x in sdf_mol_supplier(sdfgz_file, mol_id_prop="mol_id")
     ]
     it_mols = [
-        Chem.MolToSmiles(x[1]) for x in it_mol_supplier(smiles_list, mol_format='smiles', sanitize=False)
+        Chem.MolToSmiles(x[1]) for x in it_mol_supplier(smiles_list, mol_format='smiles')
     ]
     mols = []
     for smi, idx in smiles_list:
-        mol = Chem.MolFromSmiles(smi, sanitize=False)
+        mol = Chem.MolFromSmiles(smi)
         if mol:
-            # mol = minimal_sanitization(mol)
             mols.append([mol, idx])
     
     rd_it_mols = []
     for idx, mol in it_mol_supplier(mols, mol_format='smiles'):
-        # mol = minimal_sanitization(mol)
         rd_it_mols.append(Chem.MolToSmiles(mol))
 
     # assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
