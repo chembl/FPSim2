@@ -187,7 +187,7 @@ def it_mol_supplier(
     Parameters
     ----------
     iterable : iterable
-         Python iterable storing tuples of (molecule_string, molecule_id).
+         Python iterable storing tuples of (molecule, molecule_id).
 
     Yields
     -------
@@ -198,10 +198,11 @@ def it_mol_supplier(
         "smiles": Chem.MolFromSmiles,
         "inchi": Chem.MolFromInchi,
         "molfile": Chem.MolFromMolBlock,
+        "rdkit": lambda x: x,
     }
 
     if kwargs["mol_format"].lower() not in mol_funcs:
-        raise ValueError("mol_format must be one of: 'smiles', 'inchi', 'molfile'")
+        raise ValueError("mol_format must be one of: 'smiles', 'inchi', 'molfile', 'rdkit'")
 
     mol_func = mol_funcs[kwargs["mol_format"].lower()]
 
@@ -211,12 +212,9 @@ def it_mol_supplier(
         except ValueError:
             raise Exception("FPSim2 only supports integer ids for molecules")
 
-        if isinstance(mol, Chem.Mol):
-            rdmol = mol
-        else:           
-            rdmol = mol_func(mol)
-            if rdmol:
-                yield mol_id, rdmol
+        rdmol = mol_func(mol)
+        if rdmol:
+            yield mol_id, rdmol
 
 
 def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:

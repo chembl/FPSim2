@@ -60,7 +60,7 @@ def test_suppliers():
             mols.append([mol, idx])
     
     rd_it_mols = []
-    for idx, mol in it_mol_supplier(mols, mol_format='smiles'):
+    for idx, mol in it_mol_supplier(mols, mol_format='rdkit'):
         rd_it_mols.append(Chem.MolToSmiles(mol))
 
     assert smi_mols == sdf_mols == sdfgz_mols == it_mols == rd_it_mols
