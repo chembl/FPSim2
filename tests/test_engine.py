@@ -1,7 +1,8 @@
 from FPSim2 import FPSim2Engine
 from rdkit import Chem, DataStructs
 from rdkit.Chem import rdMolDescriptors
-from FPSim2.io import create_db_file, minimal_sanitization
+from FPSim2.io import create_db_file
+from FPSim2.io.chem import minimal_sanitization
 import numpy as np
 import pytest
 import math
