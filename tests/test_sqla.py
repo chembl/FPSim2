@@ -93,4 +93,6 @@ def test_create_db_file_list(db_url):
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["nBits"] == FP_PARAMS["nBits"]
     assert fpe.fps.shape[0] == 10
+    assert fpe.popcnt_bins == popcnt_bins
+    assert fpe.fps.all() == fps.all()
     assert fpe.fps.flags['C_CONTIGUOUS']
