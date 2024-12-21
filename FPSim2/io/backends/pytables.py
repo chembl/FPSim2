@@ -74,7 +74,7 @@ def create_db_file(
     supplier = get_mol_supplier(mols_source)
     fp_length = get_fp_length(fp_type, fp_params)
     # set compression
-    filters = tb.Filters(complib="blosc", complevel=5)
+    filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
 
     # set the output file and fps table
     with tb.open_file(filename, mode="w") as fp_file:
