@@ -12,6 +12,14 @@ import re
 
 MOLFILE_RE = r" [vV][23]000$"
 
+SUPPORTED_MOL_FORMATS = ["smiles", "molfile", "inchi", "rdkit"]
+
+RDKIT_PARSE_FUNCS = {
+    "smiles": Chem.MolFromSmiles,
+    "inchi": Chem.MolFromInchi,
+    "molfile": Chem.MolFromMolBlock,
+    "rdkit": lambda x: x,
+}
 
 FP_FUNCS = {
     "MACCSKeys": rdMolDescriptors.GetMACCSKeysFingerprint,
@@ -86,14 +94,14 @@ def rdmol_to_efp(
     return FP_FUNCS[fp_func](rdmol, **fp_params)
 
 
-def build_fp(rdmol, fp_type, fp_params, mol_id):
-    efp = rdmol_to_efp(rdmol, fp_type, fp_params)
-    return process_fp(efp, mol_id)
+def build_fp(
+    rdmol: Chem.Mol, fp_type: str, fp_params: Dict[str, Any], mol_id: int
+) -> tuple:
+    return process_fp(rdmol_to_efp(rdmol, fp_type, fp_params), mol_id)
 
 
 def process_fp(fp, mol_id):
-    fp = BitStrToIntList(fp.ToBitString())
-    popcnt = PyPopcount(np.array(fp, dtype=np.uint64))
+    popcnt = PyPopcount(np.array(BitStrToIntList(fp.ToBitString()), dtype=np.uint64))
     return mol_id, *fp, popcnt
 
 
@@ -194,15 +202,10 @@ def it_mol_supplier(
     tuple
         int id and rdkit mol.
     """
-    mol_funcs = {
-        "smiles": Chem.MolFromSmiles,
-        "inchi": Chem.MolFromInchi,
-        "molfile": Chem.MolFromMolBlock,
-        "rdkit": lambda x: x,
-    }
-
-    if kwargs["mol_format"].lower() not in mol_funcs:
-        raise ValueError("mol_format must be one of: 'smiles', 'inchi', 'molfile', 'rdkit'")
+    if kwargs["mol_format"].lower() not in RDKIT_PARSE_FUNCS:
+        raise ValueError(
+            "mol_format must be one of: 'smiles', 'inchi', 'molfile', 'rdkit'"
+        )
 
     mol_func = mol_funcs[kwargs["mol_format"].lower()]
 

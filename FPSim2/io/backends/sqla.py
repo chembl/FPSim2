@@ -5,6 +5,7 @@ from ..chem import (
     get_mol_supplier,
     get_fp_length,
     FP_FUNC_DEFAULTS,
+    RDKIT_PARSE_FUNCS,
 )
 from sqlalchemy import (
     create_engine,
@@ -57,6 +58,12 @@ def create_db_table(
     fp_params: dict = {},
     mol_id_prop: str = "mol_id",
 ) -> None:
+    if mol_format not in RDKIT_PARSE_FUNCS:
+        raise ValueError(f"Unsupported mol_format: {mol_format}")
+
+    if fp_type not in FP_FUNC_DEFAULTS:
+        raise ValueError(f"Unsupported fp_type: {fp_type}")
+
     # if params dict is empty use defaults
     if not fp_params:
         fp_params = FP_FUNC_DEFAULTS[fp_type]
@@ -95,6 +102,7 @@ def create_db_table(
             )
             conn.commit()
 
+
 class SqlaStorageBackend(BaseStorageBackend):
     def __init__(self, conn_url: str, table_name: str, pg_schema: str) -> None:
         super(SqlaStorageBackend, self).__init__()
@@ -118,7 +126,9 @@ class SqlaStorageBackend(BaseStorageBackend):
         self.load_fps()
         self.load_popcnt_bins()
         if self.rdkit_ver != rdkit.__version__:
-            print(f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}")
+            print(
+                f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}"
+            )
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
