@@ -2,6 +2,7 @@ from typing import Any, Callable, Iterable as IterableType, Dict, Tuple, Union
 from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
 from rdkit.Chem import rdFingerprintGenerator
+from rdkit.Chem import rdMolDescriptors
 from rdkit.DataStructs import ExplicitBitVect
 from rdkit import Chem
 import numpy as np
@@ -22,7 +23,7 @@ RDKIT_PARSE_FUNCS = {
 
 FP_FUNCS = {
     "MACCSKeys": lambda m,
-    **kwargs: rdFingerprintGenerator.GetMACCSGenerator().GetFingerprint(m),
+    **kwargs: rdMolDescriptors.GetMACCSKeysFingerprint(m),
     "Morgan": lambda m, **kwargs: rdFingerprintGenerator.GetMorganGenerator(
         **kwargs
     ).GetFingerprint(m),
@@ -36,9 +37,7 @@ FP_FUNCS = {
     "RDKit": lambda m, **kwargs: rdFingerprintGenerator.GetRDKitFPGenerator(
         **kwargs
     ).GetFingerprint(m),
-    "Pattern": lambda m, **kwargs: rdFingerprintGenerator.GetPatternGenerator(
-        **kwargs
-    ).GetFingerprint(m),
+    "Pattern": lambda m, **kwargs: Chem.PatternFingerprint(m),
 }
 
 FP_FUNC_DEFAULTS = {
