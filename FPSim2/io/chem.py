@@ -1,85 +1,93 @@
 from typing import Any, Callable, Iterable as IterableType, Dict, Tuple, Union
 from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
-from rdkit.Chem import rdMolDescriptors
+from rdkit.Chem import rdFingerprintGenerator
 from rdkit.DataStructs import ExplicitBitVect
-from rdkit.Avalon import pyAvalonTools
 from rdkit import Chem
 import numpy as np
+import gzip
 import re
 
 
 MOLFILE_RE = r" [vV][23]000$"
 
+SUPPORTED_MOL_FORMATS = ("smiles", "molfile", "inchi", "rdkit")
 
-FP_FUNCS = {
-    "MACCSKeys": rdMolDescriptors.GetMACCSKeysFingerprint,
-    "Avalon": pyAvalonTools.GetAvalonFP,
-    "Morgan": rdMolDescriptors.GetMorganFingerprintAsBitVect,
-    "TopologicalTorsion": rdMolDescriptors.GetHashedTopologicalTorsionFingerprintAsBitVect,
-    "AtomPair": rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect,
-    "RDKit": Chem.RDKFingerprint,
-    "RDKPatternFingerprint": Chem.PatternFingerprint,
+RDKIT_PARSE_FUNCS = {
+    "smiles": Chem.MolFromSmiles,
+    "inchi": Chem.MolFromInchi,
+    "molfile": Chem.MolFromMolBlock,
+    "rdkit": lambda x: x,
 }
 
+FP_FUNCS = {
+    "MACCSKeys": lambda m,
+    **kwargs: rdFingerprintGenerator.GetMACCSGenerator().GetFingerprint(m),
+    "Morgan": lambda m, **kwargs: rdFingerprintGenerator.GetMorganGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "TopologicalTorsion": lambda m,
+    **kwargs: rdFingerprintGenerator.GetTopologicalTorsionGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "AtomPair": lambda m, **kwargs: rdFingerprintGenerator.GetAtomPairGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "RDKit": lambda m, **kwargs: rdFingerprintGenerator.GetRDKitFPGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "Pattern": lambda m, **kwargs: rdFingerprintGenerator.GetPatternGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+}
 
 FP_FUNC_DEFAULTS = {
     "MACCSKeys": {},
-    "Avalon": {
-        "nBits": 512,
-        "isQuery": False,
-        "resetVect": False,
-        "bitFlags": 15761407,
-    },
     "Morgan": {
-        "radius": 2,
-        "nBits": 2048,
-        "invariants": [],
-        "fromAtoms": [],
-        "useChirality": False,
+        "includeChirality": False,
         "useBondTypes": True,
-        "useFeatures": False,
+        "useCountSimulation": False,
+        "countBounds": None,
+        "fpSize": 2048,
+        "radius": 2,
     },
     "TopologicalTorsion": {
-        "nBits": 2048,
-        "targetSize": 4,
-        "fromAtoms": 0,
-        "ignoreAtoms": 0,
-        "atomInvariants": 0,
         "includeChirality": False,
+        "fpSize": 2048,
+        "countSimulation": False,
+        "countBounds": None,
+        "torsionAtomCount": 4,
     },
     "AtomPair": {
-        "nBits": 2048,
-        "minLength": 1,
-        "maxLength": 30,
-        "fromAtoms": 0,
-        "ignoreAtoms": 0,
-        "atomInvariants": 0,
-        "nBitsPerEntry": 4,
         "includeChirality": False,
-        "use2D": True,
-        "confId": -1,
+        "fpSize": 2048,
+        "countSimulation": False,
+        "countBounds": None,
+        "minDistance": 1,
+        "maxDistance": 30,
     },
     "RDKit": {
+        "fpSize": 2048,
         "minPath": 1,
         "maxPath": 7,
-        "fpSize": 2048,
-        "nBitsPerHash": 2,
+        "countSimulation": False,
+        "countBounds": None,
         "useHs": True,
-        "tgtDensity": 0.0,
-        "minSize": 128,
         "branchedPaths": True,
         "useBondOrder": True,
-        "atomInvariants": 0,
-        "fromAtoms": 0,
-        "atomBits": None,
-        "bitInfo": None,
     },
-    "RDKPatternFingerprint": {"fpSize": 2048, "atomCounts": [], "setOnlyBits": None},
+    "Pattern": {
+        "fpSize": 2048,
+        "countSimulation": False,
+        "countBounds": None,
+        "tautomerFingerprints": False,
+    },
 }
 
 
-def rdmol_to_efp(rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]) -> ExplicitBitVect:
+def rdmol_to_efp(
+    rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]
+) -> ExplicitBitVect:
     return FP_FUNCS[fp_func](rdmol, **fp_params)
 
 
@@ -135,9 +143,7 @@ def get_fp_length(fp_type: str, fp_params: Dict[str, Any]) -> int:
         fp length of the fingerprint.
     """
     fp_length = None
-    if "nBits" in fp_params.keys():
-        fp_length = fp_params["nBits"]
-    elif "fpSize" in fp_params.keys():
+    if "fpSize" in fp_params.keys():
         fp_length = fp_params["fpSize"]
     if fp_type == "MACCSKeys":
         fp_length = 166
@@ -177,60 +183,45 @@ def get_bounds_range(
 
 
 def it_mol_supplier(
-    iterable: IterableType, gen_ids: bool, **kwargs
+    iterable: IterableType, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from iterables.
 
     Parameters
     ----------
     iterable : iterable
-         Python iterable storing molecules.
-
-    gen_ids: bool
-        generate ids or not.
+         Python iterable storing tuples of (molecule, molecule_id).
 
     Yields
     -------
     tuple
         int id and rdkit mol.
     """
-    for new_mol_id, mol in enumerate(iterable, 1):
-        if isinstance(mol, str):
-            mol_string = mol
-            mol_id = new_mol_id
-        else:
-            if gen_ids:
-                mol_string = mol
-                mol_id = new_mol_id
-            else:
-                try:
-                    mol_string = mol[0]
-                    mol_id = int(mol[1])
-                except ValueError:
-                    raise Exception(
-                        "FPSim only supports integer ids for molecules, "
-                        "cosinder setting gen_ids=True when running "
-                        "create_db_file to autogenerate them."
-                    )
-        rdmol = load_molecule(mol_string)
+    if kwargs["mol_format"].lower() not in RDKIT_PARSE_FUNCS:
+        raise ValueError(
+            "mol_format must be one of: 'smiles', 'inchi', 'molfile', 'rdkit'"
+        )
+
+    mol_func = RDKIT_PARSE_FUNCS[kwargs["mol_format"].lower()]
+
+    for mol, mol_id in iterable:
+        try:
+            mol_id = int(mol_id)
+        except ValueError:
+            raise Exception("FPSim2 only supports integer ids for molecules")
+
+        rdmol = mol_func(mol)
         if rdmol:
             yield mol_id, rdmol
-        else:
-            continue
 
 
-def smi_mol_supplier(
-    filename: str, gen_ids: bool, **kwargs
-) -> IterableType[Tuple[int, Chem.Mol]]:
+def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from a .smi file.
 
     Parameters
     ----------
     filename : str
-         .smi file name.
-
-    gen_ids: bool
-        generate ids or not.
+            .smi file name.
 
     Yields
     -------
@@ -238,37 +229,21 @@ def smi_mol_supplier(
         int id and rdkit mol.
     """
     with open(filename, "r") as f:
-        for new_mol_id, mol in enumerate(f, 1):
-            # if .smi with single smiles column just add the id
-            mol = mol.split()
-            if len(mol) == 1:
+        for line in f:
+            mol = line.strip().split()
+            if len(mol) < 2:
+                continue
+            try:
                 smiles = mol[0]
-                mol_id = new_mol_id
-            else:
-                if gen_ids:
-                    smiles = mol[0]
-                    mol_id = new_mol_id
-                else:
-                    try:
-                        smiles = mol[0]
-                        mol_id = int(mol[1])
-                    except ValueError:
-                        raise Exception(
-                            "FPSim only supports integer ids for molecules, "
-                            "cosinder setting gen_ids=True when running "
-                            "create_db_file to autogenerate them."
-                        )
-            smiles = smiles.strip()
+                mol_id = int(mol[1])
+            except ValueError:
+                raise Exception("FPSim2 only supports integer ids for molecules")
             rdmol = Chem.MolFromSmiles(smiles)
             if rdmol:
                 yield mol_id, rdmol
-            else:
-                continue
 
 
-def sdf_mol_supplier(
-    filename: str, gen_ids: bool, **kwargs
-) -> IterableType[Tuple[int, Chem.Mol]]:
+def sdf_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from a .sdf file.
 
     Parameters
@@ -276,38 +251,24 @@ def sdf_mol_supplier(
     filename : str
         .sdf filename.
 
-    gen_ids: bool
-        generate ids or not.
-
     Yields
     -------
     tuple
         int id and rdkit mol.
     """
     if filename.endswith(".gz"):
-        import gzip
-
         gzf = gzip.open(filename)
         suppl = Chem.ForwardSDMolSupplier(gzf)
     else:
         suppl = Chem.ForwardSDMolSupplier(filename)
-    for new_mol_id, rdmol in enumerate(suppl, 1):
+
+    for rdmol in suppl:
         if rdmol:
-            if gen_ids:
-                mol_id = new_mol_id
-            else:
-                mol_id = rdmol.GetProp(kwargs["mol_id_prop"])
             try:
-                int(mol_id)
+                mol_id = int(rdmol.GetProp(kwargs["mol_id_prop"]))
             except ValueError:
-                raise Exception(
-                    "FPSim only supports integer ids for molecules, "
-                    "cosinder setting gen_ids=True when running "
-                    "create_db_file to autogenerate them."
-                )
+                raise Exception("FPSim2 only supports integer ids for molecules")
             yield mol_id, rdmol
-        else:
-            continue
 
 
 def get_mol_supplier(

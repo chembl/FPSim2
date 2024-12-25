@@ -2,6 +2,7 @@ from FPSim2 import FPSim2Engine
 from rdkit import Chem, DataStructs
 from rdkit.Chem import rdMolDescriptors
 from FPSim2.io import create_db_file
+from FPSim2.io.chem import FP_FUNCS
 import numpy as np
 import pytest
 import math
@@ -10,7 +11,7 @@ import os
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 query_smi = "Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl"
-FP_PARAMS = {"radius": 2, "nBits": 2048}
+FP_PARAMS = {"radius": 2, "fpSize": 2048}
 
 MATRIX = np.matrix(
     [
@@ -144,15 +145,15 @@ def test_validate_against_rdkit():
     in_file_h5 = os.path.join(TESTS_DIR, "data/test.h5")
     with open(in_file_smi) as f:
         smiles = f.readlines()
-    fps = [
-        Chem.rdMolDescriptors.GetMorganFingerprintAsBitVect(
-            Chem.MolFromSmiles(smi), **FP_PARAMS
-        )
-        for smi in smiles
-    ]
-    query = Chem.rdMolDescriptors.GetMorganFingerprintAsBitVect(
-        Chem.MolFromSmiles(query_smi), **FP_PARAMS
-    )
+    fps = []
+    for smi in smiles:
+        mol = Chem.MolFromSmiles(smi)
+        if mol is not None:
+            fp = FP_FUNCS["Morgan"](mol,  **FP_PARAMS)
+            fps.append(fp)
+
+    q_mol = Chem.MolFromSmiles(query_smi)
+    query = FP_FUNCS["Morgan"](q_mol,  **FP_PARAMS)
     rdresults = sorted(
         [DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True
     )
@@ -179,18 +180,25 @@ def test_load_fps_sort():
 
 
 def test_query_fp():
-    query = 'CC(=O)Oc1ccccc1C(=O)O'
-    radius = 2
-    n_bits = 4096
-    index_pth = os.path.join(TESTS_DIR, 'data/test_fp_query_index.h5')
+    query = "CC(=O)Oc1ccccc1C(=O)O"
+    fp_params = {"radius": 2, "fpSize": 4096}
+    index_pth = os.path.join(TESTS_DIR, "data/test_fp_query_index.h5")
     threshold = 0.01
-    fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(query), radius=radius, nBits=n_bits)
 
-    create_db_file([
-        query,
-        'C1C(N=C(S1)C2=NC3=C(S2)C=C(C=C3)O)C(=O)O',
-        '[H][C@@]12[C@@H](CC[C@]3(C)C1C(C)=CC[C@@]23[H])C(C)C'
-    ], index_pth, 'Morgan', {'radius': radius, 'nBits': n_bits})
+    mol = Chem.MolFromSmiles(query)
+    fp = FP_FUNCS["Morgan"](mol,  **fp_params)
+
+    create_db_file(
+        [
+            [query, 1],
+            ["C1C(N=C(S1)C2=NC3=C(S2)C=C(C=C3)O)C(=O)O", 2],
+            ["[H][C@@]12[C@@H](CC[C@]3(C)C1C(C)=CC[C@@]23[H])C(C)C", 3],
+        ],
+        index_pth,
+        "smiles",
+        "Morgan",
+        fp_params,
+    )
     fpe = FPSim2Engine(index_pth)
 
     result_smi = fpe.similarity(query, threshold)
