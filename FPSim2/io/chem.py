@@ -94,14 +94,14 @@ def rdmol_to_efp(
     return FP_FUNCS[fp_func](rdmol, **fp_params)
 
 
-def build_fp(
-    rdmol: Chem.Mol, fp_type: str, fp_params: Dict[str, Any], mol_id: int
-) -> tuple:
-    return process_fp(rdmol_to_efp(rdmol, fp_type, fp_params), mol_id)
+def build_fp(rdmol, fp_type, fp_params, mol_id):
+    efp = rdmol_to_efp(rdmol, fp_type, fp_params)
+    return process_fp(efp, mol_id)
 
 
 def process_fp(fp, mol_id):
-    popcnt = PyPopcount(np.array(BitStrToIntList(fp.ToBitString()), dtype=np.uint64))
+    fp = BitStrToIntList(fp.ToBitString())
+    popcnt = PyPopcount(np.array(fp, dtype=np.uint64))
     return mol_id, *fp, popcnt
 
 
@@ -207,7 +207,7 @@ def it_mol_supplier(
             "mol_format must be one of: 'smiles', 'inchi', 'molfile', 'rdkit'"
         )
 
-    mol_func = mol_funcs[kwargs["mol_format"].lower()]
+    mol_func = RDKIT_PARSE_FUNCS[kwargs["mol_format"].lower()]
 
     for mol, mol_id in iterable:
         try:

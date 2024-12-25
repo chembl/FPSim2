@@ -58,7 +58,8 @@ def create_db_table(
     fp_params: dict = {},
     mol_id_prop: str = "mol_id",
 ) -> None:
-    if mol_format not in RDKIT_PARSE_FUNCS:
+    is_valid_file = isinstance(mols_source, str) and (mols_source.endswith(('.smi', '.sdf', '.sdf.gz')))
+    if not (is_valid_file or mol_format in RDKIT_PARSE_FUNCS):
         raise ValueError(f"Unsupported mol_format: {mol_format}")
 
     if fp_type not in FP_FUNC_DEFAULTS:
