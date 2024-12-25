@@ -156,58 +156,59 @@ def sort_db_file(filename: str) -> None:
 
 
 def merge_db_files(
-    file1: str, file2: str, output_file: str, sort_by_popcnt: bool = True
+    input_files: List[str], output_file: str, sort_by_popcnt: bool = True
 ) -> None:
-    """Merges two FPs db files into a new one.
+    """Merges multiple FPs db files into a new one.
 
     Parameters
     ----------
-    file1 : str
-        Path to first input file
-    file2 : str
-        Path to second input file
+    input_files : List[str]
+        List of paths to input files
     output_file : str
         Path to output merged file
     sort_by_popcnt : bool, optional
         Whether to sort the output file by population count, by default True
     """
-    # Check that both files have same fingerprint type, parameters and RDKit version
-    with tb.open_file(file1, mode="r") as f1, tb.open_file(file2, mode="r") as f2:
-        if (
-            f1.root.config[0] != f2.root.config[0]
-            or f1.root.config[1] != f2.root.config[1]
-            or f1.root.config[2] != f2.root.config[2]
-        ):
-            raise ValueError(
-                "Input files have different fingerprint types, parameters or RDKit versions"
-            )
+    if len(input_files) < 2:
+        raise ValueError("At least two input files are required for merging")
 
-        # Create new file with same parameters
-        filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
-        fp_type = f1.root.config[0]
-        fp_params = f1.root.config[1]
-        original_rdkit_ver = f1.root.config[2]
-        fp_length = get_fp_length(fp_type, fp_params)
+    # Check that all files have same fingerprint type, parameters and RDKit version
+    reference_configs = None
+    for file in input_files:
+        with tb.open_file(file, mode="r") as f:
+            current_configs = (f.root.config[0], f.root.config[1], f.root.config[2])
+            if reference_configs is None:
+                reference_configs = current_configs
+            elif current_configs != reference_configs:
+                raise ValueError(
+                    f"File {file} has different fingerprint types, parameters or RDKit versions"
+                )
 
-        with tb.open_file(output_file, mode="w") as out_file:
-            particle = create_schema(fp_length)
-            fps_table = out_file.create_table(
-                out_file.root, "fps", particle, "Table storing fps", filters=filters
-            )
+    # Create new file with same parameters
+    filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
+    fp_type, fp_params, original_rdkit_ver = reference_configs
+    fp_length = get_fp_length(fp_type, fp_params)
 
-            # Copy config with original RDKit version
-            param_table = out_file.create_vlarray(
-                out_file.root, "config", atom=tb.ObjectAtom()
-            )
-            param_table.append(fp_type)
-            param_table.append(fp_params)
-            param_table.append(original_rdkit_ver)
+    with tb.open_file(output_file, mode="w") as out_file:
+        particle = create_schema(fp_length)
+        fps_table = out_file.create_table(
+            out_file.root, "fps", particle, "Table storing fps", filters=filters
+        )
 
-            # Copy data
-            fps_table.append(f1.root.fps[:])
-            fps_table.append(f2.root.fps[:])
+        # Copy config with original RDKit version
+        param_table = out_file.create_vlarray(
+            out_file.root, "config", atom=tb.ObjectAtom()
+        )
+        param_table.append(fp_type)
+        param_table.append(fp_params)
+        param_table.append(original_rdkit_ver)
 
-            fps_table.cols.popcnt.create_index(kind="full")
+        # Copy data from all input files
+        for file in input_files:
+            with tb.open_file(file, mode="r") as in_file:
+                fps_table.append(in_file.root.fps[:])
+
+        fps_table.cols.popcnt.create_index(kind="full")
 
     if sort_by_popcnt:
         sort_db_file(output_file)
