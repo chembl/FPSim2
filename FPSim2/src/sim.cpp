@@ -4,7 +4,7 @@
 #include "result.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
-#include <stdexcept>
+#include <queue>
 
 namespace py = pybind11;
 
@@ -84,6 +84,7 @@ py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
 
     const auto fp_shape = query.shape(0);
     const auto popcnt_idx = fp_shape - 1;
+    const auto q_popcnt = qptr[popcnt_idx];
 
     auto results = new std::vector<Result>();
 
@@ -94,8 +95,9 @@ py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
             common_popcnt += popcntll(qptr[j] & dbptr[j]);
         coeff = TanimotoCoeff(common_popcnt, qptr[popcnt_idx], dbptr[popcnt_idx]);
 
-        if (coeff >= threshold)
-            results->push_back({i, (uint32_t)dbptr[0], coeff});
+        if (coeff < threshold)
+            continue;
+        results->push_back({i, (uint32_t)dbptr[0], coeff});
     }
     std::sort(results->begin(), results->end(), utils::cmp);
 
@@ -142,6 +144,59 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     std::sort(results->begin(), results->end(), utils::cmp);
 
     // acquire the GIL before calling Python code
+    py::gil_scoped_acquire acquire;
+    return utils::Vector2NumPy<Result>(results);
+}
+
+py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
+                                       const py::array_t<uint64_t>& py_db,
+                                       const uint32_t k,
+                                       const float threshold,
+                                       const uint32_t start,
+                                       const uint32_t end) {
+
+    // direct access to np arrays without checks
+    const auto query = py_query.unchecked<1>();
+    const auto *qptr = (uint64_t *)query.data(0);
+    const auto db = py_db.unchecked<2>();
+    const auto *dbptr = (uint64_t *)db.data(start, 0);
+
+    const auto fp_length = query.shape(0);
+    const auto popcnt_idx = fp_length - 1;
+    const auto q_popcnt = qptr[popcnt_idx];
+
+    struct ResultComparator {
+        bool operator()(const Result& lhs, const Result& rhs) const {
+            return lhs.coeff < rhs.coeff;
+        }
+    };
+    std::priority_queue<Result, std::vector<Result>, ResultComparator> top_k;
+
+    for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_length) {
+        uint64_t common_popcnt = 0;
+
+        for (auto j = 1; j < popcnt_idx; j++)
+            common_popcnt += popcntll(qptr[j] & dbptr[j]);
+        float coeff = TanimotoCoeff(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
+        if (coeff < threshold)
+            continue;
+            
+        Result result = {idx, static_cast<uint32_t>(dbptr[0]), coeff};
+
+        if (top_k.size() < k) {
+            top_k.push(result);
+        } else if (coeff > top_k.top().coeff) {
+            top_k.pop();
+            top_k.push(result);
+        }
+    }
+
+    auto results = new std::vector<Result>();
+    while (!top_k.empty()) {
+        results->push_back(top_k.top());
+        top_k.pop();
+    }
+
     py::gil_scoped_acquire acquire;
     return utils::Vector2NumPy<Result>(results);
 }

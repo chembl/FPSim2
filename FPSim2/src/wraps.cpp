@@ -43,6 +43,13 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Runs a Tversky similarity search.
     )pbdoc");
 
+    m.def("TanimotoSearchTopK", &TanimotoSearchTopK,
+        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+        Tanimoto search Top K
+
+        Runs a Tanimoto similarity search and returns the top K results.
+    )pbdoc");
+
     auto mutils = m.def_submodule("utils");
 
     mutils.def("PyPopcount", &utils::PyPopcount, py::call_guard<py::gil_scoped_release>(),

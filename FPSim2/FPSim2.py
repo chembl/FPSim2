@@ -6,6 +6,7 @@ from .FPSim2lib import (
     TanimotoSearch,
     TverskySearch,
     SubstructureScreenout,
+    TanimotoSearchTopK,
 )
 from .FPSim2lib.utils import SortResults
 from scipy.sparse import csr_matrix
@@ -580,3 +581,53 @@ class FPSim2Engine(BaseEngine):
         # similarity to distance
         sparse_matrix.data = 1 - sparse_matrix.data
         return sparse_matrix
+
+    def top_k(
+        self, query: Union[str, ExplicitBitVect], k: int, threshold: float, n_workers=1
+    ) -> np.ndarray:
+        """Runs a Tanimoto top-K search.
+
+        Parameters
+        ----------
+        query : Union[str, ExplicitBitVect]
+            SMILES, InChI, molblock or fingerprint as ExplicitBitVect.
+
+        threshold: float
+            Similarity threshold.
+
+        n_workers : int
+            Number of threads used for the search.
+
+        Returns
+        -------
+        results : numpy array
+            Similarity results.
+        """
+        if self.fps is None:
+            raise Exception(
+                "Load the fingerprints into memory before running a in memory search"
+            )
+
+        query = self.load_query(query)
+        bounds = get_bounds_range(
+            query, threshold, None, None, self.popcnt_bins, "tanimoto"
+        )
+
+        if not bounds:
+            results = self.empty_sim
+        else:
+            if n_workers == 1:
+                results = TanimotoSearchTopK(query, self.fps, k, threshold, *bounds)
+            else:
+                results = self._parallel(
+                    search_func=TanimotoSearchTopK,
+                    executor=cf.ThreadPoolExecutor,
+                    query=query,
+                    db=self.fps,
+                    args=(k, threshold,),
+                    bounds=bounds,
+                    on_disk=False,
+                    n_workers=n_workers,
+                    chunk_size=0,
+                )
+        return results[['mol_id', 'coeff']][:k]
