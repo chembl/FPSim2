@@ -91,7 +91,7 @@ def test_create_db_file_list(db_url):
     fp_type, fp_params, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
-    assert fp_params["nBits"] == FP_PARAMS["nBits"]
+    assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
     assert fpe.fps.shape[0] == 10
     assert fpe.popcnt_bins == popcnt_bins
     assert fpe.fps.all() == fps.all()
