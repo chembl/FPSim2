@@ -12,7 +12,7 @@ except:
 
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 FP_TYPE = "Morgan"
-FP_PARAMS = {"radius": 2, "nBits": 2048}
+FP_PARAMS = {"radius": 2, "fpSize": 2048}
 PG_URL = "postgresql://postgres:postgres@postgres:5432/postgres"
 MYSQL_URL = "mysql://root:root@mysql:3306/mysql"
 

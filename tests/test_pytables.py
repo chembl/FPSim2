@@ -7,7 +7,7 @@ import os
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 FP_TYPE = "Morgan"
-FP_PARAMS = {"radius": 2, "nBits": 2048}
+FP_PARAMS = {"radius": 2, "fpSize": 2048}
 
 
 with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
@@ -28,7 +28,7 @@ class TestPytablesBackend:
         fp_type, fp_params, _ = fpe.storage.read_parameters()
         assert fp_type == FP_TYPE
         assert fp_params["radius"] == FP_PARAMS["radius"]
-        assert fp_params["nBits"] == FP_PARAMS["nBits"]
+        assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
         assert fpe.fps.shape[0] == 10
 
     def test_append_fps(self):
@@ -65,7 +65,7 @@ def test_create_db_file_sdf():
     fp_type, fp_params, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
-    assert fp_params["nBits"] == FP_PARAMS["nBits"]
+    assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
     assert fpe.fps.shape[0] == 10
 
 
@@ -77,7 +77,7 @@ def test_create_db_file_list():
     fp_type, fp_params, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
-    assert fp_params["nBits"] == FP_PARAMS["nBits"]
+    assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
     assert fpe.fps.shape[0] == 3
 
 def test_calc_popcnt_bins():

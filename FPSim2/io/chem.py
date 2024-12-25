@@ -1,9 +1,8 @@
 from typing import Any, Callable, Iterable as IterableType, Dict, Tuple, Union
 from FPSim2.FPSim2lib.utils import BitStrToIntList, PyPopcount
 from collections.abc import Iterable
-from rdkit.Chem import rdMolDescriptors
+from rdkit.Chem import rdFingerprintGenerator
 from rdkit.DataStructs import ExplicitBitVect
-from rdkit.Avalon import pyAvalonTools
 from rdkit import Chem
 import numpy as np
 import gzip
@@ -12,7 +11,7 @@ import re
 
 MOLFILE_RE = r" [vV][23]000$"
 
-SUPPORTED_MOL_FORMATS = ["smiles", "molfile", "inchi", "rdkit"]
+SUPPORTED_MOL_FORMATS = ("smiles", "molfile", "inchi", "rdkit")
 
 RDKIT_PARSE_FUNCS = {
     "smiles": Chem.MolFromSmiles,
@@ -22,69 +21,67 @@ RDKIT_PARSE_FUNCS = {
 }
 
 FP_FUNCS = {
-    "MACCSKeys": rdMolDescriptors.GetMACCSKeysFingerprint,
-    "Avalon": pyAvalonTools.GetAvalonFP,
-    "Morgan": rdMolDescriptors.GetMorganFingerprintAsBitVect,
-    "TopologicalTorsion": rdMolDescriptors.GetHashedTopologicalTorsionFingerprintAsBitVect,
-    "AtomPair": rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect,
-    "RDKit": Chem.RDKFingerprint,
-    "RDKPatternFingerprint": Chem.PatternFingerprint,
+    "MACCSKeys": lambda m,
+    **kwargs: rdFingerprintGenerator.GetMACCSGenerator().GetFingerprint(m),
+    "Morgan": lambda m, **kwargs: rdFingerprintGenerator.GetMorganGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "TopologicalTorsion": lambda m,
+    **kwargs: rdFingerprintGenerator.GetTopologicalTorsionGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "AtomPair": lambda m, **kwargs: rdFingerprintGenerator.GetAtomPairGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "RDKit": lambda m, **kwargs: rdFingerprintGenerator.GetRDKitFPGenerator(
+        **kwargs
+    ).GetFingerprint(m),
+    "Pattern": lambda m, **kwargs: rdFingerprintGenerator.GetPatternGenerator(
+        **kwargs
+    ).GetFingerprint(m),
 }
-
 
 FP_FUNC_DEFAULTS = {
     "MACCSKeys": {},
-    "Avalon": {
-        "nBits": 512,
-        "isQuery": False,
-        "resetVect": False,
-        "bitFlags": 15761407,
-    },
     "Morgan": {
-        "radius": 2,
-        "nBits": 2048,
-        "invariants": [],
-        "fromAtoms": [],
-        "useChirality": False,
+        "includeChirality": False,
         "useBondTypes": True,
-        "useFeatures": False,
+        "useCountSimulation": False,
+        "countBounds": None,
+        "fpSize": 2048,
+        "radius": 2,
     },
     "TopologicalTorsion": {
-        "nBits": 2048,
-        "targetSize": 4,
-        "fromAtoms": 0,
-        "ignoreAtoms": 0,
-        "atomInvariants": 0,
         "includeChirality": False,
+        "fpSize": 2048,
+        "countSimulation": False,
+        "countBounds": None,
+        "torsionAtomCount": 4,
     },
     "AtomPair": {
-        "nBits": 2048,
-        "minLength": 1,
-        "maxLength": 30,
-        "fromAtoms": 0,
-        "ignoreAtoms": 0,
-        "atomInvariants": 0,
-        "nBitsPerEntry": 4,
         "includeChirality": False,
-        "use2D": True,
-        "confId": -1,
+        "fpSize": 2048,
+        "countSimulation": False,
+        "countBounds": None,
+        "minDistance": 1,
+        "maxDistance": 30,
     },
     "RDKit": {
+        "fpSize": 2048,
         "minPath": 1,
         "maxPath": 7,
-        "fpSize": 2048,
-        "nBitsPerHash": 2,
+        "countSimulation": False,
+        "countBounds": None,
         "useHs": True,
-        "tgtDensity": 0.0,
-        "minSize": 128,
         "branchedPaths": True,
         "useBondOrder": True,
-        "atomInvariants": 0,
-        "fromAtoms": 0,
-        "atomBits": None,
-        "bitInfo": None,
     },
-    "RDKPatternFingerprint": {"fpSize": 2048, "atomCounts": [], "setOnlyBits": None},
+    "Pattern": {
+        "fpSize": 2048,
+        "countSimulation": False,
+        "countBounds": None,
+        "tautomerFingerprints": False,
+    },
 }
 
 
@@ -146,9 +143,7 @@ def get_fp_length(fp_type: str, fp_params: Dict[str, Any]) -> int:
         fp length of the fingerprint.
     """
     fp_length = None
-    if "nBits" in fp_params.keys():
-        fp_length = fp_params["nBits"]
-    elif "fpSize" in fp_params.keys():
+    if "fpSize" in fp_params.keys():
         fp_length = fp_params["fpSize"]
     if fp_type == "MACCSKeys":
         fp_length = 166
