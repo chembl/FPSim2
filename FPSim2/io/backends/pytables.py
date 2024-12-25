@@ -6,6 +6,7 @@ from ..chem import (
     get_fp_length,
     it_mol_supplier,
     FP_FUNC_DEFAULTS,
+    RDKIT_PARSE_FUNCS,
 )
 import tables as tb
 import numpy as np
@@ -39,51 +40,25 @@ def create_db_file(
     mol_id_prop: str = "mol_id",
     sort_by_popcnt: bool = True,
 ) -> None:
-    """Creates FPSim2 FPs db file from .smi, .sdf files or from an iterable.
+    is_valid_file = isinstance(mols_source, str) and (mols_source.endswith(('.smi', '.sdf', '.sdf.gz')))
+    if not (is_valid_file or mol_format in RDKIT_PARSE_FUNCS):
+        raise ValueError(f"Unsupported mol_format: {mol_format}")
 
-    Parameters
-    ----------
-    mols_source : str
-        .smi/.sdf filename or iterable.
+    if fp_type not in FP_FUNC_DEFAULTS:
+        raise ValueError(f"Unsupported fp_type: {fp_type}")
 
-    filename: float
-        Fingerprint database filename.
-
-    fp_type : str
-        Fingerprint type used to create the fingerprints.
-
-    fp_params : dict
-        Parameters used to create the fingerprints.
-
-    mol_id_prop : str
-        Name of the .sdf property to read the molecule id.
-
-    gen_ids : bool
-        Autogenerate FP ids.
-
-    sort_by_popcnt: bool
-        Whether if the FPs should be sorted or not.
-
-    Returns
-    -------
-    None
-    """
-    # if params dict is empty use defaults
     if not fp_params:
         fp_params = FP_FUNC_DEFAULTS[fp_type]
     supplier = get_mol_supplier(mols_source)
     fp_length = get_fp_length(fp_type, fp_params)
-    # set compression
-    filters = tb.Filters(complib="blosc", complevel=5)
+    filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
 
-    # set the output file and fps table
     with tb.open_file(filename, mode="w") as fp_file:
         particle = create_schema(fp_length)
         fps_table = fp_file.create_table(
             fp_file.root, "fps", particle, "Table storing fps", filters=filters
         )
 
-        # set config table; used fp function, parameters and rdkit version
         param_table = fp_file.create_vlarray(
             fp_file.root, "config", atom=tb.ObjectAtom()
         )
@@ -99,11 +74,9 @@ def create_db_file(
             if len(fps) == BATCH_WRITE_SIZE:
                 fps_table.append(fps)
                 fps = []
-        # append last batch < 32k
         if fps:
             fps_table.append(fps)
 
-        # create index so table can be sorted
         fps_table.cols.popcnt.create_index(kind="full")
 
     if sort_by_popcnt:

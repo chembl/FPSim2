@@ -94,7 +94,7 @@ def test_get_bounds_range():
 
 def test_build_fp():
     rdmol = Chem.MolFromSmiles(smiles_list[0][0])
-    fp = build_fp(rdmol, "Morgan", {"radius": 2, "nBits": 2048}, 42)
+    fp = build_fp(rdmol, "Morgan", {"radius": 2, "fpSize": 2048}, 42)
     assert fp == (
         42,
         18014398510563328,
