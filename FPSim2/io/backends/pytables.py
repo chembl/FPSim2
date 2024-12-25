@@ -20,6 +20,7 @@ BATCH_WRITE_SIZE = 32000
 def create_schema(fp_length: int) -> Any:
     class Particle(tb.IsDescription):
         pass
+
     columns = {}
     pos = 1
     columns["fp_id"] = tb.Int64Col(pos=pos)
@@ -40,7 +41,9 @@ def create_db_file(
     mol_id_prop: str = "mol_id",
     sort_by_popcnt: bool = True,
 ) -> None:
-    is_valid_file = isinstance(mols_source, str) and (mols_source.endswith(('.smi', '.sdf', '.sdf.gz')))
+    is_valid_file = isinstance(mols_source, str) and (
+        mols_source.endswith((".smi", ".sdf", ".sdf.gz"))
+    )
     if not (is_valid_file or mol_format in RDKIT_PARSE_FUNCS):
         raise ValueError(f"Unsupported mol_format: {mol_format}")
 
@@ -152,8 +155,68 @@ def sort_db_file(filename: str) -> None:
     os.remove(tmp_filename)
 
 
+def merge_db_files(
+    file1: str, file2: str, output_file: str, sort_by_popcnt: bool = True
+) -> None:
+    """Merges two FPs db files into a new one.
+
+    Parameters
+    ----------
+    file1 : str
+        Path to first input file
+    file2 : str
+        Path to second input file
+    output_file : str
+        Path to output merged file
+    sort_by_popcnt : bool, optional
+        Whether to sort the output file by population count, by default True
+    """
+    # Check that both files have same fingerprint type, parameters and RDKit version
+    with tb.open_file(file1, mode="r") as f1, tb.open_file(file2, mode="r") as f2:
+        if (
+            f1.root.config[0] != f2.root.config[0]
+            or f1.root.config[1] != f2.root.config[1]
+            or f1.root.config[2] != f2.root.config[2]
+        ):
+            raise ValueError(
+                "Input files have different fingerprint types, parameters or RDKit versions"
+            )
+
+        # Create new file with same parameters
+        filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
+        fp_type = f1.root.config[0]
+        fp_params = f1.root.config[1]
+        original_rdkit_ver = f1.root.config[2]
+        fp_length = get_fp_length(fp_type, fp_params)
+
+        with tb.open_file(output_file, mode="w") as out_file:
+            particle = create_schema(fp_length)
+            fps_table = out_file.create_table(
+                out_file.root, "fps", particle, "Table storing fps", filters=filters
+            )
+
+            # Copy config with original RDKit version
+            param_table = out_file.create_vlarray(
+                out_file.root, "config", atom=tb.ObjectAtom()
+            )
+            param_table.append(fp_type)
+            param_table.append(fp_params)
+            param_table.append(original_rdkit_ver)
+
+            # Copy data
+            fps_table.append(f1.root.fps[:])
+            fps_table.append(f2.root.fps[:])
+
+            fps_table.cols.popcnt.create_index(kind="full")
+
+    if sort_by_popcnt:
+        sort_db_file(output_file)
+
+
 class PyTablesStorageBackend(BaseStorageBackend):
-    def __init__(self, fp_filename: str, in_memory_fps: bool = True, fps_sort: bool = False) -> None:
+    def __init__(
+        self, fp_filename: str, in_memory_fps: bool = True, fps_sort: bool = False
+    ) -> None:
         super(PyTablesStorageBackend, self).__init__()
         self.name = "pytables"
         self.fp_filename = fp_filename
@@ -164,7 +227,9 @@ class PyTablesStorageBackend(BaseStorageBackend):
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
             self.chunk_size = fp_file.root.fps.chunkshape[0] * 120
         if self.rdkit_ver != rdkit.__version__:
-            print(f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}")
+            print(
+                f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}"
+            )
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""

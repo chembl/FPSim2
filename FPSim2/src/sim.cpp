@@ -192,8 +192,9 @@ py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
     }
 
     auto results = new std::vector<Result>();
+    results->reserve(top_k.size());
     while (!top_k.empty()) {
-        results->push_back(top_k.top());
+        results->emplace_back(top_k.top());
         top_k.pop();
     }
 
