@@ -17,7 +17,6 @@ Install and generate a FPSim2 fingerprint db file.
 
 - [Installation](user_guide/install.md)
 - [Create a fingerprint db file](user_guide/create_db_file.md)
-- [Limitations](user_guide/limitations.md)
 
 ## CPU searches
 
