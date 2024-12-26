@@ -283,11 +283,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
             self.chunk_size = fp_file.root.fps.chunkshape[0] * 120
         if self.rdkit_ver != rdkit.__version__:
             print(
-                f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}"
-            )
-        if self.fpsim2_ver != __version__:
-            print(
-                f"Warning: Database was created with FPSim2 version {self.fpsim2_ver} but installed version is {__version__}"
+                f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}. "
+                "Please ensure there were no relevant changes in RDKit regarding fingerprint generation between these versions."
             )
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
