@@ -13,6 +13,9 @@ import numpy as np
 import rdkit
 import math
 import os
+from importlib.metadata import version
+
+__version__ = version("FPSim2")
 
 BATCH_WRITE_SIZE = 32000
 
@@ -68,6 +71,7 @@ def create_db_file(
         param_table.append(fp_type)
         param_table.append(fp_params)
         param_table.append(rdkit.__version__)
+        param_table.append(__version__)
 
         fps = []
         iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
@@ -146,6 +150,7 @@ def sort_db_file(filename: str) -> None:
             param_table.append(fp_type)
             param_table.append(fp_params)
             param_table.append(rdkit.__version__)
+            param_table.append(__version__)
 
             # update count ranges
             popcnt_bins = calc_popcnt_bins_pytables(dst_fps, fp_length)
@@ -176,7 +181,12 @@ def merge_db_files(
     reference_configs = None
     for file in input_files:
         with tb.open_file(file, mode="r") as f:
-            current_configs = (f.root.config[0], f.root.config[1], f.root.config[2])
+            current_configs = (
+                f.root.config[0],
+                f.root.config[1],
+                f.root.config[2],
+                f.root.config[3],
+            )
             if reference_configs is None:
                 reference_configs = current_configs
             elif current_configs != reference_configs:
@@ -186,7 +196,7 @@ def merge_db_files(
 
     # Create new file with same parameters
     filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
-    fp_type, fp_params, original_rdkit_ver = reference_configs
+    fp_type, fp_params, original_rdkit_ver, original_fpsim2_ver = reference_configs
     fp_length = get_fp_length(fp_type, fp_params)
 
     with tb.open_file(output_file, mode="w") as out_file:
@@ -202,6 +212,7 @@ def merge_db_files(
         param_table.append(fp_type)
         param_table.append(fp_params)
         param_table.append(original_rdkit_ver)
+        param_table.append(original_fpsim2_ver)
 
         # Copy data from all input files
         for file in input_files:
@@ -221,7 +232,9 @@ class PyTablesStorageBackend(BaseStorageBackend):
         super(PyTablesStorageBackend, self).__init__()
         self.name = "pytables"
         self.fp_filename = fp_filename
-        self.fp_type, self.fp_params, self.rdkit_ver = self.read_parameters()
+        self.fp_type, self.fp_params, self.rdkit_ver, self.fpsim2_ver = (
+            self.read_parameters()
+        )
         if in_memory_fps:
             self.load_fps(fps_sort)
         self.load_popcnt_bins(fps_sort)
@@ -231,6 +244,10 @@ class PyTablesStorageBackend(BaseStorageBackend):
             print(
                 f"Warning: Database was created with RDKit version {self.rdkit_ver} but installed version is {rdkit.__version__}"
             )
+        if self.fpsim2_ver != __version__:
+            print(
+                f"Warning: Database was created with FPSim2 version {self.fpsim2_ver} but installed version is {__version__}"
+            )
 
     def read_parameters(self) -> Tuple[str, Dict[str, Dict[str, dict]], str]:
         """Reads fingerprint parameters"""
@@ -238,7 +255,8 @@ class PyTablesStorageBackend(BaseStorageBackend):
             fp_type = fp_file.root.config[0]
             fp_params = fp_file.root.config[1]
             rdkit_ver = fp_file.root.config[2]
-        return fp_type, fp_params, rdkit_ver
+            fpsim2_ver = fp_file.root.config[3]
+        return fp_type, fp_params, rdkit_ver, fpsim2_ver
 
     def get_fps_chunk(self, chunk_range: Tuple[int, int]) -> np.asarray:
         with tb.open_file(self.fp_filename, mode="r") as fp_file:
@@ -250,7 +268,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
             popcnt_bins = self.calc_popcnt_bins(self.fps)
         else:
             with tb.open_file(self.fp_filename, mode="r") as fp_file:
-                popcnt_bins = fp_file.root.config[3]
+                popcnt_bins = fp_file.root.config[4]
         self.popcnt_bins = popcnt_bins
 
     def load_fps(self, fps_sort) -> None:
@@ -310,7 +328,7 @@ class PyTablesStorageBackend(BaseStorageBackend):
         -------
         None
         """
-        fp_type, fp_params, _ = self.read_parameters()
+        fp_type, fp_params, _, _ = self.read_parameters()
         with tb.open_file(self.fp_filename, mode="a") as fp_file:
             fps_table = fp_file.root.fps
             fps = []
