@@ -1,0 +1,28 @@
+site_name: FPSim2
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+nav:
+  - Getting started:
+    - Installation: user_guide/install.md
+    - Creating FP Database: user_guide/create_db_file.md
+    - Limitations: user_guide/limitations.md
+  - CPU searches:
+    - Similarity Search: user_guide/similarity.md
+    - Tversky Search: user_guide/tversky.md
+    - Substructure Screenout: user_guide/subs_screenout.md
+    - Similarity Matrix: user_guide/sim_matrix.md
+  - GPU searches:
+    - GPU Similarity Search: user_guide/gpu.md
+  - Contrib:
+    - iSIM: user_guide/contrib.md
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
