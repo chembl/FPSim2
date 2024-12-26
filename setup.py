@@ -12,15 +12,6 @@ def read(rel_path):
         return fp.read()
 
 
-def get_version(rel_path):
-    for line in read(rel_path).splitlines():
-        if line.startswith("__version__"):
-            delim = '"' if '"' in line else "'"
-            return line.split(delim)[1]
-    else:
-        raise RuntimeError("Unable to find version string.")
-
-
 class get_pybind_include(object):
     """Helper class to determine the pybind11 include path
     The purpose of this class is to postpone importing pybind11
@@ -122,34 +113,8 @@ class BuildExt(build_ext):
 
 
 setup(
-    name="FPSim2",
-    version=get_version("FPSim2/__init__.py"),
-    author="Eloy Felix",
-    author_email="eloyfelix@gmail.com",
-    url="https://github.com/chembl/FPSim2",
-    license="MIT",
     packages=find_packages(),
-    description="Simple package for fast molecular similarity searching",
-    long_description=open("README.md", encoding="utf-8").read(),
-    long_description_content_type="text/markdown",
     ext_modules=ext_modules,
-    install_requires=[
-        "rdkit>=2022.3.3",
-        "tables>=3.10",
-        "numpy >=1.14",
-        "sqlalchemy>=1.4.47",
-        "scipy",
-        "tqdm",
-    ],
     cmdclass={"build_ext": BuildExt},
-    python_requires=">=3.10",
     zip_safe=False,
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Topic :: Scientific/Engineering :: Chemistry",
-    ],
 )

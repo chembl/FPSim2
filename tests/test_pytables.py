@@ -15,7 +15,7 @@ with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
-    popcnt_bins = fp_file.root.config[3]
+    popcnt_bins = fp_file.root.config[4]
 
 @pytest.mark.incremental
 class TestPytablesBackend:
@@ -25,7 +25,7 @@ class TestPytablesBackend:
         create_db_file(in_file, out_file, None, FP_TYPE, FP_PARAMS)
 
         fpe = FPSim2Engine(out_file, storage_backend="pytables")
-        fp_type, fp_params, _ = fpe.storage.read_parameters()
+        fp_type, fp_params, _, _ = fpe.storage.read_parameters()
         assert fp_type == FP_TYPE
         assert fp_params["radius"] == FP_PARAMS["radius"]
         assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
@@ -62,7 +62,7 @@ def test_create_db_file_sdf():
     create_db_file(in_file, out_file, None, FP_TYPE, FP_PARAMS, mol_id_prop="mol_id")
 
     fpe = FPSim2Engine(out_file, storage_backend="pytables")
-    fp_type, fp_params, _ = fpe.storage.read_parameters()
+    fp_type, fp_params, _, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
@@ -74,7 +74,7 @@ def test_create_db_file_list():
     create_db_file([["CC", 1], ["CCC", 2], ["CCCC", 3]], out_file, 'smiles', FP_TYPE, FP_PARAMS)
 
     fpe = FPSim2Engine(out_file, storage_backend="pytables")
-    fp_type, fp_params, _ = fpe.storage.read_parameters()
+    fp_type, fp_params, _, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["fpSize"] == FP_PARAMS["fpSize"]

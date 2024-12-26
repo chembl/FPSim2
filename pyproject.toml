@@ -1,3 +1,31 @@
 [build-system]
 requires = ["pybind11>=2.2", "numpy>=2.0", "setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "FPSim2"
+version = "0.6.0"
+authors = [
+    { name = "Eloy Félix", email = "eloyfelix@gmail.com" }
+]
+description = "Simple package for fast molecular similarity searching"
+readme = "README.md"
+urls = { Homepage = "https://github.com/chembl/FPSim2" }
+license = { text = "MIT" }
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Chemistry"
+]
+dependencies = [
+    "rdkit>=2022.3.3",
+    "tables>=3.10",
+    "numpy>=1.14",
+    "sqlalchemy>=1.4.47",
+    "scipy",
+    "tqdm"
+]

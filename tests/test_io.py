@@ -17,7 +17,7 @@ with tb.open_file(os.path.join(TESTS_DIR, "data/test.h5"), mode="r") as fp_file:
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
-    popcnt_bins = fp_file.root.config[3]
+    popcnt_bins = fp_file.root.config[4]
 
 smiles_list = [
     ["Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl", 1],

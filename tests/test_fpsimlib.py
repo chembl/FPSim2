@@ -7,6 +7,7 @@ from FPSim2.FPSim2lib import (
     TanimotoSearch,
     TverskySearch,
     SubstructureScreenout,
+    TanimotoSearchTopK,
 )
 from FPSim2 import FPSim2Engine
 import os
@@ -75,4 +76,15 @@ def test_SortResults():
             [(0, 4, 1.0), (3, 6, 0.638298), (5, 5, 0.625)],
             dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")],
         )["coeff"],
+    )
+
+def test_TanimotoSearchTopK():
+    # Test top-k search with k=3 and threshold=0.0
+    res = TanimotoSearchTopK(fpe.fps[0], fpe.fps, 3, 0.0, 0, fpe.fps.shape[0])
+    np.testing.assert_array_almost_equal(
+        res["coeff"],
+        np.array(
+            [(0, 4, 1.0), (3, 6, 0.63829786), (5, 5, 0.625)],
+            dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")] 
+        )["coeff"]
     )
