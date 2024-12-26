@@ -225,6 +225,47 @@ def merge_db_files(
         sort_db_file(output_file)
 
 
+def migrate_db_file(original_file: str, new_file: str) -> None:
+    """Migrates old database file. Use at your own risk.
+
+    Parameters
+    ----------
+    original_file : str
+        Path to original database file
+    new_file : str
+        Path to new database file
+    """
+    with tb.open_file(original_file, mode="r") as orig_file:
+        fp_type = orig_file.root.config[0]
+        fp_params = orig_file.root.config[1].copy()
+        if "nBits" in fp_params:
+            fp_params["fpSize"] = fp_params.pop("nBits")
+        rdkit_ver = orig_file.root.config[2]
+
+        filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
+        fp_length = get_fp_length(fp_type, fp_params)
+
+        with tb.open_file(new_file, mode="w") as new_fp_file:
+            particle = create_schema(fp_length)
+            fps_table = new_fp_file.create_table(
+                new_fp_file.root, "fps", particle, "Table storing fps", filters=filters
+            )
+
+            param_table = new_fp_file.create_vlarray(
+                new_fp_file.root, "config", atom=tb.ObjectAtom()
+            )
+            param_table.append(fp_type)
+            param_table.append(fp_params)
+            param_table.append(rdkit_ver)
+            param_table.append(__version__)
+
+            fps_table.append(orig_file.root.fps[:])
+            fps_table.cols.popcnt.create_index(kind="full")
+
+            popcnt_bins = calc_popcnt_bins_pytables(fps_table, fp_length)
+            param_table.append(popcnt_bins)
+
+
 class PyTablesStorageBackend(BaseStorageBackend):
     def __init__(
         self, fp_filename: str, in_memory_fps: bool = True, fps_sort: bool = False
@@ -256,6 +297,12 @@ class PyTablesStorageBackend(BaseStorageBackend):
             fp_params = fp_file.root.config[1]
             rdkit_ver = fp_file.root.config[2]
             fpsim2_ver = fp_file.root.config[3]
+            try:
+                fp_file.root.config[4]
+            except IndexError:
+                raise ValueError(
+                    "Database file was generated with FPSim2 version prior to 0.6.0 and needs to be re-generated"
+                )
         return fp_type, fp_params, rdkit_ver, fpsim2_ver
 
     def get_fps_chunk(self, chunk_range: Tuple[int, int]) -> np.asarray:
