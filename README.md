@@ -23,12 +23,6 @@ Highlights:
 pip install fpsim2
 ```
 
-or
-
-```bash
-conda install -c conda-forge fpsim2
-```
-
 ## Documentation
 
 Documentation is available at https://chembl.github.io/FPSim2/
