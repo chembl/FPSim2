@@ -256,6 +256,10 @@ class PyTablesStorageBackend(BaseStorageBackend):
             fp_params = fp_file.root.config[1]
             rdkit_ver = fp_file.root.config[2]
             fpsim2_ver = fp_file.root.config[3]
+            try:
+                fp_file.root.config[4]
+            except IndexError:
+                raise ValueError("Database file was generated with FPSim2 version prior to 0.6.0 and needs to be re-generated")
         return fp_type, fp_params, rdkit_ver, fpsim2_ver
 
     def get_fps_chunk(self, chunk_range: Tuple[int, int]) -> np.asarray:
