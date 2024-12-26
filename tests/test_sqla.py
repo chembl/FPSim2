@@ -45,7 +45,7 @@ def test_create_db_file_smi(db_url):
     fpe = FPSim2Engine(
         conn_url=db_url, table_name="fpsim2_fp_smi", storage_backend="sqla"
     )
-    fp_type, fp_params, _ = fpe.storage.read_parameters()
+    fp_type, fp_params, _ ,_ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
@@ -65,7 +65,7 @@ def test_create_db_file_sdf(db_url):
     fpe = FPSim2Engine(
         conn_url=db_url, table_name="fpsim2_fp_sdf", storage_backend="sqla"
     )
-    fp_type, fp_params, _ = fpe.storage.read_parameters()
+    fp_type, fp_params, _, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
@@ -88,7 +88,7 @@ def test_create_db_file_list(db_url):
     fpe = FPSim2Engine(
         conn_url=db_url, table_name="fpsim2_fp_list", storage_backend="sqla"
     )
-    fp_type, fp_params, _ = fpe.storage.read_parameters()
+    fp_type, fp_params, _, _ = fpe.storage.read_parameters()
     assert fp_type == FP_TYPE
     assert fp_params["radius"] == FP_PARAMS["radius"]
     assert fp_params["fpSize"] == FP_PARAMS["fpSize"]
