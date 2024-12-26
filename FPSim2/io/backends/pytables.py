@@ -55,6 +55,11 @@ def create_db_file(
 
     if not fp_params:
         fp_params = FP_FUNC_DEFAULTS[fp_type]
+    else:
+        if "fpSize" not in fp_params:
+            if "fpSize" in FP_FUNC_DEFAULTS[fp_type]:
+                fp_params["fpSize"] = FP_FUNC_DEFAULTS[fp_type]["fpSize"]
+
     supplier = get_mol_supplier(mols_source)
     fp_length = get_fp_length(fp_type, fp_params)
     filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)

@@ -5,7 +5,7 @@
 Use the `FPSim2.FPSim2Engine.substructure` function to run an optimised Tversky (*a=1*, *b=0*, *threshold=1.0*) substructure screenout. Bear in mind that this is not a full substructure (i.e. with subgraph isomorphism) search.
 
 !!! tip
-    It's recommended to use **RDKPatternFingerprint** fingerprint type with this kind of searches.
+    It's recommended to use **RDKitPattern** fingerprint type with this kind of searches.
 
 ```python
 from FPSim2 import FPSim2Engine

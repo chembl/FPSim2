@@ -22,8 +22,7 @@ RDKIT_PARSE_FUNCS = {
 }
 
 FP_FUNCS = {
-    "MACCSKeys": lambda m,
-    **kwargs: rdMolDescriptors.GetMACCSKeysFingerprint(m),
+    "MACCSKeys": lambda m, **kwargs: rdMolDescriptors.GetMACCSKeysFingerprint(m),
     "Morgan": lambda m, **kwargs: rdFingerprintGenerator.GetMorganGenerator(
         **kwargs
     ).GetFingerprint(m),
@@ -37,50 +36,46 @@ FP_FUNCS = {
     "RDKit": lambda m, **kwargs: rdFingerprintGenerator.GetRDKitFPGenerator(
         **kwargs
     ).GetFingerprint(m),
-    "Pattern": lambda m, **kwargs: Chem.PatternFingerprint(m),
+    "RDKitPattern": lambda m, **kwargs: Chem.PatternFingerprint(m),
 }
 
 FP_FUNC_DEFAULTS = {
     "MACCSKeys": {},
     "Morgan": {
+        "radius": 3,
+        "fpSize": 2048,
+        "countSimulation": False,
         "includeChirality": False,
         "useBondTypes": True,
-        "useCountSimulation": False,
-        "countBounds": None,
-        "fpSize": 2048,
-        "radius": 2,
+        "onlyNonzeroInvariants": False,
+        "includeRingMembership": True,
+        "includeRedundantEnvironments": False,
     },
     "TopologicalTorsion": {
-        "includeChirality": False,
         "fpSize": 2048,
-        "countSimulation": False,
-        "countBounds": None,
+        "includeChirality": False,
         "torsionAtomCount": 4,
+        "countSimulation": True,
     },
     "AtomPair": {
-        "includeChirality": False,
         "fpSize": 2048,
-        "countSimulation": False,
-        "countBounds": None,
         "minDistance": 1,
         "maxDistance": 30,
+        "includeChirality": False,
+        "use2D": True,
+        "countSimulation": True,
     },
     "RDKit": {
         "fpSize": 2048,
         "minPath": 1,
         "maxPath": 7,
-        "countSimulation": False,
-        "countBounds": None,
         "useHs": True,
         "branchedPaths": True,
         "useBondOrder": True,
-    },
-    "Pattern": {
-        "fpSize": 2048,
         "countSimulation": False,
-        "countBounds": None,
-        "tautomerFingerprints": False,
+        "numBitsPerFeature": 2,
     },
+    "RDKitPattern": {"fpSize": 2048, "tautomerFingerprints": False},
 }
 
 
