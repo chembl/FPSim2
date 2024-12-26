@@ -21,7 +21,7 @@ from FPSim2.io import create_db_file
 create_db_file(
     mols_source='stuff.sdf',
     filename='stuff.h5',
-    mol_format=None,
+    mol_format=None, # not required, .sdf will always use 'molfile'
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048},
     mol_id_prop='mol_id'
@@ -35,7 +35,7 @@ from FPSim2.io import create_db_file
 create_db_file(
     mols_source='chembl.smi',
     filename='chembl.h5',
-    mol_format=None,
+    mol_format=None, # not required, .smi will always use 'smiles'
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}
 )
@@ -49,7 +49,7 @@ mols = [['CC', 1], ['CCC', 2], ['CCCC', 3]]
 create_db_file(
     mols_source=mols,
     filename='test/10mols.h5',
-    mol_format='smiles',
+    mol_format='smiles', # required
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}
 )
@@ -69,7 +69,7 @@ res_prox = s.execute(sql_query)
 create_db_file(
     mols_source=res_prox,
     filename='test/10mols.h5',
-    mol_format='molfile',
+    mol_format='molfile', # required
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}
 )

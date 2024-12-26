@@ -14,5 +14,5 @@ fp_filename = 'chembl_27.h5'
 fpce = FPSim2CudaEngine(fp_filename)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpce.similarity(query, 0.7)
+results = fpce.similarity(query, threshold=0.7)
 ```

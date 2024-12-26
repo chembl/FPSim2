@@ -11,7 +11,7 @@ fp_filename = 'chembl_27.h5'
 fpe = FPSim2Engine(fp_filename)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpe.similarity(query, 0.7, n_workers=1)
+results = fpe.similarity(query, threshold=0.7, n_workers=1)
 ```
 
 
@@ -42,5 +42,5 @@ fp_filename = 'chembl_27.h5'
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpe.on_disk_similarity(query, 0.7, n_workers=1)
+results = fpe.on_disk_similarity(query, threshold=0.7, n_workers=1)
 ```

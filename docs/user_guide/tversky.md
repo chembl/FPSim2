@@ -16,7 +16,7 @@ fp_filename = 'chembl_27.h5'
 fpe = FPSim2Engine(fp_filename)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpe.tversky(query, 0.7, 0.5, 0.5, n_workers=1)
+results = fpe.tversky(query, threshold=0.7, a=0.5, b=0.5, n_workers=1)
 ```
 
 > **Tip:** *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful when searching big datasets.
@@ -32,5 +32,5 @@ fp_filename = 'chembl_27.h5'
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpe.on_disk_tversky(query, 0.7, 0.5, 0.5, n_workers=1)
+results = fpe.on_disk_tversky(query, threshold=0.7, a=0.5, b=0.5, n_workers=1)
 ```
