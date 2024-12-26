@@ -167,7 +167,7 @@ py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
 
     struct ResultComparator {
         bool operator()(const Result& lhs, const Result& rhs) const {
-            return lhs.coeff < rhs.coeff;
+            return lhs.coeff > rhs.coeff;
         }
     };
     std::priority_queue<Result, std::vector<Result>, ResultComparator> top_k;
@@ -194,7 +194,7 @@ py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
     auto results = new std::vector<Result>();
     results->reserve(top_k.size());
     while (!top_k.empty()) {
-        results->emplace_back(top_k.top());
+        results->insert(results->begin(), top_k.top());
         top_k.pop();
     }
 
