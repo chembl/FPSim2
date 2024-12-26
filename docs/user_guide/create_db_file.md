@@ -1,6 +1,6 @@
 # Create a fingerprint database file
 
-Use the `FPSim2.io.backends.pytables.create_db_file` function to create the fingerprint database file.
+Use the `FPSim2.io.backends.pytables.create_db_file` function to create the fingerprint database file needed to run the searches.
 
 !!! warning
     FPSim2 only supports integer molecule ids.
@@ -16,7 +16,7 @@ The fingerprints are calculated with [RDKit](https://www.rdkit.org/). Fingerprin
 
 ## From a .sdf file
 ```python
-from FPSim2.io.backends.pytables import create_db_file
+from FPSim2.io import create_db_file
 
 create_db_file(
     mols_source='stuff.sdf',
@@ -30,7 +30,7 @@ create_db_file(
 
 ## From a .smi file
 ```python
-from FPSim2.io.backends.pytables import create_db_file
+from FPSim2.io import create_db_file
 
 create_db_file(
     mols_source='chembl.smi',
@@ -43,7 +43,7 @@ create_db_file(
 
 ## From a Python list
 ```python
-from FPSim2.io.backends.pytables import create_db_file
+from FPSim2.io import create_db_file
 
 mols = [['CC', 1], ['CCC', 2], ['CCCC', 3]]
 create_db_file(
@@ -57,7 +57,7 @@ create_db_file(
 
 ## From any other Python iterable like a SQLAlchemy result proxy
 ```python
-from FPSim2.io.backends.pytables import create_db_file
+from FPSim2.io import create_db_file
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 

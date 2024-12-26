@@ -2,7 +2,7 @@
 
 ## [iSIM](https://pubs.rsc.org/en/content/articlehtml/2024/dd/d4dd00041b) 
 
-iSIM performs comparisons of multiple molecules at the same time and yields the same value as the average pairwise comparisons of molecules represented by binary fingerprints and real-value descriptors.
+iSIM performs comparisons of multiple molecules at the same time and yields the same value as the average pairwise comparisons of molecules represented by binary fingerprints.
 
 ```python
 from FPSim2.contrib.isim.isim_comp import get_sim_dict

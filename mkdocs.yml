@@ -7,7 +7,6 @@ nav:
   - Getting started:
     - Installation: user_guide/install.md
     - Creating FP Database: user_guide/create_db_file.md
-    - Limitations: user_guide/limitations.md
   - CPU searches:
     - Similarity Search: user_guide/similarity.md
     - Tversky Search: user_guide/tversky.md

@@ -19,7 +19,7 @@ query = 'CC(=O)Oc1ccccc1C(=O)O'
 results = fpe.tversky(query, 0.7, 0.5, 0.5, n_workers=1)
 ```
 
-> **Tip:** *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful on big datasets.
+> **Tip:** *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful when searching big datasets.
 
 ## On disk
 
