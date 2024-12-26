@@ -69,6 +69,10 @@ class BaseEngine(ABC):
     def rdkit_ver(self):
         return self.storage.rdkit_ver
 
+    @property
+    def fpsim2_ver(self):
+        return self.storage.fpsim2_ver
+
     def load_query(self, query: Union[str, ExplicitBitVect]) -> np.ndarray:
         """Loads the query fingerprint from SMILES, molblock, InChI or ExplicitBitVect fingerprint.
 

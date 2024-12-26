@@ -30,4 +30,4 @@ Documentation is available at https://chembl.github.io/FPSim2/
 
 ## Trying it online
 
-To try out FPSim2 interactively in your web browser, just click on the binder icon [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/eloyfelix/fpsim2_binder/master?filepath=demo.ipynb)
+To try out FPSim2 interactively in your web browser, check out this Google Colab notebook [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1E-Hu0YXHb4aaVQWOLzMTJFdAhh3nIbxA)
