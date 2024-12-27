@@ -1,15 +1,8 @@
 from setuptools import setup, Extension, distutils, find_packages
 from setuptools.command.build_ext import build_ext
 import platform
-import codecs
 import sys
 import os
-
-
-def read(rel_path):
-    here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, rel_path), "r") as fp:
-        return fp.read()
 
 
 class get_pybind_include(object):
@@ -40,8 +33,6 @@ ext_modules = [
 ]
 
 
-# As of Python 3.6, CCompiler has a `has_flag` method.
-# cf http://bugs.python.org/issue26689
 def has_flag(compiler, flagname):
     """Return a boolean indicating whether a flag name is supported on
     the specified compiler.
