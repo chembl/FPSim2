@@ -1,11 +1,11 @@
 # Contributor modules
 
-## [iSIM](https://pubs.rsc.org/en/content/articlehtml/2024/dd/d4dd00041b) 
+## [iSIM](https://pubs.rsc.org/en/content/articlehtml/2024/dd/d4dd00041b) (Miranda-Quintana Group, Department of Chemistry, University of Florida)
 
 iSIM performs comparisons of multiple molecules at the same time and yields the same value as the average pairwise comparisons of molecules represented by binary fingerprints.
 
 ```python
-from FPSim2.contrib.isim.isim_comp import get_sim_dict
+from FPSim2.contrib.isim.isim_comp import get_sim_dict, calculate_medoid, calculate_outlier, calculate_comp_sim
 from FPSim2 import FPSim2Engine
 
 fp_filename = 'chembl_34.h5'
