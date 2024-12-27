@@ -2,12 +2,10 @@
 
 ## In memory
 
-Use the `FPSim2.FPSim2.FPSim2Engine.tversky` function to run Tversky searches. Tversky is a generalisation of Tanimoto and the Sørensen–Dice coefficients. 
+Use the `FPSim2Engine.tversky` function to run Tversky searches. Tversky is a generalisation of Tanimoto and the Sørensen–Dice coefficients.
 
-> **Tip:** By setting the a, b and threshold parameters:
-> - a=b=1 will return the same results than a Tanimoto search but will be slower than using `FPSim2.FPSim2.FPSim2Engine.similarity`
-> - a=b=0.5: will run a Sørensen–Dice search
-> - a=1, b=0, threshold=1.0 will return the same results than using `FPSim2.FPSim2.FPSim2Engine.substructure` function but will be slower
+!!! tip "Search Types Configuration"
+    Set `a=b=0.5` to perform a Sørensen–Dice search.
 
 ```python
 from FPSim2 import FPSim2Engine
@@ -19,11 +17,13 @@ query = 'CC(=O)Oc1ccccc1C(=O)O'
 results = fpe.tversky(query, threshold=0.7, a=0.5, b=0.5, n_workers=1)
 ```
 
-> **Tip:** *n_workers* parameter can be used to split a single query into multiple threads to speed up the seach. This is specially useful when searching big datasets.
+!!! tip "Parallel Processing"
+    The `n_workers` parameter can be used to split a single query into multiple threads to speed up the search.
+    This is especially useful when searching large datasets.
 
 ## On disk
 
-It is also possible to run on disk similarity searches (i.e. without loading the whole fingerprints file in memory) with the `FPSim2.FPSim2.FPSim2Engine.on_disk_tversky` function. This allows running similarity searches on databases bigger than the available system memory:
+It is also possible to run on disk similarity searches (i.e. without loading the whole fingerprints file in memory) with the `FPSim2Engine.on_disk_tversky` function. This allows running similarity searches on databases bigger than the available system memory:
 
 ```python
 from FPSim2 import FPSim2Engine
