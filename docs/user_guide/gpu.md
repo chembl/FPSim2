@@ -10,7 +10,7 @@ Use the `similarity` function in the `FPSim2CudaEngine` class to run a Tanimoto 
 ```python
 from FPSim2 import FPSim2CudaEngine
 
-fp_filename = 'chembl_27.h5'
+fp_filename = 'chembl_35_v0.6.0.h5'
 fpce = FPSim2CudaEngine(fp_filename)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'

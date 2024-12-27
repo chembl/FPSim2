@@ -33,8 +33,8 @@ create_db_file(
 from FPSim2.io import create_db_file
 
 create_db_file(
-    mols_source='chembl.smi',
-    filename='chembl.h5',
+    mols_source='stuff.smi',
+    filename='stuff.h5',
     mol_format=None, # not required, .smi will always use 'smiles'
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}

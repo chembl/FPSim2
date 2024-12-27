@@ -8,7 +8,7 @@ iSIM performs comparisons of multiple molecules at the same time and yields the 
 from FPSim2.contrib.isim.isim_comp import get_sim_dict, calculate_medoid, calculate_outlier, calculate_comp_sim
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_34.h5'
+fp_filename = 'chembl_35_v0.6.0.h5'
 fpe = FPSim2Engine(fp_filename)
 
 # get average similarity of the dataset

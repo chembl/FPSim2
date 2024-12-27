@@ -10,7 +10,7 @@ Use the `FPSim2Engine.tversky` function to run Tversky searches. Tversky is a ge
 ```python
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_27.h5'
+fp_filename = 'chembl_35_v0.6.0.h5'
 fpe = FPSim2Engine(fp_filename)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
@@ -28,7 +28,7 @@ It is also possible to run on disk similarity searches (i.e. without loading the
 ```python
 from FPSim2 import FPSim2Engine
 
-fp_filename = 'chembl_27.h5'
+fp_filename = 'chembl_35_v0.6.0.h5'
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'

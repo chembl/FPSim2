@@ -4,7 +4,7 @@ Use the `FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a Sci
 
 ```python
 >>> from FPSim2 import FPSim2Engine
->>> fp_filename = 'chembl_27.h5'
+>>> fp_filename = 'chembl_35_v0.6.0.h5'
 >>> fpe = FPSim2Engine(fp_filename)
 >>> csr_matrix = fpe.symmetric_distance_matrix(threshold=0.7, n_workers=4)
 ```
