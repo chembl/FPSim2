@@ -14,13 +14,20 @@ The fingerprints are calculated with [RDKit](https://www.rdkit.org/). Fingerprin
 - [RDKit](https://www.rdkit.org/docs/source/rdkit.Chem.rdFingerprintGenerator.html#rdkit.Chem.rdFingerprintGenerator.GetRDKitFPGenerator)
 - [RDKitPattern](https://www.rdkit.org/docs/source/rdkit.Chem.rdmolops.html#rdkit.Chem.rdmolops.PatternFingerprint)
 
+# From the command line, only supports .smi files as input and runs in parallel
+```bash
+fpsim2-create-db smiles_file.smi fp_db.h5 --fp_type Morgan --fp_params '{"radius": 2, "fpSize": 256}' --processes 32
+```
+
+# As a Python library, doesn't run in parallel
+
 ## From a .sdf file
 ```python
 from FPSim2.io import create_db_file
 
 create_db_file(
-    mols_source='stuff.sdf',
-    filename='stuff.h5',
+    mols_source='sdf_file.sdf',
+    filename='fp_db.h5',
     mol_format=None, # not required, .sdf will always use 'molfile'
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048},
@@ -33,8 +40,8 @@ create_db_file(
 from FPSim2.io import create_db_file
 
 create_db_file(
-    mols_source='stuff.smi',
-    filename='stuff.h5',
+    mols_source='smiles_file.smi',
+    filename='fp_db.h5',
     mol_format=None, # not required, .smi will always use 'smiles'
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}
@@ -48,7 +55,7 @@ from FPSim2.io import create_db_file
 mols = [['CC', 1], ['CCC', 2], ['CCCC', 3]]
 create_db_file(
     mols_source=mols,
-    filename='test/10mols.h5',
+    filename='fp_db.h5',
     mol_format='smiles', # required
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}
@@ -68,7 +75,7 @@ res_prox = s.execute(sql_query)
 
 create_db_file(
     mols_source=res_prox,
-    filename='test/10mols.h5',
+    filename='fp_db.h5',
     mol_format='molfile', # required
     fp_type='Morgan',
     fp_params={'radius': 2, 'fpSize': 2048}
