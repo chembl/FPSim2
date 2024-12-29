@@ -224,11 +224,8 @@ def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
     """
     with open(filename, "r") as f:
         for line in f:
-            try:
-                mol = line.strip().rsplit(None, 1)
-                if len(mol) == 2:
-                    yield mol
-            except ValueError:
+            mol = line.strip().rsplit(None, 1)
+            if not len(mol) == 2:
                 continue
             try:
                 smiles = mol[0]
