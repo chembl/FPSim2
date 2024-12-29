@@ -15,7 +15,7 @@ def read_chunk(filename, start_row, end_row):
         for _ in range(end_row - start_row):
             line = f.readline().strip()
             if line:
-                rows.append(line.split(" "))
+                rows.append(line.split())
     return rows
 
 
@@ -111,6 +111,10 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if not args.input_file.endswith('.smi'):
+        parser.error("Input file must have '.smi' SMILES file")
+
     create_db_file_parallel(
         args.input_file,
         args.output_file,
