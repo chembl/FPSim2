@@ -1,23 +1,23 @@
 from FPSim2.io.backends.pytables import create_db_file, merge_db_files
-from concurrent.futures import ProcessPoolExecutor
+import concurrent.futures as cf
 from typing import List, Tuple
+from itertools import islice
 import argparse
-import os
 import json
+import os
 
 
 def read_chunk(filename, start_row, end_row):
-    rows = []
     with open(filename, "r") as f:
-        for _ in range(start_row):
-            next(f)
-
-        for _ in range(end_row - start_row):
-            line = f.readline().strip()
-            if line:
-                rows.append(line.split())
-    return rows
-
+        # works with both SMILES and CXMILES
+        chunk = islice(f, start_row, end_row)
+        for line in chunk:
+            try:
+                mol = line.strip().rsplit(None, 1)
+                if len(mol) == 2:
+                    yield mol
+            except ValueError:
+                continue
 
 def worker(args):
     mols_source, chunk_range, fp_type, fp_params = args
@@ -35,14 +35,16 @@ def worker(args):
     return out_file
 
 
-def calculate_chunks(total_rows: int, num_processes: int) -> List[Tuple[int, int]]:
-    """Calculate row ranges for each process"""
-    rows_per_chunk = total_rows // num_processes
+def calculate_chunks(
+    total_rows: int, num_processes: int, m: int = 16
+) -> List[Tuple[int, int]]:
+    n = num_processes * m
+    rows_per_chunk = total_rows // n
     chunks = []
     start = 0
 
-    for i in range(num_processes):
-        if i == num_processes - 1:
+    for i in range(n):
+        if i == n - 1:
             end = total_rows
         else:
             end = start + rows_per_chunk
@@ -52,11 +54,8 @@ def calculate_chunks(total_rows: int, num_processes: int) -> List[Tuple[int, int
 
 
 def count_rows(filename, chunk_size=65536):
-    """Fast method reading in chunks, correctly handling files without trailing newline"""
     with open(filename, "rb") as f:
-        # Read all chunks
         chunks = iter(lambda: f.read(chunk_size), b"")
-        # Count newlines in all complete chunks
         newlines = sum(chunk.count(b"\n") for chunk in chunks)
         # If file doesn't end with newline, add 1 for the last line
         f.seek(-1, os.SEEK_END)
@@ -67,7 +66,7 @@ def count_rows(filename, chunk_size=65536):
 def create_db_file_parallel(smi_file, out_file, fp_type, fp_params, num_processes):
     total_mols = count_rows(smi_file)
     chunks = calculate_chunks(total_mols, num_processes)
-    with ProcessPoolExecutor(max_workers=num_processes) as executor:
+    with cf.ProcessPoolExecutor(max_workers=num_processes) as executor:
         futures = [
             executor.submit(
                 worker,
@@ -112,7 +111,7 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.input_file.endswith('.smi'):
+    if not args.input_file.endswith(".smi"):
         parser.error("Input file must have '.smi' SMILES file")
 
     create_db_file_parallel(
