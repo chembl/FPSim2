@@ -1,8 +1,8 @@
 name: Deploy MkDocs
 on:
-  push:
-    branches:
-      - master
+  release:
+    types: [published]
+  workflow_dispatch:  # Allows manual triggering
 
 permissions:
   contents: write
