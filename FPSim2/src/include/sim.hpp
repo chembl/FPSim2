@@ -43,3 +43,15 @@ py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
                                        const float threshold,
                                        const uint32_t start,
                                        const uint32_t end);
+
+py::array_t<Result> CosineSearch(const py::array_t<uint64_t> py_query,
+                                    const py::array_t<uint64_t> py_db,
+                                    const float threshold,
+                                    const uint32_t start,
+                                    const uint32_t end);
+
+py::array_t<Result> DiceSearch(const py::array_t<uint64_t> py_query,
+                                const py::array_t<uint64_t> py_db,
+                                const float threshold,
+                                const uint32_t start,
+                                const uint32_t end);

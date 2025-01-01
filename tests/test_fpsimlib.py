@@ -8,6 +8,8 @@ from FPSim2.FPSim2lib import (
     TverskySearch,
     SubstructureScreenout,
     TanimotoSearchTopK,
+    CosineSearch,
+    DiceSearch,
 )
 from FPSim2 import FPSim2Engine
 import os
@@ -78,6 +80,7 @@ def test_SortResults():
         )["coeff"],
     )
 
+
 def test_TanimotoSearchTopK():
     # Test top-k search with k=3 and threshold=0.0
     res = TanimotoSearchTopK(fpe.fps[0], fpe.fps, 3, 0.0, 0, fpe.fps.shape[0])
@@ -85,6 +88,44 @@ def test_TanimotoSearchTopK():
         res["coeff"],
         np.array(
             [(0, 4, 1.0), (3, 6, 0.63829786), (5, 5, 0.625)],
-            dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")] 
-        )["coeff"]
+            dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")],
+        )["coeff"],
     )
+
+
+def test_CosineSearch():
+    res = CosineSearch(fpe.fps[0], fpe.fps, 0.0, 0, fpe.fps.shape[0])
+    np.testing.assert_array_almost_equal(
+        res[0:5]["coeff"],
+        np.array(
+            [
+                (0, 4, 1.0),
+                (3, 6, 0.782461),
+                (5, 5, 0.773309),
+                (7, 2, 0.747667),
+                (6, 1, 0.707528),
+            ],
+            dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")],
+        )["coeff"],
+    )
+    res = CosineSearch(fpe.fps[0], fpe.fps, 0.6, 0, fpe.fps.shape[0])
+    assert res.shape[0] == 9
+
+
+def test_DiceSearch():
+    res = DiceSearch(fpe.fps[0], fpe.fps, 0.0, 0, fpe.fps.shape[0])
+    np.testing.assert_array_almost_equal(
+        res[0:5]["coeff"],
+        np.array(
+            [
+                (0, 4, 1.0),
+                (3, 6, 0.7792208),
+                (5, 5, 0.7692308),
+                (7, 2, 0.7407407),
+                (6, 1, 0.7000000),
+            ],
+            dtype=[("idx", "<u4"), ("mol_id", "<u4"), ("coeff", "<f4")],
+        )["coeff"],
+    )
+    res = DiceSearch(fpe.fps[0], fpe.fps, 0.6, 0, fpe.fps.shape[0])
+    assert res.shape[0] == 9

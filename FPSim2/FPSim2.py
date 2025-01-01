@@ -7,6 +7,8 @@ from .FPSim2lib import (
     TverskySearch,
     SubstructureScreenout,
     TanimotoSearchTopK,
+    DiceSearch,
+    CosineSearch,
 )
 from .FPSim2lib.utils import SortResults
 from scipy.sparse import csr_matrix
@@ -15,7 +17,11 @@ import numpy as np
 
 
 def on_disk_search(
-    search_func: str, query: np.array, storage: Any, args, chunk: Tuple[int, int],
+    search_func: str,
+    query: np.array,
+    storage: Any,
+    args,
+    chunk: Tuple[int, int],
 ) -> np.ndarray:
     fps = storage.get_fps_chunk(chunk)
     num_fields = len(fps[0])
@@ -71,7 +77,7 @@ class FPSim2Engine(BaseEngine):
         storage_backend: str = "pytables",
         conn_url: str = "",
         table_name: str = "",
-        pg_schema: str = ""
+        pg_schema: str = "",
     ) -> None:
         super(FPSim2Engine, self).__init__(
             fp_filename=fp_filename,
@@ -80,338 +86,10 @@ class FPSim2Engine(BaseEngine):
             fps_sort=fps_sort,
             conn_url=conn_url,
             table_name=table_name,
-            pg_schema=pg_schema
+            pg_schema=pg_schema,
         )
         self.empty_sim = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
         self.empty_subs = np.ndarray((0,), dtype="<u4")
-
-    def similarity(
-        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
-    ) -> np.ndarray:
-        """Runs a Tanimoto search.
-
-        Parameters
-        ----------
-        query : Union[str, ExplicitBitVect]
-            SMILES, InChI, molblock or fingerprint as ExplicitBitVect.
-
-        threshold: float
-            Similarity threshold.
-
-        n_workers : int
-            Number of threads used for the search.
-
-        Returns
-        -------
-        results : numpy array
-            Similarity results.
-        """
-        if self.fps is None:
-            raise Exception(
-                "Load the fingerprints into memory before running a in memory search"
-            )
-
-        query = self.load_query(query)
-        bounds = get_bounds_range(
-            query, threshold, None, None, self.popcnt_bins, "tanimoto"
-        )
-
-        if not bounds:
-            results = self.empty_sim
-        else:
-            if n_workers == 1:
-                results = TanimotoSearch(query, self.fps, threshold, *bounds)
-            else:
-                results = self._parallel(
-                    search_func=TanimotoSearch,
-                    executor=cf.ThreadPoolExecutor,
-                    query=query,
-                    db=self.fps,
-                    args=(threshold,),
-                    bounds=bounds,
-                    on_disk=False,
-                    n_workers=n_workers,
-                    chunk_size=0,
-                )
-        return results[["mol_id", "coeff"]]
-
-    def on_disk_similarity(
-        self,
-        query_string: str,
-        threshold: float,
-        n_workers: int = 1,
-        chunk_size: int = 0,
-    ) -> np.ndarray:
-        """Runs a on disk Tanimoto search.
-
-        Parameters
-        ----------
-        query_string : str
-            SMILES, InChI or molblock.
-
-        threshold: float
-            Similarity threshold.
-
-        n_workers : int
-            Number of processes used for the search.
-
-        chunk_size : float
-            Chunk size.
-
-        Returns
-        -------
-        results : numpy array
-            Similarity results.
-        """
-        if not chunk_size:
-            chunk_size = self.storage.chunk_size
-
-        np_query = self.load_query(query_string)
-        bounds = get_bounds_range(
-            np_query, threshold, None, None, self.popcnt_bins, "tanimoto"
-        )
-        if not bounds:
-            results = self.empty_sim
-        else:
-            if n_workers == 1:
-                results = self._on_disk_single_core(
-                    np_query, (threshold,), bounds, chunk_size, TanimotoSearch
-                )
-            else:
-                results = self._parallel(
-                    search_func=TanimotoSearch,
-                    executor=cf.ProcessPoolExecutor,
-                    query=np_query,
-                    db=self.storage,
-                    args=(threshold,),
-                    bounds=bounds,
-                    on_disk=True,
-                    n_workers=n_workers,
-                    chunk_size=chunk_size,
-                )
-        return results[["mol_id", "coeff"]]
-
-    def tversky(
-        self,
-        query_string: str,
-        threshold: float,
-        a: float,
-        b: float,
-        n_workers: int = 1,
-    ) -> np.ndarray:
-        """Runs a Tversky search.
-
-        Parameters
-        ----------
-        query_string : str
-            SMILES, InChI or molblock.
-
-        threshold: float
-            Similarity threshold.
-
-        a: float
-            alpha
-
-        b: float
-            beta
-
-        n_workers : int
-            Number of threads used for the search.
-
-        chunk_size : float
-            Chunk size.
-
-        Returns
-        -------
-        results : numpy array
-            Similarity results.
-        """
-        if self.fps is None:
-            raise Exception(
-                "Load the fingerprints into memory before running a in memory search"
-            )
-
-        np_query = self.load_query(query_string)
-        bounds = get_bounds_range(
-            np_query, threshold, a, b, self.popcnt_bins, "tversky"
-        )
-        if not bounds:
-            results = self.empty_sim
-        else:
-            if n_workers == 1:
-                results = TverskySearch(np_query, self.fps, threshold, a, b, *bounds)
-            else:
-                results = self._parallel(
-                    search_func=TverskySearch,
-                    executor=cf.ThreadPoolExecutor,
-                    query=np_query,
-                    db=self.fps,
-                    args=(threshold, a, b),
-                    bounds=bounds,
-                    on_disk=False,
-                    n_workers=n_workers,
-                    chunk_size=0,
-                )
-        return results[["mol_id", "coeff"]]
-
-    def on_disk_tversky(
-        self,
-        query_string: str,
-        threshold: float,
-        a: float,
-        b: float,
-        n_workers: int = 1,
-        chunk_size: int = None,
-    ) -> np.ndarray:
-        """Runs a on disk Tversky search.
-
-        Parameters
-        ----------
-        query_string : str
-            SMILES, InChI or molblock.
-
-        threshold: float
-            Similarity threshold.
-
-        a: float
-            alpha
-
-        b: float
-            beta
-
-        n_workers : int
-            Number of processes used for the search.
-
-        chunk_size : float
-            Chunk size.
-
-        Returns
-        -------
-        results : numpy array
-            Similarity results.
-        """
-        if not chunk_size:
-            chunk_size = self.storage.chunk_size
-
-        np_query = self.load_query(query_string)
-        bounds = get_bounds_range(
-            np_query, threshold, a, b, self.popcnt_bins, "tversky"
-        )
-        if not bounds:
-            results = self.empty_sim
-        else:
-            if n_workers == 1:
-                results = self._on_disk_single_core(
-                    np_query, (threshold, a, b), bounds, chunk_size, TverskySearch
-                )
-            else:
-                results = self._parallel(
-                    search_func=TverskySearch,
-                    executor=cf.ProcessPoolExecutor,
-                    query=np_query,
-                    db=self.storage,
-                    args=(threshold, a, b),
-                    bounds=bounds,
-                    on_disk=True,
-                    n_workers=n_workers,
-                    chunk_size=chunk_size,
-                )
-        return results[["mol_id", "coeff"]]
-
-    def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
-        """Run a substructure screenout using an optimised calculation of tversky wiht a=1, b=0
-
-        Parameters
-        ----------
-        query_string : str
-            SMILES, InChI or molblock.
-
-        n_workers : int
-            Number of processes used for the search.
-
-        chunk_size : float
-            Chunk size.
-
-        Returns
-        -------
-        results : numpy array
-            Substructure results.
-        """
-        if self.fps is None:
-            raise Exception(
-                "Load the fingerprints into memory before running a in memory search"
-            )
-        np_query = self.load_query(query_string)
-        bounds = get_bounds_range(
-            np_query, 1, None, None, self.popcnt_bins, "substructure"
-        )
-        if not bounds:
-            results = self.empty_subs
-        else:
-            if n_workers == 1:
-                results = SubstructureScreenout(np_query, self.fps, *bounds)
-            else:
-                results = self._parallel(
-                    search_func=SubstructureScreenout,
-                    executor=cf.ThreadPoolExecutor,
-                    query=np_query,
-                    db=self.fps,
-                    args=(),
-                    bounds=bounds,
-                    on_disk=False,
-                    n_workers=n_workers,
-                    chunk_size=0,
-                )
-        return results
-
-    def on_disk_substructure(
-        self, query_string: str, n_workers: int = 1, chunk_size: int = None
-    ) -> np.ndarray:
-        """Run a on disk substructure screenout.
-
-        Parameters
-        ----------
-        query_string : str
-            SMILES, InChI or molblock.
-
-        n_workers : int
-            Number of processes used for the search.
-
-        chunk_size : float
-            Chunk size.
-
-        Returns
-        -------
-        results : numpy array
-            Substructure results.
-        """
-        if not chunk_size:
-            chunk_size = self.storage.chunk_size
-
-        np_query = self.load_query(query_string)
-        bounds = get_bounds_range(
-            np_query, 1, None, None, self.popcnt_bins, "substructure"
-        )
-        if not bounds:
-            results = self.empty_subs
-        else:
-            if n_workers == 1:
-                results = self._on_disk_single_core(
-                    np_query, (), bounds, chunk_size, SubstructureScreenout
-                )
-            else:
-                results = self._parallel(
-                    search_func=SubstructureScreenout,
-                    executor=cf.ProcessPoolExecutor,
-                    query=np_query,
-                    db=self.storage,
-                    args=(),
-                    bounds=bounds,
-                    on_disk=True,
-                    n_workers=n_workers,
-                    chunk_size=chunk_size,
-                )
-        return results
 
     def _on_disk_single_core(
         self,
@@ -497,6 +175,257 @@ class FPSim2Engine(BaseEngine):
                 results = self.empty_subs
         return results
 
+    def _search(
+        self,
+        query: Union[str, ExplicitBitVect],
+        search_type: str = "tanimoto",
+        threshold: float = None,
+        a: float = None,
+        b: float = None,
+        k: int = None,
+        n_workers: int = 1,
+        on_disk: bool = False,
+        chunk_size: int = None,
+    ) -> np.ndarray:
+        """Generic search function supporting tanimoto, tversky, substructure, cosine, and dice searches.
+
+        Parameters
+        ----------
+        query : Union[str, ExplicitBitVect]
+            SMILES, InChI, molblock or fingerprint as ExplicitBitVect.
+        search_type : str
+            Type of search ('tanimoto', 'tversky', 'substructure', 'top_k', 'cosine', 'dice')
+        threshold : float
+            Similarity threshold.
+        a : float
+            Alpha parameter for Tversky search.
+        b : float
+            Beta parameter for Tversky search.
+        k : int
+            Number of top results to return (for top_k search).
+        n_workers : int
+            Number of threads/processes used for the search.
+        on_disk : bool
+            Whether to perform on-disk search.
+        chunk_size : int
+            Chunk size for on-disk searches.
+
+        Returns
+        -------
+        results : numpy array
+            Search results.
+        """
+        if not on_disk and self.fps is None:
+            raise Exception(
+                "Load the fingerprints into memory before running a in memory search"
+            )
+
+        if on_disk and not chunk_size:
+            chunk_size = self.storage.chunk_size
+
+        # Map search types to their corresponding functions and parameters
+        search_funcs = {
+            "tanimoto": (TanimotoSearch, (threshold,)),
+            "tversky": (TverskySearch, (threshold, a, b)),
+            "substructure": (SubstructureScreenout, ()),
+            "top_k": (TanimotoSearchTopK, (k, threshold)),
+            "dice": (DiceSearch, (threshold,)),
+            "cosine": (CosineSearch, (threshold,)),
+        }
+
+        np_query = self.load_query(query)
+        search_func, args = search_funcs[search_type]
+
+        # Get bounds for the search
+        threshold_val = 1 if search_type == "substructure" else threshold
+        bounds = get_bounds_range(
+            np_query, threshold_val, a, b, self.popcnt_bins, search_type
+        )
+
+        if not bounds:
+            return self.empty_subs if search_type == "substructure" else self.empty_sim
+
+        if n_workers == 1:
+            if on_disk:
+                results = self._on_disk_single_core(
+                    np_query, args, bounds, chunk_size, search_func
+                )
+            else:
+                results = search_func(np_query, self.fps, *args, *bounds)
+        else:
+            results = self._parallel(
+                search_func=search_func,
+                executor=cf.ProcessPoolExecutor if on_disk else cf.ThreadPoolExecutor,
+                query=np_query,
+                db=self.storage if on_disk else self.fps,
+                args=args,
+                bounds=bounds,
+                on_disk=on_disk,
+                n_workers=n_workers,
+                chunk_size=chunk_size if on_disk else 0,
+            )
+
+        if search_type == "top_k":
+            return results[["mol_id", "coeff"]][:k]
+        return (
+            results[["mol_id", "coeff"]] if search_type != "substructure" else results
+        )
+
+    def tanimoto(
+        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
+    ) -> np.ndarray:
+        return self._search(query, "tanimoto", threshold=threshold, n_workers=n_workers)
+
+    def on_disk_tanimoto(
+        self,
+        query: Union[str, ExplicitBitVect],
+        threshold: float,
+        n_workers: int = 1,
+        chunk_size: int = 0,
+    ) -> np.ndarray:
+        return self._search(
+            query,
+            "tanimoto",
+            threshold=threshold,
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
+    def cosine(
+        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
+    ) -> np.ndarray:
+        return self._search(query, "cosine", threshold=threshold, n_workers=n_workers)
+
+    def on_disk_cosine(
+        self,
+        query: Union[str, ExplicitBitVect],
+        threshold: float,
+        n_workers: int = 1,
+        chunk_size: int = 0,
+    ) -> np.ndarray:
+        return self._search(
+            query,
+            "cosine",
+            threshold=threshold,
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
+    def dice(
+        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
+    ) -> np.ndarray:
+        return self._search(query, "dice", threshold=threshold, n_workers=n_workers)
+
+    def on_disk_dice(
+        self,
+        query: Union[str, ExplicitBitVect],
+        threshold: float,
+        n_workers: int = 1,
+        chunk_size: int = 0,
+    ) -> np.ndarray:
+        return self._search(
+            query,
+            "dice",
+            threshold=threshold,
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
+    def similarity(
+        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
+    ) -> np.ndarray:
+        return self._search(query, "tanimoto", threshold=threshold, n_workers=n_workers)
+
+    def on_disk_similarity(
+        self,
+        query_string: str,
+        threshold: float,
+        n_workers: int = 1,
+        chunk_size: int = 0,
+    ) -> np.ndarray:
+        return self._search(
+            query_string,
+            "tanimoto",
+            threshold=threshold,
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
+    def tversky(
+        self,
+        query_string: str,
+        threshold: float,
+        a: float,
+        b: float,
+        n_workers: int = 1,
+    ) -> np.ndarray:
+        return self._search(
+            query_string, "tversky", threshold=threshold, a=a, b=b, n_workers=n_workers
+        )
+
+    def on_disk_tversky(
+        self,
+        query_string: str,
+        threshold: float,
+        a: float,
+        b: float,
+        n_workers: int = 1,
+        chunk_size: int = None,
+    ) -> np.ndarray:
+        return self._search(
+            query_string,
+            "tversky",
+            threshold=threshold,
+            a=a,
+            b=b,
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
+    def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
+        return self._search(query_string, "substructure", n_workers=n_workers)
+
+    def on_disk_substructure(
+        self, query_string: str, n_workers: int = 1, chunk_size: int = None
+    ) -> np.ndarray:
+        return self._search(
+            query_string,
+            "substructure",
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
+    def top_k(
+        self, query: Union[str, ExplicitBitVect], k: int, threshold: float, n_workers=1
+    ) -> np.ndarray:
+        return self._search(
+            query, "top_k", threshold=threshold, k=k, n_workers=n_workers
+        )
+
+    def on_disk_top_k(
+        self,
+        query: Union[str, ExplicitBitVect],
+        k: int,
+        threshold: float,
+        n_workers: int = 1,
+        chunk_size: int = None,
+    ) -> np.ndarray:
+        return self._search(
+            query,
+            "top_k",
+            threshold=threshold,
+            k=k,
+            n_workers=n_workers,
+            on_disk=True,
+            chunk_size=chunk_size,
+        )
+
     def symmetric_distance_matrix(
         self,
         threshold: float,
@@ -564,7 +493,13 @@ class FPSim2Engine(BaseEngine):
                     data.append(r["coeff"])
         else:
             with cf.ThreadPoolExecutor(max_workers=n_workers) as executor:
-                future_to_idx = {executor.submit(run, idx,): idx for idx in idxs}
+                future_to_idx = {
+                    executor.submit(
+                        run,
+                        idx,
+                    ): idx
+                    for idx in idxs
+                }
                 for future in tqdm(cf.as_completed(future_to_idx), total=idxs.shape[0]):
                     idx = future_to_idx[future]
                     np_res = future.result()
@@ -581,53 +516,3 @@ class FPSim2Engine(BaseEngine):
         # similarity to distance
         sparse_matrix.data = 1 - sparse_matrix.data
         return sparse_matrix
-
-    def top_k(
-        self, query: Union[str, ExplicitBitVect], k: int, threshold: float, n_workers=1
-    ) -> np.ndarray:
-        """Runs a Tanimoto top-K search.
-
-        Parameters
-        ----------
-        query : Union[str, ExplicitBitVect]
-            SMILES, InChI, molblock or fingerprint as ExplicitBitVect.
-
-        threshold: float
-            Similarity threshold.
-
-        n_workers : int
-            Number of threads used for the search.
-
-        Returns
-        -------
-        results : numpy array
-            Similarity results.
-        """
-        if self.fps is None:
-            raise Exception(
-                "Load the fingerprints into memory before running a in memory search"
-            )
-
-        query = self.load_query(query)
-        bounds = get_bounds_range(
-            query, threshold, None, None, self.popcnt_bins, "tanimoto"
-        )
-
-        if not bounds:
-            results = self.empty_sim
-        else:
-            if n_workers == 1:
-                results = TanimotoSearchTopK(query, self.fps, k, threshold, *bounds)
-            else:
-                results = self._parallel(
-                    search_func=TanimotoSearchTopK,
-                    executor=cf.ThreadPoolExecutor,
-                    query=query,
-                    db=self.fps,
-                    args=(k, threshold,),
-                    bounds=bounds,
-                    on_disk=False,
-                    n_workers=n_workers,
-                    chunk_size=0,
-                )
-        return results[['mol_id', 'coeff']][:k]

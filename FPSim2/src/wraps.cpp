@@ -50,6 +50,20 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Runs a Tanimoto similarity search and returns the top K results.
     )pbdoc");
 
+    m.def("CosineSearch", &CosineSearch,
+        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+        Cosine search
+
+        Runs a Cosine similarity search.
+    )pbdoc");
+
+    m.def("DiceSearch", &DiceSearch,
+        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+        Dice search
+        
+        Runs a Dice similarity search.
+    )pbdoc");
+
     auto mutils = m.def_submodule("utils");
 
     mutils.def("PyPopcount", &utils::PyPopcount, py::call_guard<py::gil_scoped_release>(),

@@ -158,15 +158,18 @@ def get_bounds_range(
     range_to_keep = []
 
     for count, c_range in ranges:
-        if search_type == "tanimoto":
+        if search_type in ("tanimoto", "top_k"):
             max_sim = min(query_count, count) / max(query_count, count)
         elif search_type == "tversky":
             max_sim = min(query_count, count) / (
                 a * query_count + b * count + (1 - a - b) * min(query_count, count)
             )
-        # substructure (simplified tversky with a=1, b=0)
         elif search_type == "substructure":
             max_sim = min(query_count, count) / query_count
+        elif search_type == "cosine":
+            max_sim = min(query_count, count) / np.sqrt(query_count * count)
+        elif search_type == "dice":
+            max_sim = 2 * min(query_count, count) / (query_count + count)
         else:
             break
         if max_sim >= threshold:
