@@ -50,6 +50,9 @@ class FPSim2Engine(BaseEngine):
         self.empty_sim = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
         self.empty_subs = np.ndarray((0,), dtype="<u4")
 
+    def __str__(self):
+        return super().__str__()
+
     def _on_disk_single_core(
         self,
         query: np.array,
@@ -154,8 +157,14 @@ class FPSim2Engine(BaseEngine):
         if on_disk and not chunk_size:
             chunk_size = self.storage.chunk_size
 
+        if metric not in METRICS:
+            raise ValueError(
+                f"Invalid metric: {metric}. Available metrics are: {list(METRICS.keys())}"
+            )
+        calc_type = METRICS[metric]
+
         search_funcs = {
-            "similarity": (GenericSearch, (threshold, k, METRICS[metric])),
+            "similarity": (GenericSearch, (threshold, k, calc_type)),
             "tversky": (TverskySearch, (threshold, a, b)),
             "substructure": (SubstructureScreenout, ()),
         }
@@ -325,7 +334,13 @@ class FPSim2Engine(BaseEngine):
         n_workers: int = 4,
     ) -> csr_matrix:
         search_func = GenericSearch
-        calc_type = METRICS.get(metric, 0)
+
+        if metric not in METRICS:
+            raise ValueError(
+                f"Invalid metric: {metric}. Available metrics are: {list(METRICS.keys())}"
+            )
+        calc_type = METRICS[metric]
+
         args = (threshold, 0, calc_type)
 
         from tqdm import tqdm
