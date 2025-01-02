@@ -1,14 +1,11 @@
 import concurrent.futures as cf
 from rdkit.DataStructs import ExplicitBitVect
-from .io.chem import get_bounds_range
+from .io.chem import get_bounds_range, METRICS
 from typing import Callable, Any, Tuple, Union
 from .FPSim2lib import (
-    TanimotoSearch,
+    GenericSearch,
     TverskySearch,
     SubstructureScreenout,
-    TanimotoSearchTopK,
-    DiceSearch,
-    CosineSearch,
 )
 from .FPSim2lib.utils import SortResults
 from scipy.sparse import csr_matrix
@@ -27,48 +24,11 @@ def on_disk_search(
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
-    res = globals()[search_func](query, fps, *args, 0, fps.shape[0])
-    return res
+    # Call the desired function by name
+    return globals()[search_func](query, fps, *args, *chunk)
 
 
 class FPSim2Engine(BaseEngine):
-    """FPSim2 class to run fast CPU searches.
-
-    Parameters
-    ----------
-    fp_filename : str
-        Fingerprints database file path.
-
-    in_memory_fps : bool
-        Whether if the FPs should be loaded into memory or not.
-
-    fps_sort : bool
-        Whether if the FPs should be sorted by popcnt after being loaded into memory or not.
-
-    storage_backend : str
-        Storage backend to use (only pytables available at the moment).
-
-    Attributes
-    ----------
-    fps : Numpy array
-        Fingerprints.
-
-    popcnt_bins : list
-        List with the popcount bins ranges.
-
-    fp_type : str
-        Fingerprint type used to create the fingerprints.
-
-    fp_params : dict
-        Parameters used to create the fingerprints.
-
-    rdkit_ver : dict
-        RDKit version used to create the fingerprints.
-
-    Examples
-    --------
-    """
-
     def __init__(
         self,
         fp_filename: str = "",
@@ -140,7 +100,7 @@ class FPSim2Engine(BaseEngine):
                 future_ss = {
                     exe.submit(
                         on_disk_search,
-                        search_func.__name__,  # PyCapsule is not pickable...
+                        search_func.__name__,
                         query,
                         db,
                         args,
@@ -178,73 +138,45 @@ class FPSim2Engine(BaseEngine):
     def _search(
         self,
         query: Union[str, ExplicitBitVect],
-        search_type: str = "tanimoto",
+        search_type: str = "similarity",
+        metric: str = "tanimoto",
         threshold: float = None,
         a: float = None,
         b: float = None,
-        k: int = None,
+        k: int = 0,
         n_workers: int = 1,
         on_disk: bool = False,
         chunk_size: int = None,
     ) -> np.ndarray:
-        """Generic search function supporting tanimoto, tversky, substructure, cosine, and dice searches.
-
-        Parameters
-        ----------
-        query : Union[str, ExplicitBitVect]
-            SMILES, InChI, molblock or fingerprint as ExplicitBitVect.
-        search_type : str
-            Type of search ('tanimoto', 'tversky', 'substructure', 'top_k', 'cosine', 'dice')
-        threshold : float
-            Similarity threshold.
-        a : float
-            Alpha parameter for Tversky search.
-        b : float
-            Beta parameter for Tversky search.
-        k : int
-            Number of top results to return (for top_k search).
-        n_workers : int
-            Number of threads/processes used for the search.
-        on_disk : bool
-            Whether to perform on-disk search.
-        chunk_size : int
-            Chunk size for on-disk searches.
-
-        Returns
-        -------
-        results : numpy array
-            Search results.
-        """
         if not on_disk and self.fps is None:
             raise Exception(
                 "Load the fingerprints into memory before running a in memory search"
             )
-
         if on_disk and not chunk_size:
             chunk_size = self.storage.chunk_size
 
-        # Map search types to their corresponding functions and parameters
         search_funcs = {
-            "tanimoto": (TanimotoSearch, (threshold,)),
+            "similarity": (GenericSearch, (threshold, k, METRICS[metric])),
             "tversky": (TverskySearch, (threshold, a, b)),
             "substructure": (SubstructureScreenout, ()),
-            "top_k": (TanimotoSearchTopK, (k, threshold)),
-            "dice": (DiceSearch, (threshold,)),
-            "cosine": (CosineSearch, (threshold,)),
         }
 
         np_query = self.load_query(query)
         search_func, args = search_funcs[search_type]
 
-        # Get bounds for the search
+        # Get bounds
         threshold_val = 1 if search_type == "substructure" else threshold
+        if search_type in ("tversky", "substructure"):
+            bounds_par = search_type
+        else:
+            bounds_par = metric
         bounds = get_bounds_range(
-            np_query, threshold_val, a, b, self.popcnt_bins, search_type
+            np_query, threshold_val, a, b, self.popcnt_bins, bounds_par
         )
-
         if not bounds:
             return self.empty_subs if search_type == "substructure" else self.empty_sim
 
+        # Dispatch
         if n_workers == 1:
             if on_disk:
                 results = self._on_disk_single_core(
@@ -271,84 +203,33 @@ class FPSim2Engine(BaseEngine):
             results[["mol_id", "coeff"]] if search_type != "substructure" else results
         )
 
-    def tanimoto(
-        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
-    ) -> np.ndarray:
-        return self._search(query, "tanimoto", threshold=threshold, n_workers=n_workers)
-
-    def on_disk_tanimoto(
-        self,
-        query: Union[str, ExplicitBitVect],
-        threshold: float,
-        n_workers: int = 1,
-        chunk_size: int = 0,
-    ) -> np.ndarray:
-        return self._search(
-            query,
-            "tanimoto",
-            threshold=threshold,
-            n_workers=n_workers,
-            on_disk=True,
-            chunk_size=chunk_size,
-        )
-
-    def cosine(
-        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
-    ) -> np.ndarray:
-        return self._search(query, "cosine", threshold=threshold, n_workers=n_workers)
-
-    def on_disk_cosine(
-        self,
-        query: Union[str, ExplicitBitVect],
-        threshold: float,
-        n_workers: int = 1,
-        chunk_size: int = 0,
-    ) -> np.ndarray:
-        return self._search(
-            query,
-            "cosine",
-            threshold=threshold,
-            n_workers=n_workers,
-            on_disk=True,
-            chunk_size=chunk_size,
-        )
-
-    def dice(
-        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
-    ) -> np.ndarray:
-        return self._search(query, "dice", threshold=threshold, n_workers=n_workers)
-
-    def on_disk_dice(
-        self,
-        query: Union[str, ExplicitBitVect],
-        threshold: float,
-        n_workers: int = 1,
-        chunk_size: int = 0,
-    ) -> np.ndarray:
-        return self._search(
-            query,
-            "dice",
-            threshold=threshold,
-            n_workers=n_workers,
-            on_disk=True,
-            chunk_size=chunk_size,
-        )
-
     def similarity(
-        self, query: Union[str, ExplicitBitVect], threshold: float, n_workers=1
+        self,
+        query: Union[str, ExplicitBitVect],
+        threshold: float,
+        metric: str = "tanimoto",
+        n_workers=1,
     ) -> np.ndarray:
-        return self._search(query, "tanimoto", threshold=threshold, n_workers=n_workers)
+        return self._search(
+            query,
+            search_type="similarity",
+            metric=metric,
+            threshold=threshold,
+            n_workers=n_workers,
+        )
 
     def on_disk_similarity(
         self,
         query_string: str,
         threshold: float,
+        metric: str = "tanimoto",
         n_workers: int = 1,
         chunk_size: int = 0,
     ) -> np.ndarray:
         return self._search(
             query_string,
-            "tanimoto",
+            search_type="similarity",
+            metric=metric,
             threshold=threshold,
             n_workers=n_workers,
             on_disk=True,
@@ -402,10 +283,20 @@ class FPSim2Engine(BaseEngine):
         )
 
     def top_k(
-        self, query: Union[str, ExplicitBitVect], k: int, threshold: float, n_workers=1
+        self,
+        query: Union[str, ExplicitBitVect],
+        k: int,
+        threshold: float,
+        metric="tanimoto",
+        n_workers=1,
     ) -> np.ndarray:
         return self._search(
-            query, "top_k", threshold=threshold, k=k, n_workers=n_workers
+            query,
+            "similarity",
+            metric=metric,
+            threshold=threshold,
+            k=k,
+            n_workers=n_workers,
         )
 
     def on_disk_top_k(
@@ -413,12 +304,14 @@ class FPSim2Engine(BaseEngine):
         query: Union[str, ExplicitBitVect],
         k: int,
         threshold: float,
-        n_workers: int = 1,
+        metric="tanimoto",
+        n_workers=1,
         chunk_size: int = None,
     ) -> np.ndarray:
         return self._search(
             query,
-            "top_k",
+            "similarity",
+            metric=metric,
             threshold=threshold,
             k=k,
             n_workers=n_workers,
@@ -429,54 +322,22 @@ class FPSim2Engine(BaseEngine):
     def symmetric_distance_matrix(
         self,
         threshold: float,
-        search_type: str = "tanimoto",
-        a: float = 0,
-        b: float = 0,
+        metric: str = "tanimoto",
         n_workers: int = 4,
     ) -> csr_matrix:
-        """Computes the Tanimoto similarity matrix of the set.
-
-        Parameters
-        ----------
-        threshold : float
-            Similarity threshold.
-
-        search_type : str
-            Type of search.
-
-        a : float
-            alpha in Tversky search.
-
-        b : float
-            beta in Tversky search.
-
-        n_workers : int
-            Number of threads to use.
-
-        Returns
-        -------
-        results : numpy array
-            Similarity results.
-        """
-        if search_type == "tversky":
-            if a != b:
-                raise Exception("tversky with a != b is asymmetric")
-            search_func = TverskySearch
-            args = (threshold, a, b)
-        else:
-            search_func = TanimotoSearch
-            args = (threshold,)
+        search_func = GenericSearch
+        calc_type = METRICS.get(metric, 0)
+        args = (threshold, 0, calc_type)
 
         from tqdm import tqdm
 
-        # shuffle indexes so we can estimate how long can a run take
         idxs = np.arange(self.fps.shape[0], dtype=np.uint32)
         np.random.shuffle(idxs)
 
         def run(idx):
             np_query = self.fps[idx]
             bounds = get_bounds_range(
-                np_query, threshold, a, b, self.popcnt_bins, search_type
+                np_query, threshold, 0, 0, self.popcnt_bins, metric
             )
             sym_bounds = (max(idx + 1, bounds[0]), bounds[1])
             return search_func(np_query, self.fps, *args, *sym_bounds)
@@ -493,13 +354,7 @@ class FPSim2Engine(BaseEngine):
                     data.append(r["coeff"])
         else:
             with cf.ThreadPoolExecutor(max_workers=n_workers) as executor:
-                future_to_idx = {
-                    executor.submit(
-                        run,
-                        idx,
-                    ): idx
-                    for idx in idxs
-                }
+                future_to_idx = {executor.submit(run, idx): idx for idx in idxs}
                 for future in tqdm(cf.as_completed(future_to_idx), total=idxs.shape[0]):
                     idx = future_to_idx[future]
                     np_res = future.result()
@@ -512,7 +367,5 @@ class FPSim2Engine(BaseEngine):
             (data + data, (rows + cols, cols + rows)),
             shape=(self.fps.shape[0], self.fps.shape[0]),
         )
-
-        # similarity to distance
         sparse_matrix.data = 1 - sparse_matrix.data
         return sparse_matrix

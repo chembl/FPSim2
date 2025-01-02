@@ -8,25 +8,9 @@
 
 namespace py = pybind11;
 
-inline float TanimotoCoeff(const uint32_t &common_popcnt,
-                           const uint32_t &qcount,
-                           const uint32_t &ocount) {
-    return (float)common_popcnt / (qcount + ocount - common_popcnt);
-}
-
-inline float TverskyCoeff(const uint32_t &common_popcnt,
-                          const uint32_t &rel_co_popcnt,
-                          const uint32_t &rel_co_popcnt2,
-                          const float &a, const float &b) {
-    float coeff = 0.0;
-    coeff = common_popcnt + a * rel_co_popcnt + b * rel_co_popcnt2;
-    if (coeff != 0.0)
-        coeff = common_popcnt / coeff;
-    return coeff;
-}
-
 inline uint32_t SubstructCoeff(const uint32_t &rel_co_popcnt,
-                               const uint32_t &common_popcnt) {
+                               const uint32_t &common_popcnt)
+{
     uint32_t coeff = 0;
     coeff = rel_co_popcnt + common_popcnt;
     if (coeff != 0)
@@ -34,24 +18,13 @@ inline uint32_t SubstructCoeff(const uint32_t &rel_co_popcnt,
     return coeff;
 }
 
-inline float CosineCoeff(const uint32_t &common_popcnt,
-                         const uint32_t &qcount,
-                         const uint32_t &ocount) {
-    return (float)common_popcnt / sqrt(qcount * ocount);
-}
-
-inline float DiceCoeff(const uint32_t &common_popcnt,
-                       const uint32_t &qcount,
-                       const uint32_t &ocount) {
-    return (2.0f * common_popcnt) / (qcount + ocount);
-}
-
 py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query,
                                             const py::array_t<uint64_t> py_db,
                                             const uint32_t start,
-                                            const uint32_t end) {
+                                            const uint32_t end)
+{
 
-    // direct access to np arrays without checks
+    // Direct access to np arrays without checks
     const auto query = py_query.unchecked<1>();
     const auto *qptr = (uint64_t *)query.data(0);
     const auto db = py_db.unchecked<2>();
@@ -65,9 +38,11 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
     uint32_t coeff;
     uint64_t common_popcnt = 0;
     uint64_t rel_co_popcnt = 0;
-    for (auto i = start; i < end; i++, dbptr += fp_shape, 
-              common_popcnt = 0, rel_co_popcnt = 0) {
-        for (size_t j = 1; j < popcnt_idx; j++) {
+    for (auto i = start; i < end; i++, dbptr += fp_shape,
+              common_popcnt = 0, rel_co_popcnt = 0)
+    {
+        for (size_t j = 1; j < popcnt_idx; j++)
+        {
             common_popcnt += popcntll(qptr[j] & dbptr[j]);
             rel_co_popcnt += popcntll(qptr[j] & ~dbptr[j]);
         }
@@ -82,40 +57,16 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
     return utils::Vector2NumPy<uint32_t>(results);
 }
 
-py::array_t<Result> TanimotoSearch(const py::array_t<uint64_t> py_query,
-                                   const py::array_t<uint64_t> py_db,
-                                   const float threshold,
-                                   const uint32_t start,
-                                   const uint32_t end) {
-
-    // direct access to np arrays without checks
-    const auto query = py_query.unchecked<1>();
-    const auto *qptr = (uint64_t *)query.data(0);
-    const auto db = py_db.unchecked<2>();
-    const auto *dbptr = (uint64_t *)db.data(start, 0);
-
-    const auto fp_shape = query.shape(0);
-    const auto popcnt_idx = fp_shape - 1;
-    const auto q_popcnt = qptr[popcnt_idx];
-
-    auto results = new std::vector<Result>();
-
-    float coeff;
-    uint64_t common_popcnt = 0;
-    for (auto i = start; i < end; i++, dbptr += fp_shape, common_popcnt = 0) {
-        for (auto j = 1; j < popcnt_idx; j++)
-            common_popcnt += popcntll(qptr[j] & dbptr[j]);
-        coeff = TanimotoCoeff(common_popcnt, qptr[popcnt_idx], dbptr[popcnt_idx]);
-
-        if (coeff < threshold)
-            continue;
-        results->push_back({i, (uint32_t)dbptr[0], coeff});
-    }
-    std::sort(results->begin(), results->end(), utils::cmp);
-
-    // acquire the GIL before calling Python code
-    py::gil_scoped_acquire acquire;
-    return utils::Vector2NumPy<Result>(results);
+inline float TverskyCoeff(const uint32_t &common_popcnt,
+                          const uint32_t &rel_co_popcnt,
+                          const uint32_t &rel_co_popcnt2,
+                          const float &a, const float &b)
+{
+    float coeff = 0.0;
+    coeff = common_popcnt + a * rel_co_popcnt + b * rel_co_popcnt2;
+    if (coeff != 0.0)
+        coeff = common_popcnt / coeff;
+    return coeff;
 }
 
 py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
@@ -124,7 +75,8 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
                                   const float a,
                                   const float b,
                                   const uint32_t start,
-                                  const uint32_t end) {
+                                  const uint32_t end)
+{
 
     // direct access to np arrays without checks
     const auto query = py_query.unchecked<1>();
@@ -142,8 +94,10 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     uint64_t rel_co_popcnt = 0;
     uint64_t rel_co_popcnt2 = 0;
     for (auto i = start; i < end; i++, dbptr += fp_shape,
-              common_popcnt = 0, rel_co_popcnt = 0, rel_co_popcnt2 = 0) {
-        for (auto j = 1; j < popcnt_idx; j++) {
+              common_popcnt = 0, rel_co_popcnt = 0, rel_co_popcnt2 = 0)
+    {
+        for (auto j = 1; j < popcnt_idx; j++)
+        {
             // popcnts of both relative complements and intersection
             common_popcnt += popcntll(qptr[j] & dbptr[j]);
             rel_co_popcnt += popcntll(qptr[j] & ~dbptr[j]);
@@ -160,121 +114,139 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     return utils::Vector2NumPy<Result>(results);
 }
 
-py::array_t<Result> TanimotoSearchTopK(const py::array_t<uint64_t>& py_query,
-                                       const py::array_t<uint64_t>& py_db,
-                                       const uint32_t k,
-                                       const float threshold,
-                                       const uint32_t start,
-                                       const uint32_t end) {
+// Define coefficient calculators for the generic search
+struct TanimotoCalculator
+{
+    static inline float calculate(const uint32_t &common_popcnt,
+                                  const uint32_t &qcount,
+                                  const uint32_t &ocount)
+    {
+        return (float)common_popcnt / (qcount + ocount - common_popcnt);
+    }
+};
 
-    // direct access to np arrays without checks
+struct CosineCalculator
+{
+    static inline float calculate(const uint32_t &common_popcnt,
+                                  const uint32_t &qcount,
+                                  const uint32_t &ocount)
+    {
+        return (float)common_popcnt / sqrt(qcount * ocount);
+    }
+};
+
+struct DiceCalculator
+{
+    static inline float calculate(const uint32_t &common_popcnt,
+                                  const uint32_t &qcount,
+                                  const uint32_t &ocount)
+    {
+        return (2.0f * common_popcnt) / (qcount + ocount);
+    }
+};
+
+struct ResultComparator
+{
+    bool operator()(const Result &a, const Result &b)
+    {
+        return a.coeff > b.coeff;
+    }
+};
+
+py::array_t<Result> GenericSearch(const py::array_t<uint64_t> py_query,
+                                  const py::array_t<uint64_t> py_db,
+                                  const float threshold,
+                                  const uint32_t k,
+                                  const int calc_type,
+                                  const uint32_t start,
+                                  const uint32_t end)
+{
+    if (calc_type == 0)
+    {
+        return GenericSearchImpl(py_query, py_db, threshold, k, TanimotoCalculator(), start, end);
+    }
+    else if (calc_type == 1)
+    {
+        return GenericSearchImpl(py_query, py_db, threshold, k, DiceCalculator(), start, end);
+    }
+    else
+    {
+        return GenericSearchImpl(py_query, py_db, threshold, k, CosineCalculator(), start, end);
+    }
+}
+
+template <typename Calculator>
+py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
+                                      const py::array_t<uint64_t> py_db,
+                                      const float threshold,
+                                      const uint32_t k,
+                                      Calculator calc,
+                                      const uint32_t start,
+                                      const uint32_t end)
+{
     const auto query = py_query.unchecked<1>();
     const auto *qptr = (uint64_t *)query.data(0);
     const auto db = py_db.unchecked<2>();
     const auto *dbptr = (uint64_t *)db.data(start, 0);
 
-    const auto fp_length = query.shape(0);
-    const auto popcnt_idx = fp_length - 1;
+    const auto fp_shape = query.shape(0);
+    const auto popcnt_idx = fp_shape - 1;
     const auto q_popcnt = qptr[popcnt_idx];
 
-    struct ResultComparator {
-        bool operator()(const Result& lhs, const Result& rhs) const {
-            return lhs.coeff > rhs.coeff;
+    if (k > 0)
+    {
+        std::priority_queue<Result, std::vector<Result>, ResultComparator> top_k;
+
+        for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_shape)
+        {
+            uint64_t common_popcnt = 0;
+            for (auto j = 1; j < popcnt_idx; j++)
+                common_popcnt += popcntll(qptr[j] & dbptr[j]);
+
+            float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
+            if (coeff < threshold)
+                continue;
+
+            if (top_k.size() < k)
+            {
+                top_k.push({idx, static_cast<uint32_t>(dbptr[0]), coeff});
+            }
+            else if (coeff > top_k.top().coeff)
+            {
+                top_k.pop();
+                top_k.push({idx, static_cast<uint32_t>(dbptr[0]), coeff});
+            }
         }
-    };
-    std::priority_queue<Result, std::vector<Result>, ResultComparator> top_k;
 
-    for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_length) {
-        uint64_t common_popcnt = 0;
-
-        for (auto j = 1; j < popcnt_idx; j++)
-            common_popcnt += popcntll(qptr[j] & dbptr[j]);
-        float coeff = TanimotoCoeff(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
-        if (coeff < threshold)
-            continue;
-            
-        Result result = {idx, static_cast<uint32_t>(dbptr[0]), coeff};
-
-        if (top_k.size() < k) {
-            top_k.push(result);
-        } else if (coeff > top_k.top().coeff) {
+        auto results = new std::vector<Result>;
+        results->reserve(top_k.size());
+        while (!top_k.empty())
+        {
+            results->push_back(top_k.top());
             top_k.pop();
-            top_k.push(result);
         }
+        std::reverse(results->begin(), results->end());
+
+        py::gil_scoped_acquire acquire;
+        return utils::Vector2NumPy<Result>(results);
     }
+    else
+    {
+        auto results = new std::vector<Result>;
 
-    auto results = new std::vector<Result>();
-    results->reserve(top_k.size());
-    while (!top_k.empty()) {
-        results->push_back(top_k.top());
-        top_k.pop();
+        for (auto i = start; i < end; i++, dbptr += fp_shape)
+        {
+            uint64_t common_popcnt = 0;
+            for (auto j = 1; j < popcnt_idx; j++)
+                common_popcnt += popcntll(qptr[j] & dbptr[j]);
+
+            float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
+            if (coeff >= threshold)
+                results->push_back({i, static_cast<uint32_t>(dbptr[0]), coeff});
+        }
+        std::sort(results->begin(), results->end(), utils::cmp);
+
+        py::gil_scoped_acquire acquire;
+        return utils::Vector2NumPy<Result>(results);
     }
-    std::reverse(results->begin(), results->end());
-
-    py::gil_scoped_acquire acquire;
-    return utils::Vector2NumPy<Result>(results);
-}
-
-py::array_t<Result> CosineSearch(const py::array_t<uint64_t> py_query,
-                                 const py::array_t<uint64_t> py_db,
-                                 const float threshold,
-                                 const uint32_t start,
-                                 const uint32_t end) {
-    const auto query = py_query.unchecked<1>();
-    const auto *qptr = (uint64_t *)query.data(0);
-    const auto db = py_db.unchecked<2>();
-    const auto *dbptr = (uint64_t *)db.data(start, 0);
-
-    const auto fp_shape = query.shape(0);
-    const auto popcnt_idx = fp_shape - 1;
-    const auto q_popcnt = qptr[popcnt_idx];
-
-    auto results = new std::vector<Result>();
-
-    float coeff;
-    uint64_t common_popcnt = 0;
-    for (auto i = start; i < end; i++, dbptr += fp_shape, common_popcnt = 0) {
-        for (auto j = 1; j < popcnt_idx; j++)
-            common_popcnt += popcntll(qptr[j] & dbptr[j]);
-        coeff = CosineCoeff(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
-
-        if (coeff >= threshold)
-            results->push_back({i, (uint32_t)dbptr[0], coeff});
-    }
-    std::sort(results->begin(), results->end(), utils::cmp);
-
-    py::gil_scoped_acquire acquire;
-    return utils::Vector2NumPy<Result>(results);
-}
-
-py::array_t<Result> DiceSearch(const py::array_t<uint64_t> py_query,
-                               const py::array_t<uint64_t> py_db,
-                               const float threshold,
-                               const uint32_t start,
-                               const uint32_t end) {
-    const auto query = py_query.unchecked<1>();
-    const auto *qptr = (uint64_t *)query.data(0);
-    const auto db = py_db.unchecked<2>();
-    const auto *dbptr = (uint64_t *)db.data(start, 0);
-
-    const auto fp_shape = query.shape(0);
-    const auto popcnt_idx = fp_shape - 1;
-    const auto q_popcnt = qptr[popcnt_idx];
-
-    auto results = new std::vector<Result>();
-
-    float coeff;
-    uint64_t common_popcnt = 0;
-    for (auto i = start; i < end; i++, dbptr += fp_shape, common_popcnt = 0) {
-        for (auto j = 1; j < popcnt_idx; j++)
-            common_popcnt += popcntll(qptr[j] & dbptr[j]);
-        coeff = DiceCoeff(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
-
-        if (coeff >= threshold)
-            results->push_back({i, (uint32_t)dbptr[0], coeff});
-    }
-    std::sort(results->begin(), results->end(), utils::cmp);
-
-    py::gil_scoped_acquire acquire;
-    return utils::Vector2NumPy<Result>(results);
 }

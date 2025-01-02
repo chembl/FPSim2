@@ -1,6 +1,5 @@
 from FPSim2 import FPSim2Engine
 from rdkit import Chem, DataStructs
-from rdkit.Chem import rdMolDescriptors
 from FPSim2.io import create_db_file
 from FPSim2.io.chem import FP_FUNCS
 import numpy as np
@@ -140,7 +139,8 @@ MATRIX = np.matrix(
 )
 
 
-def test_validate_against_rdkit():
+@pytest.mark.parametrize("metric", ("tanimoto", "dice", "cosine"))
+def test_validate_against_rdkit(metric):
     in_file_smi = os.path.join(TESTS_DIR, "data/10mols.smi")
     in_file_h5 = os.path.join(TESTS_DIR, "data/test.h5")
     with open(in_file_smi) as f:
@@ -149,17 +149,25 @@ def test_validate_against_rdkit():
     for smi in smiles:
         mol = Chem.MolFromSmiles(smi)
         if mol is not None:
-            fp = FP_FUNCS["Morgan"](mol,  **FP_PARAMS)
+            fp = FP_FUNCS["Morgan"](mol, **FP_PARAMS)
             fps.append(fp)
 
     q_mol = Chem.MolFromSmiles(query_smi)
-    query = FP_FUNCS["Morgan"](q_mol,  **FP_PARAMS)
-    rdresults = sorted(
-        [DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True
-    )
-
+    query = FP_FUNCS["Morgan"](q_mol, **FP_PARAMS)
+    if metric == "tanimoto":
+        rdresults = sorted(
+            [DataStructs.TanimotoSimilarity(query, fp) for fp in fps], reverse=True
+        )
+    elif metric == "dice":
+        rdresults = sorted(
+            [DataStructs.DiceSimilarity(query, fp) for fp in fps], reverse=True
+        )
+    elif metric == "cosine":
+        rdresults = sorted(
+            [DataStructs.CosineSimilarity(query, fp) for fp in fps], reverse=True
+        )
     fpe = FPSim2Engine(in_file_h5, storage_backend="pytables")
-    results = fpe.similarity(query_smi, 0.0, n_workers=1)["coeff"]
+    results = fpe.similarity(query_smi, 0.0, metric=metric, n_workers=1)["coeff"]
     for rds, fpss in zip(rdresults, results):
         assert math.isclose(rds, fpss, rel_tol=1e-7)
 
@@ -186,7 +194,7 @@ def test_query_fp():
     threshold = 0.01
 
     mol = Chem.MolFromSmiles(query)
-    fp = FP_FUNCS["Morgan"](mol,  **fp_params)
+    fp = FP_FUNCS["Morgan"](mol, **fp_params)
 
     create_db_file(
         [
