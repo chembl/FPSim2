@@ -114,7 +114,7 @@ def test_DiceSearch():
 
 
 def test_TverskySearch():
-    res = TverskySearch(fpe.fps[0], fpe.fps, 0.0, 0.5, 0.5, 0, 0, fpe.fps.shape[0])
+    res = TverskySearch(fpe.fps[0], fpe.fps, 0.0, 0.5, 0.5, 0, fpe.fps.shape[0])
     np.testing.assert_array_almost_equal(
         res[0:5]["coeff"],
         np.array(

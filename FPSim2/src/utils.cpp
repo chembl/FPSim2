@@ -34,13 +34,9 @@ namespace utils {
         return efp;
     }
 
-    bool cmp(const Result &l, const Result &r) {
-        return l.coeff > r.coeff;
-    }
-
     void SortResults(py::array_t<Result> py_res) {
         auto res = py_res.unchecked<1>();
         Result *ptr = (Result *)res.data(0);
-        std::sort(&ptr[0], &ptr[res.shape(0)], cmp);
+        std::sort(ptr, ptr + res.shape(0), ResultComparator());
     }
 }

@@ -107,14 +107,13 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
         if (coeff >= threshold)
             results->push_back({i, (uint32_t)dbptr[0], coeff});
     }
-    std::sort(results->begin(), results->end(), utils::cmp);
+    std::sort(results->begin(), results->end(), utils::ResultComparator());
 
     // acquire the GIL before calling Python code
     py::gil_scoped_acquire acquire;
     return utils::Vector2NumPy<Result>(results);
 }
 
-// Define coefficient calculators for the generic search
 struct TanimotoCalculator
 {
     static inline float calculate(const uint32_t &common_popcnt,
@@ -142,14 +141,6 @@ struct DiceCalculator
                                   const uint32_t &ocount)
     {
         return (2.0f * common_popcnt) / (qcount + ocount);
-    }
-};
-
-struct ResultComparator
-{
-    bool operator()(const Result &a, const Result &b)
-    {
-        return a.coeff > b.coeff;
     }
 };
 
@@ -184,6 +175,7 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
                                       const uint32_t start,
                                       const uint32_t end)
 {
+    // direct access to np arrays without checks
     const auto query = py_query.unchecked<1>();
     const auto *qptr = (uint64_t *)query.data(0);
     const auto db = py_db.unchecked<2>();
@@ -193,9 +185,11 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
     const auto popcnt_idx = fp_shape - 1;
     const auto q_popcnt = qptr[popcnt_idx];
 
-    if (k > 0)
+    auto results = new std::vector<Result>;
+
+    if (k > 0) // top-k search
     {
-        std::priority_queue<Result, std::vector<Result>, ResultComparator> top_k;
+        std::priority_queue<Result, std::vector<Result>, utils::ResultComparator> top_k;
 
         for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_shape)
         {
@@ -217,8 +211,6 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
                 top_k.push({idx, static_cast<uint32_t>(dbptr[0]), coeff});
             }
         }
-
-        auto results = new std::vector<Result>;
         results->reserve(top_k.size());
         while (!top_k.empty())
         {
@@ -226,14 +218,9 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
             top_k.pop();
         }
         std::reverse(results->begin(), results->end());
-
-        py::gil_scoped_acquire acquire;
-        return utils::Vector2NumPy<Result>(results);
     }
-    else
+    else // normal search
     {
-        auto results = new std::vector<Result>;
-
         for (auto i = start; i < end; i++, dbptr += fp_shape)
         {
             uint64_t common_popcnt = 0;
@@ -241,12 +228,13 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
                 common_popcnt += popcntll(qptr[j] & dbptr[j]);
 
             float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
-            if (coeff >= threshold)
-                results->push_back({i, static_cast<uint32_t>(dbptr[0]), coeff});
+            if (coeff < threshold)
+                continue;
+            results->push_back({i, static_cast<uint32_t>(dbptr[0]), coeff});
         }
-        std::sort(results->begin(), results->end(), utils::cmp);
-
-        py::gil_scoped_acquire acquire;
-        return utils::Vector2NumPy<Result>(results);
+        std::sort(results->begin(), results->end(), utils::ResultComparator());
     }
+    // acquire the GIL before calling Python code
+    py::gil_scoped_acquire acquire;
+    return utils::Vector2NumPy<Result>(results);
 }

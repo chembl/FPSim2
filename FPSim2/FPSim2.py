@@ -24,8 +24,7 @@ def on_disk_search(
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
-    # Call the desired function by name
-    return globals()[search_func](query, fps, *args, *chunk)
+    return globals()[search_func](query, fps, *args, 0, fps.shape[0])
 
 
 class FPSim2Engine(BaseEngine):
