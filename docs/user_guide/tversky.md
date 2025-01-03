@@ -1,4 +1,4 @@
-# FPSim2 Tversky Searches
+# Tversky Searches
 
 ## In memory
 

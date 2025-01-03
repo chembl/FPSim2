@@ -1,4 +1,4 @@
-# FPSim2 Symmetric Similarity Searches
+# Symmetric Similarity Searches
 
 ## In memory
 
@@ -9,7 +9,7 @@ Use the `FPSim2Engine.similarity` function to run symmetric similarity searches.
 
     - `tanimoto` (Jaccard): Measures the ratio of intersection to union. Commonly used for binary fingerprints, providing a balance between shared and distinct features.
     - `dice` (Dice-Sørensen): Emphasizes the intersection more than Tanimoto. Useful when you want to highlight common features between fingerprints.
-    - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features, making it more robust when comparing sparse fingerprints.
+    - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features.
 
 ```python
 from FPSim2 import FPSim2Engine

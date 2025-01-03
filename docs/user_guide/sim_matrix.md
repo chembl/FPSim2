@@ -1,4 +1,5 @@
-# Compute a symmetric distance matrix
+# Computing a Symmetric Distance Matrix
+
 
 Use the `FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR sparse distance matrix from the current dataset:
 

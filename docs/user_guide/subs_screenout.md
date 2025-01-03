@@ -1,4 +1,4 @@
-# Run Tversky Substructure Screenouts
+# Substructure Screenouts
 
 ## In memory
 
