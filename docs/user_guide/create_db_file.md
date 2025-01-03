@@ -1,6 +1,6 @@
 # Create a fingerprint database file
 
-Use the `FPSim2.io.backends.pytables.create_db_file` function to create the fingerprint database file needed to run the searches.
+Use the `FPSim2.io.create_db_file` function to create the fingerprint database file needed to run the searches.
 
 !!! warning
     FPSim2 only supports integer molecule ids.
@@ -14,12 +14,14 @@ The fingerprints are calculated with [RDKit](https://www.rdkit.org/). Fingerprin
 - [RDKit](https://www.rdkit.org/docs/source/rdkit.Chem.rdFingerprintGenerator.html#rdkit.Chem.rdFingerprintGenerator.GetRDKitFPGenerator)
 - [RDKitPattern](https://www.rdkit.org/docs/source/rdkit.Chem.rdmolops.html#rdkit.Chem.rdmolops.PatternFingerprint)
 
-# From the command line, only supports .smi files as input and runs in parallel
+# From the command line
+Supports .smi files as input and runs in parallel.
+
 ```bash
 fpsim2-create-db smiles_file.smi fp_db.h5 --fp_type Morgan --fp_params '{"radius": 2, "fpSize": 256}' --processes 32
 ```
-
-# As a Python library, doesn't run in parallel
+# As a Python library
+Does not run in parallel.
 
 ## From a .sdf file
 ```python

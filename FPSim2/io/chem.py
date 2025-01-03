@@ -12,7 +12,7 @@ import re
 
 MOLFILE_RE = r" [vV][23]000$"
 
-SUPPORTED_MOL_FORMATS = ("smiles", "molfile", "inchi", "rdkit")
+METRICS = {"tanimoto": 0, "dice": 1, "cosine": 2}
 
 RDKIT_PARSE_FUNCS = {
     "smiles": Chem.MolFromSmiles,
@@ -160,11 +160,14 @@ def get_bounds_range(
     for count, c_range in ranges:
         if search_type == "tanimoto":
             max_sim = min(query_count, count) / max(query_count, count)
+        elif search_type == "cosine":
+            max_sim = min(query_count, count) / np.sqrt(query_count * count)
+        elif search_type == "dice":
+            max_sim = 2 * min(query_count, count) / (query_count + count)
         elif search_type == "tversky":
             max_sim = min(query_count, count) / (
                 a * query_count + b * count + (1 - a - b) * min(query_count, count)
             )
-        # substructure (simplified tversky with a=1, b=0)
         elif search_type == "substructure":
             max_sim = min(query_count, count) / query_count
         else:

@@ -9,7 +9,6 @@ import numpy as np
 
 
 class BaseEngine(ABC):
-
     fp_filename = None
     storage = None
 
@@ -23,7 +22,6 @@ class BaseEngine(ABC):
         table_name: str,
         pg_schema: str,
     ) -> None:
-
         self.fp_filename = fp_filename
         self.in_memory_fps = in_memory_fps
         if storage_backend == "pytables":
@@ -45,6 +43,9 @@ class BaseEngine(ABC):
                     "FPSim2 sqla engine only works for PostgreSQL, MySQL and Oracle (experimental)"
                 )
             self.storage = SqlaStorageBackend(conn_url, table_name, pg_schema)
+
+    def __str__(self):
+        return f"FPSim2Engine(fp_type='{self.fp_type}', fp_params={self.fp_params}, rdkit_ver={self.rdkit_ver}, fpsim2_ver={self.fpsim2_ver})"
 
     @property
     def fps(self):

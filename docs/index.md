@@ -22,10 +22,10 @@ Install and generate a FPSim2 fingerprint db file.
 
 Learn how to run CPU based similarity searches:
 
-- [Run Tanimoto similarity searches](user_guide/similarity.md)
-- [Run Tversky searches with a and b parameters](user_guide/tversky.md)
-- [Run Tversky substructure screenouts](user_guide/subs_screenout.md)
-- [Generate a symmetic distance matrix](user_guide/sim_matrix.md)
+- [Run symmetric similarity searches](user_guide/similarity.md)
+- [Run Tversky asymmetric searches](user_guide/tversky.md)
+- [Run substructure screenouts](user_guide/subs_screenout.md)
+- [Generate a symmetric distance matrix](user_guide/sim_matrix.md)
 
 ## GPU searches
 

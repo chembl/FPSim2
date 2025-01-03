@@ -1,11 +1,12 @@
-# Run Tversky searches
+# Tversky Searches
 
 ## In memory
 
-Use the `FPSim2Engine.tversky` function to run Tversky searches. Tversky is a generalisation of Tanimoto and the Sørensen–Dice coefficients.
+Use the `FPSim2Engine.tversky` function to run Tversky asymmetric searches. The Tversky similarity coefficient is a generalization of the Tanimoto coefficient that allows asymmetric weighting between query and reference fingerprints.
 
-!!! tip "Search Types Configuration"
-    Set `a=b=0.5` to perform a Sørensen–Dice search.
+
+!!! info "Using `a` and `b` Parameters"
+    The `a` and `b` parameters in the `tversky` function control the weighting of the query and reference fingerprints, respectively. Adjusting these values allows you to fine-tune the similarity measure to emphasize different aspects of the fingerprints. For example, setting `a` to a higher value than `b` will give more weight to the query fingerprint.
 
 ```python
 from FPSim2 import FPSim2Engine
@@ -14,7 +15,7 @@ fp_filename = 'chembl_35_v0.6.0.h5'
 fpe = FPSim2Engine(fp_filename)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpe.tversky(query, threshold=0.7, a=0.5, b=0.5, n_workers=1)
+results = fpe.tversky(query, threshold=0.7, a=0.7, b=0.3, n_workers=1)
 ```
 
 !!! tip "Parallel Processing"
@@ -32,5 +33,5 @@ fp_filename = 'chembl_35_v0.6.0.h5'
 fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
 query = 'CC(=O)Oc1ccccc1C(=O)O'
-results = fpe.on_disk_tversky(query, threshold=0.7, a=0.5, b=0.5, n_workers=1)
+results = fpe.on_disk_tversky(query, threshold=0.7, a=0.7, b=0.3, n_workers=1)
 ```

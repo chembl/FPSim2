@@ -1,4 +1,5 @@
-# Run GPU similarity searches
+# Running GPU Similarity Searches
+
 
 Experimental CUDA similarity search is implemented via the [CuPy](https://cupy.chainer.org/) library.
 

@@ -1,4 +1,4 @@
-# Run Tversky substructure screenouts
+# Substructure Screenouts
 
 ## In memory
 
@@ -17,12 +17,12 @@ query = 'CC(=O)Oc1ccccc1C(=O)O'
 results = fpe.substructure(query, n_workers=1)
 ```
 
-!!! tip
-    *n_workers* parameter can be used to split a single query into multiple threads to speed up the search. This is specially useful on big datasets.
+!!! tip "Parallel Processing"
+    The `n_workers` parameter can be used to split a single query into multiple threads to speed up the search. This is especially useful when searching large datasets.
 
 ## On disk
 
-It is also possible to run on disk substructure screenouts (i.e. without loading the whole fingerprints file in memory) with the `FPSim2Engine.on_disk_substructure` function. This allows running screenouts on databases bigger than the available system memory:
+For on-disk substructure screenouts (slower but doesn't require loading the entire fingerprint file into memory), use the `FPSim2Engine.on_disk_substructure` function. This is useful for databases larger than the available system memory:
 
 ```python
 from FPSim2 import FPSim2Engine

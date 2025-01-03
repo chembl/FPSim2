@@ -29,13 +29,6 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Runs a Tversky (a=1, b=0) substructure screenout.
     )pbdoc");
 
-    m.def("TanimotoSearch", &TanimotoSearch,
-        py::call_guard<py::gil_scoped_release>(), R"pbdoc(
-        Tanimoto search
-
-        Runs a Tanimoto similarity search.
-    )pbdoc");
-
     m.def("TverskySearch", &TverskySearch,
         py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         Tversky search
@@ -43,12 +36,13 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Runs a Tversky similarity search.
     )pbdoc");
 
-    m.def("TanimotoSearchTopK", &TanimotoSearchTopK,
+    m.def("GenericSearch", &GenericSearch,
         py::call_guard<py::gil_scoped_release>(), R"pbdoc(
-        Tanimoto search Top K
+        Generic similarity search function
 
-        Runs a Tanimoto similarity search and returns the top K results.
+        Generic similarity search supporting multiple metrics and top-K.
     )pbdoc");
+
 
     auto mutils = m.def_submodule("utils");
 
