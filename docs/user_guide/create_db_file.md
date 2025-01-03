@@ -1,6 +1,6 @@
 # Create a fingerprint database file
 
-Use the `FPSim2.io.backends.pytables.create_db_file` function to create the fingerprint database file needed to run the searches.
+Use the `FPSim2.io.create_db_file` function to create the fingerprint database file needed to run the searches.
 
 !!! warning
     FPSim2 only supports integer molecule ids.

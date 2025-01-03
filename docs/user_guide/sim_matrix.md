@@ -2,11 +2,19 @@
 
 Use the `FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR sparse distance matrix from the current dataset:
 
+!!! info "Similarity Metrics"
+    Possible metrics that can be used are (`tanimoto` is default):
+
+    - `tanimoto` (Jaccard): Measures the ratio of intersection to union. Commonly used for binary fingerprints, providing a balance between shared and distinct features.
+    - `dice` (Dice-Sørensen): Emphasizes the intersection more than Tanimoto. Useful when you want to highlight common features between fingerprints.
+    - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features, making it more robust when comparing sparse fingerprints.
+
 ```python
->>> from FPSim2 import FPSim2Engine
->>> fp_filename = 'chembl_35_v0.6.0.h5'
->>> fpe = FPSim2Engine(fp_filename)
->>> csr_matrix = fpe.symmetric_distance_matrix(threshold=0.7, n_workers=4)
+from FPSim2 import FPSim2Engine
+
+fp_filename = 'chembl_35_v0.6.0.h5'
+fpe = FPSim2Engine(fp_filename)
+csr_matrix = fpe.symmetric_distance_matrix(threshold=0.7, metric="tanimoto", n_workers=4)
 ```
 
 !!! note
@@ -15,7 +23,7 @@ Use the `FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a Sci
 The order of the compounds is the same one than in the fps file (the compounds get sorted by number of fingerprint features). To get the fps ids:
 
 ```python
->>> ids = fpe.fps[:, 0]
+ids = fpe.fps[:, 0]
 ```
 
 The CSR distance matrix can be used as an input for some scikit-learn algorithms supporting "precomputed" distance metrics. Some others may need a similarity matrix. A CSR distance matrix can be easily converted into a similarity matrix:
