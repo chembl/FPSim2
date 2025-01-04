@@ -2,7 +2,7 @@
 
 ## Pypi
 
-Builds available for Linux, MacOS and Windows:
+Builds available for Linux (x86_64, arm64), MacOS (x86_64, arm64) and Windows (x86_64):
 
 ```bash
 pip install fpsim2
