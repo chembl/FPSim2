@@ -48,10 +48,10 @@ jobs:
             bitness: 64
             python: 312
             platform_id: win_amd64
-          - os: windows-latest
-            bitness: 64
-            python: 313
-            platform_id: win_amd64
+          # - os: windows-latest issue #123
+          #   bitness: 64
+          #   python: 313
+          #   platform_id: win_amd64
 
           # Linux 64 bit manylinux_2_28
           - os: ubuntu-latest
@@ -106,10 +106,10 @@ jobs:
             bitness: 64
             python: 312
             platform_id: macosx_arm64
-          - os: macos-latest
-            bitness: 64
-            python: 313
-            platform_id: macosx_arm64
+          # - os: macos-latest issue #123
+          #   bitness: 64
+          #   python: 313
+          #   platform_id: macosx_arm64
 
 
     steps:
