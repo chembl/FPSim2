@@ -23,63 +23,69 @@ fpsim2-create-db smiles_file.smi fp_db.h5 --fp_type Morgan --fp_params '{"radius
 # As a Python library
 Does not run in parallel.
 
-## From a .sdf file
-```python
-from FPSim2.io import create_db_file
 
-create_db_file(
-    mols_source='sdf_file.sdf',
-    filename='fp_db.h5',
-    mol_format=None, # not required, .sdf will always use 'molfile'
-    fp_type='Morgan',
-    fp_params={'radius': 2, 'fpSize': 2048},
-    mol_id_prop='mol_id'
-)
-```
+=== "From a .sdf file"
 
-## From a .smi file
-```python
-from FPSim2.io import create_db_file
+    ```python
+    from FPSim2.io import create_db_file
 
-create_db_file(
-    mols_source='smiles_file.smi',
-    filename='fp_db.h5',
-    mol_format=None, # not required, .smi will always use 'smiles'
-    fp_type='Morgan',
-    fp_params={'radius': 2, 'fpSize': 2048}
-)
-```
+    create_db_file(
+        mols_source='sdf_file.sdf',
+        filename='fp_db.h5',
+        mol_format=None, # not required
+        fp_type='Morgan',
+        fp_params={'radius': 2, 'fpSize': 2048},
+        mol_id_prop='mol_id'
+    )
+    ```
 
-## From a Python list
-```python
-from FPSim2.io import create_db_file
+=== "From a .smi file"
 
-mols = [['CC', 1], ['CCC', 2], ['CCCC', 3]]
-create_db_file(
-    mols_source=mols,
-    filename='fp_db.h5',
-    mol_format='smiles', # required
-    fp_type='Morgan',
-    fp_params={'radius': 2, 'fpSize': 2048}
-)
-```
+    ```python
+    from FPSim2.io import create_db_file
 
-## From any other Python iterable like a SQLAlchemy result proxy
-```python
-from FPSim2.io import create_db_file
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
+    create_db_file(
+        mols_source='smiles_file.smi',
+        filename='fp_db.h5',
+        mol_format=None, # not required
+        fp_type='Morgan',
+        fp_params={'radius': 2, 'fpSize': 2048}
+    )
+    ```
 
-engine = create_engine('sqlite:///test/test.db')
-s = Session(engine)
-sql_query = "select molfile, mol_id from structure"
-res_prox = s.execute(sql_query)
+=== "From a Python list"
 
-create_db_file(
-    mols_source=res_prox,
-    filename='fp_db.h5',
-    mol_format='molfile', # required
-    fp_type='Morgan',
-    fp_params={'radius': 2, 'fpSize': 2048}
-)
-```
+    ```python
+    from FPSim2.io import create_db_file
+
+    mols = [['CC', 1], ['CCC', 2], ['CCCC', 3]]
+    create_db_file(
+        mols_source=mols,
+        filename='fp_db.h5',
+        mol_format='smiles', # required
+        fp_type='Morgan',
+        fp_params={'radius': 2, 'fpSize': 2048}
+    )
+    ```
+
+
+=== "From any other iterable"
+    SQLAlchemy result proxy as an example
+
+    ```python
+    from FPSim2.io import create_db_file
+    from sqlalchemy import create_engine, text
+
+    engine = create_engine('sqlite:///test/test.db')
+    with engine.connect() as conn:
+        sql_query = text("select molfile, mol_id from structure")
+        res_prox = conn.execute(sql_query)
+
+        create_db_file(
+            mols_source=res_prox,
+            filename='fp_db.h5',
+            mol_format='molfile', # required
+            fp_type='Morgan',
+            fp_params={'radius': 2, 'fpSize': 2048}
+        )
+    ```
