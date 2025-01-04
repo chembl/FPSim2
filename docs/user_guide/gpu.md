@@ -1,7 +1,6 @@
 # Running GPU Similarity Searches
 
-
-Experimental CUDA similarity search is implemented via the [CuPy](https://cupy.chainer.org/) library.
+Experimental CUDA Tanimoto similarity search is implemented via the [CuPy](https://cupy.chainer.org/) library.
 
 !!! important
     Be sure to have CuPy properly [installed](https://docs-cupy.chainer.org/en/stable/install.html) before using this feature.

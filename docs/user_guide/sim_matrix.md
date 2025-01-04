@@ -1,14 +1,20 @@
 # Computing a Symmetric Distance Matrix
 
 
-Use the `FPSim2.FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR sparse distance matrix from the current dataset:
+Use the `FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR sparse distance matrix from the current dataset:
 
 !!! info "Similarity Metrics"
     Possible metrics that can be used are (`tanimoto` is default):
 
-    - `tanimoto` (Jaccard): Measures the ratio of intersection to union. Commonly used for binary fingerprints, providing a balance between shared and distinct features.
-    - `dice` (Dice-Sørensen): Emphasizes the intersection more than Tanimoto. Useful when you want to highlight common features between fingerprints.
-    - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features, making it more robust when comparing sparse fingerprints.
+    - `tanimoto` (Jaccard): Measures the ratio of intersection to union. $T(A,B) = \frac{|A \cap B|}{|A \cup B|} = \frac{c}{a + b - c}$
+    - `dice` (Dice-Sørensen): Emphasizes the intersection more than Tanimoto. $D(A,B) = \frac{2|A \cap B|}{|A| + |B|} = \frac{2c}{a + b}$
+    - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features. $C(A,B) = \frac{|A \cap B|}{\sqrt{|A| \cdot |B|}} = \frac{c}{\sqrt{a \cdot b}}$
+
+    Where:
+    - $a$ is the number of bits set to 1 in fingerprint A
+    - $b$ is the number of bits set to 1 in fingerprint B
+    - $c$ is the number of bits set to 1 in both fingerprints
+
 
 ```python
 from FPSim2 import FPSim2Engine
