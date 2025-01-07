@@ -10,6 +10,7 @@ Run a similarity search to find compounds that are structurally similar to a que
     - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features. $C(A,B) = \frac{|A \cap B|}{\sqrt{|A| \cdot |B|}} = \frac{c}{\sqrt{a \cdot b}}$
 
     Where:
+
     - $a$ is the number of bits set to 1 in fingerprint A
     - $b$ is the number of bits set to 1 in fingerprint B
     - $c$ is the number of bits set to 1 in both fingerprints
@@ -22,6 +23,7 @@ Run a similarity search to find compounds that are structurally similar to a que
 
     fp_filename = 'chembl_35_v0.6.0.h5'
     fpe = FPSim2Engine(fp_filename)
+
     query = 'CC(=O)Oc1ccccc1C(=O)O'
     results = fpe.similarity(query, threshold=0.7, metric='tanimoto', n_workers=1)
     ```

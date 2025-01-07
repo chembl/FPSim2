@@ -11,6 +11,7 @@ Use the `FPSim2Engine.symmetric_distance_matrix` function to create a SciPy CSR 
     - `cosine` (Otsuka–Ochiai): Also focuses on shared features but is less affected by the total number of features. $C(A,B) = \frac{|A \cap B|}{\sqrt{|A| \cdot |B|}} = \frac{c}{\sqrt{a \cdot b}}$
 
     Where:
+
     - $a$ is the number of bits set to 1 in fingerprint A
     - $b$ is the number of bits set to 1 in fingerprint B
     - $c$ is the number of bits set to 1 in both fingerprints
