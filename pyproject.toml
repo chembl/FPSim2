@@ -7,7 +7,7 @@ fpsim2-create-db = "FPSim2.scripts.create_fpsim2_fp_db:main"
 
 [project]
 name = "FPSim2"
-version = "0.7.0"
+version = "0.7.1"
 authors = [
     { name = "Eloy Félix", email = "eloyfelix@gmail.com" }
 ]
@@ -22,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Chemistry"
 ]
 dependencies = [
