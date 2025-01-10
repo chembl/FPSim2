@@ -146,6 +146,7 @@ class FPSim2Engine(BaseEngine):
         a: float = None,
         b: float = None,
         k: int = 0,
+        full_sanitization: bool = True,
         n_workers: int = 1,
         on_disk: bool = False,
         chunk_size: int = None,
@@ -169,7 +170,7 @@ class FPSim2Engine(BaseEngine):
             "substructure": (SubstructureScreenout, ()),
         }
 
-        np_query = self.load_query(query)
+        np_query = self.load_query(query, full_sanitization=full_sanitization)
         search_func, args = search_funcs[search_type]
 
         # Get bounds
@@ -216,6 +217,7 @@ class FPSim2Engine(BaseEngine):
         query: Union[str, ExplicitBitVect],
         threshold: float,
         metric: str = "tanimoto",
+        full_sanitization: bool = True,
         n_workers=1,
     ) -> np.ndarray:
         return self._search(
@@ -224,6 +226,7 @@ class FPSim2Engine(BaseEngine):
             metric=metric,
             threshold=threshold,
             n_workers=n_workers,
+            full_sanitization=full_sanitization,
         )
 
     def on_disk_similarity(
@@ -231,6 +234,7 @@ class FPSim2Engine(BaseEngine):
         query_string: str,
         threshold: float,
         metric: str = "tanimoto",
+        full_sanitization: bool = True,
         n_workers: int = 1,
         chunk_size: int = 0,
     ) -> np.ndarray:
@@ -242,6 +246,7 @@ class FPSim2Engine(BaseEngine):
             n_workers=n_workers,
             on_disk=True,
             chunk_size=chunk_size,
+            full_sanitization=full_sanitization,
         )
 
     def tversky(
@@ -250,10 +255,17 @@ class FPSim2Engine(BaseEngine):
         threshold: float,
         a: float,
         b: float,
+        full_sanitization: bool = True,
         n_workers: int = 1,
     ) -> np.ndarray:
         return self._search(
-            query_string, "tversky", threshold=threshold, a=a, b=b, n_workers=n_workers
+            query_string,
+            "tversky",
+            threshold=threshold,
+            a=a,
+            b=b,
+            full_sanitization=full_sanitization,
+            n_workers=n_workers,
         )
 
     def on_disk_tversky(
@@ -262,6 +274,7 @@ class FPSim2Engine(BaseEngine):
         threshold: float,
         a: float,
         b: float,
+        full_sanitization: bool = True,
         n_workers: int = 1,
         chunk_size: int = None,
     ) -> np.ndarray:
@@ -271,20 +284,33 @@ class FPSim2Engine(BaseEngine):
             threshold=threshold,
             a=a,
             b=b,
+            full_sanitization=full_sanitization,
             n_workers=n_workers,
             on_disk=True,
             chunk_size=chunk_size,
         )
 
-    def substructure(self, query_string: str, n_workers: int = 1) -> np.ndarray:
-        return self._search(query_string, "substructure", n_workers=n_workers)
-
-    def on_disk_substructure(
-        self, query_string: str, n_workers: int = 1, chunk_size: int = None
+    def substructure(
+        self, query_string: str, full_sanitization: bool = True, n_workers: int = 1
     ) -> np.ndarray:
         return self._search(
             query_string,
             "substructure",
+            n_workers=n_workers,
+            full_sanitization=full_sanitization,
+        )
+
+    def on_disk_substructure(
+        self,
+        query_string: str,
+        full_sanitization: bool = True,
+        n_workers: int = 1,
+        chunk_size: int = None,
+    ) -> np.ndarray:
+        return self._search(
+            query_string,
+            "substructure",
+            full_sanitization=full_sanitization,
             n_workers=n_workers,
             on_disk=True,
             chunk_size=chunk_size,
@@ -296,6 +322,7 @@ class FPSim2Engine(BaseEngine):
         k: int,
         threshold: float,
         metric="tanimoto",
+        full_sanitization: bool = True,
         n_workers=1,
     ) -> np.ndarray:
         return self._search(
@@ -304,6 +331,7 @@ class FPSim2Engine(BaseEngine):
             metric=metric,
             threshold=threshold,
             k=k,
+            full_sanitization=full_sanitization,
             n_workers=n_workers,
         )
 
@@ -313,6 +341,7 @@ class FPSim2Engine(BaseEngine):
         k: int,
         threshold: float,
         metric="tanimoto",
+        full_sanitization: bool = True,
         n_workers=1,
         chunk_size: int = None,
     ) -> np.ndarray:
@@ -322,6 +351,7 @@ class FPSim2Engine(BaseEngine):
             metric=metric,
             threshold=threshold,
             k=k,
+            full_sanitization=full_sanitization,
             n_workers=n_workers,
             on_disk=True,
             chunk_size=chunk_size,

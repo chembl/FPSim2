@@ -133,10 +133,7 @@ class FPSim2CudaEngine(BaseEngine):
         else:
             raise Exception("only supports 'raw' and 'element_wise' kernels")
 
-    def _element_wise_search(self, query_string, threshold):
-
-        np_query = self.load_query(query_string)
-
+    def _element_wise_search(self, np_query, threshold):
         # get the range of the molecule subset to screen
         fp_range = get_bounds_range(
             np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
@@ -170,10 +167,7 @@ class FPSim2CudaEngine(BaseEngine):
 
         return np_ids, np_sim
 
-    def _raw_kernel_search(self, query_string, threshold):
-
-        np_query = self.load_query(query_string)
-
+    def _raw_kernel_search(self, np_query, threshold):
         # get the range of the molecule subset to screen
         fp_range = get_bounds_range(
             np_query, threshold, 0, 0, self.popcnt_bins, "tanimoto"
@@ -217,7 +211,12 @@ class FPSim2CudaEngine(BaseEngine):
 
         return np_ids, np_sim
 
-    def similarity(self, query_string: str, threshold: str) -> np.ndarray:
+    def similarity(
+        self,
+        query_string: str,
+        threshold: str,
+        full_sanitization: bool = True,
+    ) -> np.ndarray:
         """Runs a CUDA Tanimoto search.
 
         Parameters
@@ -233,10 +232,12 @@ class FPSim2CudaEngine(BaseEngine):
         results : numpy array
             Similarity results.
         """
+        np_query = self.load_query(query_string, full_sanitization=full_sanitization)
+
         if self.kernel == "raw":
-            ids, sims = self._raw_kernel_search(query_string, threshold)
+            ids, sims = self._raw_kernel_search(np_query, threshold)
         elif self.kernel == "element_wise":
-            ids, sims = self._element_wise_search(query_string, threshold)
+            ids, sims = self._element_wise_search(np_query, threshold)
         else:
             raise Exception("only supports 'raw' and 'element_wise' kernels")
 
