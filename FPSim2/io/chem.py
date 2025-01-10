@@ -18,7 +18,7 @@ RDKIT_PARSE_FUNCS = {
     "smiles": Chem.MolFromSmiles,
     "inchi": Chem.MolFromInchi,
     "molfile": Chem.MolFromMolBlock,
-    "rdkit": lambda x: x,
+    "rdkit": lambda x, s: x,
 }
 
 FP_FUNCS = {
@@ -203,12 +203,13 @@ def it_mol_supplier(
     tuple
         int id and rdkit mol.
     """
-    if kwargs["mol_format"].lower() not in RDKIT_PARSE_FUNCS:
+    mol_format = kwargs["mol_format"]
+    if mol_format not in RDKIT_PARSE_FUNCS:
         raise ValueError(
             "mol_format must be one of: 'smiles', 'inchi', 'molfile', 'rdkit'"
         )
 
-    mol_func = RDKIT_PARSE_FUNCS[kwargs["mol_format"].lower()]
+    mol_func = RDKIT_PARSE_FUNCS[mol_format]
 
     for mol, mol_id in iterable:
         try:
@@ -216,10 +217,11 @@ def it_mol_supplier(
         except ValueError:
             raise Exception("FPSim2 only supports integer ids for molecules")
 
-        rdmol = mol_func(mol, sanitize=full_sanitization)
+        rdmol = mol_func(mol, full_sanitization)
         if not rdmol:
             continue
-        if not full_sanitization:
+        # don't sanitize if mol_format is rdkit
+        if not full_sanitization and mol_format != "rdkit":
             rdmol = partial_sanitization(rdmol)
             if not rdmol:
                 continue

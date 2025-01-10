@@ -4,6 +4,7 @@ from .io.backends import PyTablesStorageBackend
 from .io.backends import SqlaStorageBackend
 from sqlalchemy import create_mock_engine
 from rdkit.DataStructs import ExplicitBitVect
+from rdkit import Chem
 from typing import Union
 import numpy as np
 
@@ -76,7 +77,7 @@ class BaseEngine(ABC):
 
     def load_query(
         self,
-        query: Union[str, ExplicitBitVect],
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         full_sanitization: bool = True,
     ) -> np.ndarray:
         """Loads the query fingerprint from SMILES, molblock, InChI or ExplicitBitVect fingerprint.
@@ -94,6 +95,8 @@ class BaseEngine(ABC):
 
         if isinstance(query, ExplicitBitVect):
             fp = process_fp(query, 0)
+        elif isinstance(query, Chem.Mol):
+            fp = build_fp(query, self.fp_type, self.fp_params, 0)
         else:
             rdmol = load_molecule(query, full_sanitization=full_sanitization)
             fp = build_fp(rdmol, self.fp_type, self.fp_params, 0)
