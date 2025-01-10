@@ -43,6 +43,7 @@ def create_db_file(
     fp_params: dict = {},
     mol_id_prop: str = "mol_id",
     sort_by_popcnt: bool = True,
+    full_sanitization: bool = True,
 ) -> None:
     is_valid_file = isinstance(mols_source, str) and (
         mols_source.endswith((".smi", ".sdf", ".sdf.gz"))
@@ -79,7 +80,12 @@ def create_db_file(
         param_table.append(__version__)
 
         fps = []
-        iterable = supplier(mols_source, mol_format=mol_format, mol_id_prop=mol_id_prop)
+        iterable = supplier(
+            mols_source,
+            full_sanitization,
+            mol_format=mol_format,
+            mol_id_prop=mol_id_prop,
+        )
         for mol_id, rdmol in iterable:
             fp = build_fp(rdmol, fp_type, fp_params, mol_id)
             fps.append(fp)

@@ -2,9 +2,18 @@ from FPSim2.io.backends.pytables import create_db_file, merge_db_files
 import concurrent.futures as cf
 from typing import List, Tuple
 from itertools import islice
+import hashlib
 import argparse
+import time
 import json
 import os
+
+
+def generate_time_hash():
+    current_time = str(time.time())
+    hash_object = hashlib.md5(current_time.encode())
+    short_hash = hash_object.hexdigest()
+    return short_hash
 
 
 def read_chunk(filename, start_row, end_row):
@@ -19,9 +28,11 @@ def read_chunk(filename, start_row, end_row):
             except ValueError:
                 continue
 
-def worker(args):
-    mols_source, chunk_range, fp_type, fp_params = args
-    out_file = f"temp_chunk_{chunk_range[0]}.h5"
+
+def create_db_chunk(args):
+    mols_source, chunk_range, fp_type, fp_params, full_sanitization = args
+    time_hash = generate_time_hash()
+    out_file = f"temp_chunk_{chunk_range[0]}_{time_hash}.h5"
 
     rows = read_chunk(mols_source, chunk_range[0], chunk_range[1])
     create_db_file(
@@ -31,6 +42,7 @@ def worker(args):
         fp_type=fp_type,
         fp_params=fp_params,
         sort_by_popcnt=False,
+        full_sanitization=full_sanitization,
     )
     return out_file
 
@@ -63,14 +75,16 @@ def count_rows(filename, chunk_size=65536):
         return newlines + (0 if last_char == b"\n" else 1)
 
 
-def create_db_file_parallel(smi_file, out_file, fp_type, fp_params, num_processes):
+def create_db_file_parallel(
+    smi_file, out_file, fp_type, fp_params, full_sanitization, num_processes
+):
     total_mols = count_rows(smi_file)
     chunks = calculate_chunks(total_mols, num_processes)
     with cf.ProcessPoolExecutor(max_workers=num_processes) as executor:
         futures = [
             executor.submit(
-                worker,
-                (smi_file, chunk, fp_type, fp_params),
+                create_db_chunk,
+                (smi_file, chunk, fp_type, fp_params, full_sanitization),
             )
             for chunk in chunks
         ]
@@ -94,12 +108,16 @@ def main():
     parser.add_argument(
         "--fp_type", default="Morgan", help="Fingerprint type (default: Morgan)"
     )
-
     parser.add_argument(
         "--fp_params",
         type=json.loads,
         default='{"radius": 2, "fpSize": 256}',
         help='Fingerprint parameters as JSON string (default: {"radius": 2, "fpSize": 256})',
+    )
+    parser.add_argument(
+        "--full_sanitization",
+        default=True,
+        help="Enable full sanitization (default: True)",
     )
 
     parser.add_argument(
@@ -119,5 +137,6 @@ def main():
         args.output_file,
         args.fp_type,
         args.fp_params,
+        args.full_sanitization,
         args.processes,
     )
