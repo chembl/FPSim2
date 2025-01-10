@@ -152,17 +152,16 @@ py::array_t<Result> GenericSearch(const py::array_t<uint64_t> py_query,
                                   const uint32_t start,
                                   const uint32_t end)
 {
-    if (calc_type == 0)
+    switch (calc_type)
     {
+    case 0:
         return GenericSearchImpl(py_query, py_db, threshold, k, TanimotoCalculator(), start, end);
-    }
-    else if (calc_type == 1)
-    {
+    case 1:
         return GenericSearchImpl(py_query, py_db, threshold, k, DiceCalculator(), start, end);
-    }
-    else
-    {
+    case 2:
         return GenericSearchImpl(py_query, py_db, threshold, k, CosineCalculator(), start, end);
+    default:
+        throw std::invalid_argument("Invalid calc_type. Must be 0 (Tanimoto), 1 (Dice), or 2 (Cosine)");
     }
 }
 
