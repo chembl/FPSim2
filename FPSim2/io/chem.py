@@ -79,6 +79,13 @@ FP_FUNC_DEFAULTS = {
 }
 
 
+def partial_sanitization(mol):
+    # https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
+    mol.UpdatePropertyCache()
+    Chem.FastFindRings(mol)
+    return mol
+
+
 def rdmol_to_efp(
     rdmol: Chem.Mol, fp_func: str, fp_params: Dict[str, Any]
 ) -> ExplicitBitVect:
@@ -96,7 +103,7 @@ def process_fp(fp, mol_id):
     return mol_id, *fp, popcnt
 
 
-def load_molecule(molecule: Any) -> Chem.Mol:
+def load_molecule(molecule: Any, full_sanitization: str = True) -> Chem.Mol:
     """Reads SMILES, molblock or InChI and returns a RDKit mol.
 
     Parameters
@@ -112,11 +119,13 @@ def load_molecule(molecule: Any) -> Chem.Mol:
     if isinstance(molecule, Chem.Mol):
         return molecule
     if re.search(MOLFILE_RE, molecule, flags=re.MULTILINE):
-        rdmol = Chem.MolFromMolBlock(molecule)
+        rdmol = Chem.MolFromMolBlock(molecule, sanitize=full_sanitization)
     elif molecule.startswith("InChI="):
-        rdmol = Chem.MolFromInchi(molecule)
+        rdmol = Chem.MolFromInchi(molecule, sanitize=full_sanitization)
     else:
-        rdmol = Chem.MolFromSmiles(molecule)
+        rdmol = Chem.MolFromSmiles(molecule, sanitize=full_sanitization)
+    if not full_sanitization:
+        rdmol = partial_sanitization(rdmol)
     return rdmol
 
 
@@ -180,7 +189,7 @@ def get_bounds_range(
 
 
 def it_mol_supplier(
-    iterable: IterableType, **kwargs
+    iterable: IterableType, full_sanitization: bool = True, **kwargs
 ) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from iterables.
 
@@ -207,12 +216,19 @@ def it_mol_supplier(
         except ValueError:
             raise Exception("FPSim2 only supports integer ids for molecules")
 
-        rdmol = mol_func(mol)
-        if rdmol:
-            yield mol_id, rdmol
+        rdmol = mol_func(mol, sanitize=full_sanitization)
+        if not rdmol:
+            continue
+        if not full_sanitization:
+            rdmol = partial_sanitization(rdmol)
+            if not rdmol:
+                continue
+        yield mol_id, rdmol
 
 
-def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
+def smi_mol_supplier(
+    filename: str, full_sanitization: bool = True, **kwargs
+) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from a .smi file.
 
     Parameters
@@ -235,12 +251,19 @@ def smi_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
                 mol_id = int(mol[1])
             except ValueError:
                 raise Exception("FPSim2 only supports integer ids for molecules")
-            rdmol = Chem.MolFromSmiles(smiles)
-            if rdmol:
-                yield mol_id, rdmol
+            rdmol = Chem.MolFromSmiles(smiles, sanitize=full_sanitization)
+            if not rdmol:
+                continue
+            if not full_sanitization:
+                rdmol = partial_sanitization(rdmol)
+                if not rdmol:
+                    continue
+            yield mol_id, rdmol
 
 
-def sdf_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mol]]:
+def sdf_mol_supplier(
+    filename: str, full_sanitization: bool = True, **kwargs
+) -> IterableType[Tuple[int, Chem.Mol]]:
     """Generator function that reads from a .sdf file.
 
     Parameters
@@ -260,12 +283,17 @@ def sdf_mol_supplier(filename: str, **kwargs) -> IterableType[Tuple[int, Chem.Mo
         suppl = Chem.ForwardSDMolSupplier(filename)
 
     for rdmol in suppl:
-        if rdmol:
-            try:
-                mol_id = int(rdmol.GetProp(kwargs["mol_id_prop"]))
-            except ValueError:
-                raise Exception("FPSim2 only supports integer ids for molecules")
-            yield mol_id, rdmol
+        if not rdmol:
+            continue
+        if not full_sanitization:
+            rdmol = partial_sanitization(rdmol)
+            if not rdmol:
+                continue
+        try:
+            mol_id = int(rdmol.GetProp(kwargs["mol_id_prop"]))
+        except ValueError:
+            raise Exception("FPSim2 only supports integer ids for molecules")
+        yield mol_id, rdmol
 
 
 def get_mol_supplier(

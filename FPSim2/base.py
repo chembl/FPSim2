@@ -74,7 +74,11 @@ class BaseEngine(ABC):
     def fpsim2_ver(self):
         return self.storage.fpsim2_ver
 
-    def load_query(self, query: Union[str, ExplicitBitVect]) -> np.ndarray:
+    def load_query(
+        self,
+        query: Union[str, ExplicitBitVect],
+        full_sanitization: bool = True,
+    ) -> np.ndarray:
         """Loads the query fingerprint from SMILES, molblock, InChI or ExplicitBitVect fingerprint.
 
         Parameters
@@ -91,7 +95,7 @@ class BaseEngine(ABC):
         if isinstance(query, ExplicitBitVect):
             fp = process_fp(query, 0)
         else:
-            rdmol = load_molecule(query)
+            rdmol = load_molecule(query, full_sanitization=full_sanitization)
             fp = build_fp(rdmol, self.fp_type, self.fp_params, 0)
         return np.array(fp, dtype=np.uint64)
 
