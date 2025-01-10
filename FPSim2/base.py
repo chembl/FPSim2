@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp, process_fp
+from .io.backends.pytables import create_schema, get_fp_length
 from .io.backends import PyTablesStorageBackend
 from .io.backends import SqlaStorageBackend
 from sqlalchemy import create_mock_engine
 from rdkit.DataStructs import ExplicitBitVect
 from rdkit import Chem
 from typing import Union
+import tables as tb
 import numpy as np
 
 
@@ -107,3 +109,37 @@ class BaseEngine(ABC):
         self, query_string: str, threshold: float, n_workers=1
     ) -> np.ndarray:
         """Tanimoto similarity search"""
+
+    def save_h5(self, filename: str) -> None:
+        """Save the fingerprints to a HDF5 file.
+
+        Useful when the fingerprints were loaded from SQL and want to save them to a file.
+        """
+
+        if not self.in_memory_fps:
+            raise Exception("FPs not loaded into memory.")
+
+        if not hasattr(self, "popcnt_bins"):
+            raise Exception(
+                "FPs are not sorted and popcnt_bins are not stored in memory."
+            )
+
+        fp_length = get_fp_length(self.fp_type, self.fp_params)
+        filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
+
+        with tb.open_file(filename, mode="w") as out_file:
+            table_class = create_schema(fp_length)
+            fps_table = out_file.create_table(
+                out_file.root, "fps", table_class, "Table storing fps", filters=filters
+            )
+            config_table = out_file.create_vlarray(
+                out_file.root, "config", atom=tb.ObjectAtom()
+            )
+            config_table.append(self.fp_type)
+            config_table.append(self.fp_params)
+            config_table.append(self.rdkit_ver)
+            config_table.append(self.fpsim2_ver)
+
+            if self.fps is not None:
+                fps_table.append(self.fps)
+                config_table.append(self.popcnt_bins)
