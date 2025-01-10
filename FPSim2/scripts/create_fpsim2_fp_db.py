@@ -31,7 +31,7 @@ def read_chunk(filename, start_row, end_row):
 
 def create_db_chunk(args):
     mols_source, chunk_range, fp_type, fp_params, full_sanitization = args
-    time_hash = generate_time_hash
+    time_hash = generate_time_hash()
     out_file = f"temp_chunk_{chunk_range[0]}_{time_hash}.h5"
 
     rows = read_chunk(mols_source, chunk_range[0], chunk_range[1])
