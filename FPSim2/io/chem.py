@@ -81,7 +81,7 @@ FP_FUNC_DEFAULTS = {
 
 def partial_sanitization(mol):
     # https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
-    mol.UpdatePropertyCache()
+    mol.UpdatePropertyCache(strict=False)
     Chem.FastFindRings(mol)
     return mol
 

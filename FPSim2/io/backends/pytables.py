@@ -119,53 +119,55 @@ def calc_popcnt_bins_pytables(fps: Any, fp_length: int) -> list:
 
 def sort_db_file(filename: str) -> None:
     """Sorts the FPs db file."""
-    # rename not sorted filename
+    # rename unsorted file
     tmp_filename = filename + "_tmp"
     os.rename(filename, tmp_filename)
-    filters = tb.Filters(complib="blosc", complevel=5)
+    filters = tb.Filters(complib="blosc2", complevel=9, fletcher32=False)
 
     # copy sorted fps and config to a new file
-    with tb.open_file(tmp_filename, mode="r") as fp_file:
-        with tb.open_file(filename, mode="w") as sorted_fp_file:
-            fp_type = fp_file.root.config[0]
-            fp_params = fp_file.root.config[1]
-            fp_length = get_fp_length(fp_type, fp_params)
+    with (
+        tb.open_file(tmp_filename, mode="r") as fp_file,
+        tb.open_file(filename, mode="w") as sorted_fp_file,
+    ):
+        fp_type = fp_file.root.config[0]
+        fp_params = fp_file.root.config[1]
+        fp_length = get_fp_length(fp_type, fp_params)
 
-            # create a sorted copy of the fps table
-            dst_fps = fp_file.root.fps.copy(
-                sorted_fp_file.root,
-                "fps",
-                filters=filters,
-                copyuserattrs=True,
-                overwrite=True,
-                stats={
-                    "groups": 0,
-                    "leaves": 0,
-                    "links": 0,
-                    "bytes": 0,
-                    "hardlinks": 0,
-                },
-                start=None,
-                stop=None,
-                step=None,
-                chunkshape="auto",
-                sortby="popcnt",
-                check_CSI=True,
-                propindexes=True,
-            )
+        # create a sorted copy of the fps table
+        dst_fps = fp_file.root.fps.copy(
+            sorted_fp_file.root,
+            "fps",
+            filters=filters,
+            copyuserattrs=True,
+            overwrite=True,
+            stats={
+                "groups": 0,
+                "leaves": 0,
+                "links": 0,
+                "bytes": 0,
+                "hardlinks": 0,
+            },
+            start=None,
+            stop=None,
+            step=None,
+            chunkshape="auto",
+            sortby="popcnt",
+            check_CSI=True,
+            propindexes=True,
+        )
 
-            # set config table; used fp function, parameters and rdkit version
-            param_table = sorted_fp_file.create_vlarray(
-                sorted_fp_file.root, "config", atom=tb.ObjectAtom()
-            )
-            param_table.append(fp_type)
-            param_table.append(fp_params)
-            param_table.append(rdkit.__version__)
-            param_table.append(__version__)
+        # set config table; used fp function, parameters and rdkit version
+        param_table = sorted_fp_file.create_vlarray(
+            sorted_fp_file.root, "config", atom=tb.ObjectAtom()
+        )
+        param_table.append(fp_type)
+        param_table.append(fp_params)
+        param_table.append(rdkit.__version__)
+        param_table.append(__version__)
 
-            # update count ranges
-            popcnt_bins = calc_popcnt_bins_pytables(dst_fps, fp_length)
-            param_table.append(popcnt_bins)
+        # update count ranges
+        popcnt_bins = calc_popcnt_bins_pytables(dst_fps, fp_length)
+        param_table.append(popcnt_bins)
 
     # remove unsorted file
     os.remove(tmp_filename)

@@ -115,9 +115,9 @@ def main():
         help='Fingerprint parameters as JSON string (default: {"radius": 2, "fpSize": 256})',
     )
     parser.add_argument(
-        "--full_sanitization",
-        default=True,
-        help="Enable full sanitization (default: True)",
+        "--no_full_sanitization",
+        action="store_true",
+        help="Enable partial sanitization (default: False)",
     )
 
     parser.add_argument(
@@ -128,6 +128,7 @@ def main():
     )
 
     args = parser.parse_args()
+    full_sanitization = not args.no_full_sanitization
 
     if not args.input_file.endswith(".smi"):
         parser.error("Input file must have '.smi' SMILES file")
@@ -137,6 +138,6 @@ def main():
         args.output_file,
         args.fp_type,
         args.fp_params,
-        args.full_sanitization,
+        full_sanitization,
         args.processes,
     )
