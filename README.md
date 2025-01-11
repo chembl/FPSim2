@@ -12,7 +12,7 @@ FPSim2 is a small NumPy centric Python/C++ RDKit based package to run fast compo
 Highlights:
 - Using CPU POPCNT instruction
 - Bounds for sublinear speedups from [10.1021/ci600358f](https://pubs.acs.org/doi/abs/10.1021/ci600358f)
-- A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/)
+- A compressed file format with optimised read speed based in [PyTables](https://www.pytables.org/) and [BLOSC2](http://www.blosc.org/pages/blosc-in-depth/)
 - Fast multicore CPU and GPU similarity searches
 - In memory and on disk search modes
 - Distance matrix calculation

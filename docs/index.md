@@ -6,7 +6,7 @@
 
 - Uses SIMD instructions
 - Implements bounds for sublinear speedups from [10.1021/ci600358f](https://pubs.acs.org/doi/abs/10.1021/ci600358f/)
-- Features a compressed file format with optimized read speed based on [PyTables](https://www.pytables.org/) and [BLOSC](http://www.blosc.org/pages/blosc-in-depth/)
+- Features a compressed file format with optimized read speed based on [PyTables](https://www.pytables.org/) and [BLOSC2](http://www.blosc.org/pages/blosc-in-depth/)
 - Provides fast multicore CPU and GPU similarity searches
 - Supports in-memory and on-disk search modes
 - Enables distance matrix calculation
@@ -17,6 +17,9 @@ Install and generate a FPSim2 fingerprint db file.
 
 - [Installation](user_guide/install.md)
 - [Create a fingerprint db file](user_guide/create_db_file.md)
+- [Sanitization](user_guide/sanitization.md)
+- [Alternative SQLAlchemy backend](user_guide/sql_backend.md)
+
 
 ## CPU searches
 
