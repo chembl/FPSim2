@@ -36,7 +36,7 @@ create_db_table(smiles_list, db_url, table_name, mol_format, fp_type, fp_params)
 
 ## Incremental load
 
-You can append molecules to an existing table using the same `create_db_table` function. For databases where structures are stored in the same SQL instance, you can populate the table using a SQLAlchemy CursorResult:
+You can append molecules to an existing table using the `create_db_table` function. For databases where structures are stored in the same SQL instance, you can populate the table using a SQLAlchemy CursorResult:
 
 ```python
 from sqlalchemy import create_engine, text
@@ -78,7 +78,7 @@ Once the fingerprints are stored in the database, load them into FPSim2Engine us
 ```python
 from FPSim2 import FPSim2Engine
 
-db_url = "postgresql://postgres:postgres@postgres:5432/postgres"
+db_url = "postgresql://user:password@hostname:5432/fpsim2"
 table_name = "fpsim2_fp_table"
 
 fpe = FPSim2Engine(
