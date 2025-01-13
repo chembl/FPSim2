@@ -17,7 +17,8 @@ Run a similarity search to find compounds that are structurally similar to a que
 
 
 === "In memory"
-    Use the `FPSim2Engine.similarity` function to run symmetric similarity searches:
+    Use the `FPSim2Engine.similarity` function to run symmetric similarity searches.
+
     ```python
     from FPSim2 import FPSim2Engine
 
@@ -29,7 +30,7 @@ Run a similarity search to find compounds that are structurally similar to a que
     ```
 
 === "On disk"
-    For on-disk similarity searches (slower but doesn't require loading the entire fingerprint file into memory), use the `FPSim2Engine.on_disk_similarity` function. This is useful for databases larger than the available system memory:
+    Use the `FPSim2Engine.on_disk_similarity` function to run similarity searches on disk. This method is much slower but suitable when working with databases larger than available RAM. To use **ONLY** if the dataset doesn't fit in memory.
 
     ```python
     from FPSim2 import FPSim2Engine
@@ -38,7 +39,7 @@ Run a similarity search to find compounds that are structurally similar to a que
     fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
     query = 'CC(=O)Oc1ccccc1C(=O)O'
-    results = fpe.on_disk_similarity(query, threshold=0.7, metric='tanimoto', n_workers=1)
+    results = fpe.on_disk_similarity(query, threshold=0.7, metric='tanimoto')
     ```
 
 !!! tip "Parallel Processing"
@@ -49,6 +50,7 @@ Run a similarity search to find compounds that are structurally similar to a que
 
 === "In memory"
     Retrieve the top K most similar hits using the `FPSim2Engine.top_k` function.
+
     ```python
     from FPSim2 import FPSim2Engine
 
@@ -60,7 +62,7 @@ Run a similarity search to find compounds that are structurally similar to a que
     ```
 
 === "On disk"
-    For on-disk top K searches, use the `FPSim2Engine.on_disk_top_k` function.
+    Use the `FPSim2Engine.on_disk_top_k` function to run top-K searches on disk. This method is much slower but suitable when working with databases larger than available RAM. To use **ONLY** if the dataset doesn't fit in memory.
 
     ```python
     from FPSim2 import FPSim2Engine
@@ -69,5 +71,5 @@ Run a similarity search to find compounds that are structurally similar to a que
     fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
     query = 'CC(=O)Oc1ccccc1C(=O)O'
-    results = fpe.on_disk_top_k(query, k=100, threshold=0.7, metric='tanimoto', n_workers=1)
+    results = fpe.on_disk_top_k(query, k=100, threshold=0.7, metric='tanimoto')
     ```

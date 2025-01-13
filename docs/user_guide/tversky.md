@@ -20,7 +20,7 @@ Run a Tversky search. The Tversky similarity coefficient is a generalization of 
     ```
 
 === "On disk"
-    Use the `FPSim2Engine.on_disk_tversky` function to run an on disk Tversky search (much slower but doesn't require loading the entire fingerprint file into memory).
+    Use the `FPSim2Engine.on_disk_tversky` function to run Tversky searches on disk. This method is much slower but suitable when working with databases larger than available RAM. To use **ONLY** if the dataset doesn't fit in memory.
 
     ```python
     from FPSim2 import FPSim2Engine
@@ -29,7 +29,7 @@ Run a Tversky search. The Tversky similarity coefficient is a generalization of 
     fpe = FPSim2Engine(fp_filename, in_memory_fps=False)
 
     query = 'CC(=O)Oc1ccccc1C(=O)O'
-    results = fpe.on_disk_tversky(query, threshold=0.7, a=0.7, b=0.3, n_workers=1)
+    results = fpe.on_disk_tversky(query, threshold=0.7, a=0.7, b=0.3)
     ```
 
 

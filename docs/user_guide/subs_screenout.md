@@ -18,7 +18,7 @@ Run an optimised Tversky (a=1, b=0, threshold=1.0) substructure screenout. Note 
     ```
 
 === "On disk"
-    Use the `FPSim2Engine.on_disk_substructure` function to run an on disk substructure screenout (much slower but doesn't require loading the entire fingerprint file into memory).
+    Use the `FPSim2Engine.on_disk_substructure` function to run substructure screenouts on disk. This method is much slower but suitable when working with databases larger than available RAM. To use **ONLY** if the dataset doesn't fit in memory.
 
     ```python
     from FPSim2 import FPSim2Engine

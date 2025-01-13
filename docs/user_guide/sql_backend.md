@@ -88,6 +88,15 @@ fpe = FPSim2Engine(
 )
 ```
 
+## Running a search
+
+Running similarity searches with the SQLAlchemy backend is identical to using the PyTables backend:
+
+```python
+query = 'CC(=O)Oc1ccccc1C(=O)O'
+results = fpe.similarity(query, threshold=0.7, metric='tanimoto', n_workers=1)
+```
+
 ## Saving the table to a PyTables h5 file
 
 You can export the fingerprints stored in SQL to the PyTables h5 file format, which is useful for sharing or distributing the data you have in SQL:

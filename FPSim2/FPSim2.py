@@ -47,6 +47,12 @@ class FPSim2Engine(BaseEngine):
             table_name=table_name,
             pg_schema=pg_schema,
         )
+
+        if not in_memory_fps and storage_backend == "sqla":
+            raise ValueError(
+                "Loading the fingerprints into memory is required for the SQLAlchemy backend"
+            )
+
         self.empty_sim = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
         self.empty_subs = np.ndarray((0,), dtype="<u4")
 
@@ -206,7 +212,8 @@ class FPSim2Engine(BaseEngine):
                 chunk_size=chunk_size if on_disk else 0,
             )
 
-        if search_type == "top_k":
+        # if a top-k search, return the top-k results (multiple workers may return more than k results)
+        if k > 0:
             return results[["mol_id", "coeff"]][:k]
         return (
             results[["mol_id", "coeff"]] if search_type != "substructure" else results
