@@ -4,7 +4,7 @@
 
 ## Highlights
 
-- Uses SIMD instructions
+- Uses CPU POPCNT instruction for fast bit counting
 - Implements bounds for sublinear speedups from [10.1021/ci600358f](https://pubs.acs.org/doi/abs/10.1021/ci600358f/)
 - Features a compressed file format with optimized read speed based on [PyTables](https://www.pytables.org/) and [BLOSC2](http://www.blosc.org/pages/blosc-in-depth/)
 - Provides fast multicore CPU and GPU similarity searches
