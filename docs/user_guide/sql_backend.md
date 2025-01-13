@@ -8,6 +8,8 @@ This alternative backend is particularly useful when you need to:
 - Integrate with existing database infrastructure
 - Prefer database management over file-based storage in your deployments
 
+!!! warning
+    The SQLAlchemy backend's fingerprint loading time is noticeably slower than PyTables h5 files. Once loaded, search performance is identical. For optimal loading performance with large-scale datasets, we recommend using the PyTables default backend.
 
 ## Create database table
 
