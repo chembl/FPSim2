@@ -146,7 +146,7 @@ class FPSim2Engine(BaseEngine):
 
     def _search(
         self,
-        query: Union[str, ExplicitBitVect],
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         search_type: str = "similarity",
         metric: str = "tanimoto",
         threshold: float = None,
