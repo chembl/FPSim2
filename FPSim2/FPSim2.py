@@ -10,6 +10,7 @@ from .FPSim2lib import (
 from .FPSim2lib.utils import SortResults
 from scipy.sparse import csr_matrix
 from .base import BaseEngine
+from rdkit import Chem
 import numpy as np
 
 
@@ -221,7 +222,7 @@ class FPSim2Engine(BaseEngine):
 
     def similarity(
         self,
-        query: Union[str, ExplicitBitVect],
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         threshold: float,
         metric: str = "tanimoto",
         full_sanitization: bool = True,
@@ -238,7 +239,7 @@ class FPSim2Engine(BaseEngine):
 
     def on_disk_similarity(
         self,
-        query_string: str,
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         threshold: float,
         metric: str = "tanimoto",
         full_sanitization: bool = True,
@@ -246,7 +247,7 @@ class FPSim2Engine(BaseEngine):
         chunk_size: int = 0,
     ) -> np.ndarray:
         return self._search(
-            query_string,
+            query,
             search_type="similarity",
             metric=metric,
             threshold=threshold,
@@ -258,7 +259,7 @@ class FPSim2Engine(BaseEngine):
 
     def tversky(
         self,
-        query_string: str,
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         threshold: float,
         a: float,
         b: float,
@@ -266,7 +267,7 @@ class FPSim2Engine(BaseEngine):
         n_workers: int = 1,
     ) -> np.ndarray:
         return self._search(
-            query_string,
+            query,
             "tversky",
             threshold=threshold,
             a=a,
@@ -277,7 +278,7 @@ class FPSim2Engine(BaseEngine):
 
     def on_disk_tversky(
         self,
-        query_string: str,
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         threshold: float,
         a: float,
         b: float,
@@ -286,7 +287,7 @@ class FPSim2Engine(BaseEngine):
         chunk_size: int = None,
     ) -> np.ndarray:
         return self._search(
-            query_string,
+            query,
             "tversky",
             threshold=threshold,
             a=a,
@@ -298,10 +299,13 @@ class FPSim2Engine(BaseEngine):
         )
 
     def substructure(
-        self, query_string: str, full_sanitization: bool = True, n_workers: int = 1
+        self,
+        query: Union[str, ExplicitBitVect, Chem.Mol],
+        full_sanitization: bool = True,
+        n_workers: int = 1,
     ) -> np.ndarray:
         return self._search(
-            query_string,
+            query,
             "substructure",
             n_workers=n_workers,
             full_sanitization=full_sanitization,
@@ -309,13 +313,13 @@ class FPSim2Engine(BaseEngine):
 
     def on_disk_substructure(
         self,
-        query_string: str,
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         full_sanitization: bool = True,
         n_workers: int = 1,
         chunk_size: int = None,
     ) -> np.ndarray:
         return self._search(
-            query_string,
+            query,
             "substructure",
             full_sanitization=full_sanitization,
             n_workers=n_workers,
@@ -325,7 +329,7 @@ class FPSim2Engine(BaseEngine):
 
     def top_k(
         self,
-        query: Union[str, ExplicitBitVect],
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         k: int,
         threshold: float,
         metric="tanimoto",
@@ -344,7 +348,7 @@ class FPSim2Engine(BaseEngine):
 
     def on_disk_top_k(
         self,
-        query: Union[str, ExplicitBitVect],
+        query: Union[str, ExplicitBitVect, Chem.Mol],
         k: int,
         threshold: float,
         metric="tanimoto",
