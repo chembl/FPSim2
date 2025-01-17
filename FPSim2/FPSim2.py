@@ -16,7 +16,7 @@ import numpy as np
 
 def on_disk_search(
     search_func: str,
-    query: np.array,
+    np_query: np.array,
     storage: Any,
     args,
     chunk: Tuple[int, int],
@@ -25,7 +25,7 @@ def on_disk_search(
     num_fields = len(fps[0])
     fps = fps.view("<u8")
     fps = fps.reshape(int(fps.size / num_fields), num_fields)
-    return globals()[search_func](query, fps, *args, 0, fps.shape[0])
+    return globals()[search_func](np_query, fps, *args, 0, fps.shape[0])
 
 
 class FPSim2Engine(BaseEngine):
@@ -62,7 +62,7 @@ class FPSim2Engine(BaseEngine):
 
     def _on_disk_single_core(
         self,
-        query: np.array,
+        np_query: np.array,
         args: Any,
         bounds: Tuple[int, int],
         chunk_size: int,
@@ -71,7 +71,7 @@ class FPSim2Engine(BaseEngine):
         chunks = ((x, x + chunk_size) for x in range(*bounds, chunk_size))
         results = []
         for chunk in chunks:
-            res = on_disk_search(search_func.__name__, query, self.storage, args, chunk)
+            res = on_disk_search(search_func.__name__, np_query, self.storage, args, chunk)
             if len(res) > 0:
                 results.append(res)
         if len(results):
@@ -89,7 +89,7 @@ class FPSim2Engine(BaseEngine):
         self,
         search_func: Callable[..., np.ndarray],
         executor: Callable[..., Any],
-        query: np.array,
+        np_query: np.array,
         db: np.array,
         args: Tuple,
         bounds: Tuple[int, int],
@@ -110,7 +110,7 @@ class FPSim2Engine(BaseEngine):
                     exe.submit(
                         on_disk_search,
                         search_func.__name__,
-                        query,
+                        np_query,
                         db,
                         args,
                         chunk,
@@ -119,7 +119,7 @@ class FPSim2Engine(BaseEngine):
                 }
             else:
                 future_ss = {
-                    exe.submit(search_func, query, db, *args, *chunk): chunk_id
+                    exe.submit(search_func, np_query, db, *args, *chunk): chunk_id
                     for chunk_id, chunk in enumerate(chunks)
                 }
             for future in cf.as_completed(future_ss):

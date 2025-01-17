@@ -17,6 +17,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
+import tables as tb
 import numpy as np
 import rdkit
 import math
@@ -114,6 +115,54 @@ def create_db_table(
                 fps,
             )
             conn.commit()
+
+
+def import_pytables(h5_file: str, conn_url: str, table_name: str) -> None:
+    """Imports a FPSim2 PyTables h5 file into a SQL table.
+
+    Parameters
+    ----------
+    h5_file : str
+        Path to FPSim2 PyTables h5 file
+    conn_url : str
+        SQLAlchemy connection URL
+    table_name : str
+        Name of table to create
+    """
+    with tb.open_file(h5_file, mode="r") as fp_file:
+        fp_type = fp_file.root.config[0]
+        fp_params = fp_file.root.config[1]
+        rdkit_ver = fp_file.root.config[2]
+        fpsim2_ver = fp_file.root.config[3]
+        fp_length = get_fp_length(fp_type, fp_params)
+
+        # Create table schema
+        Base = declarative_base()
+        comment = f"{fp_type}||{repr(fp_params)}||{rdkit_ver}||{fpsim2_ver}"
+        FingerprintsTable = create_mapping(table_name, fp_length=fp_length, base=Base)
+        FingerprintsTable.__table__.comment = comment
+
+        # Create and populate table
+        engine = create_engine(conn_url, future=True)
+        Base.metadata.create_all(engine)
+
+        with engine.connect() as conn:
+            fps = []
+            for rid in range(len(fp_file.root.fps)):
+                row = fp_file.root.fps[rid].tolist()
+                record = {
+                    f"fp_{idx}": int(np.uint64(val).astype("i8"))
+                    for idx, val in enumerate(row[1:-1])
+                }
+                record.update({"mol_id": row[0], "popcnt": row[-1]})
+                fps.append(record)
+                if len(fps) == BATCH_SIZE:
+                    conn.execute(insert(FingerprintsTable), fps)
+                    conn.commit()
+                    fps = []
+            if fps:
+                conn.execute(insert(FingerprintsTable), fps)
+                conn.commit()
 
 
 class SqlaStorageBackend(BaseStorageBackend):

@@ -1,3 +1,6 @@
+from typing import Union
+from rdkit.DataStructs import ExplicitBitVect
+from rdkit import Chem
 from .io.chem import get_bounds_range
 from .base import BaseEngine
 import numpy as np
@@ -116,7 +119,10 @@ class FPSim2CudaEngine(BaseEngine):
         return cp.asnumpy(self.cuda_ids[slice_range][mask]), cp.asnumpy(sims[mask])
 
     def similarity(
-        self, query_string: str, threshold: str, full_sanitization: bool = True
+        self,
+        query: Union[str, ExplicitBitVect, Chem.Mol],
+        threshold: float,
+        full_sanitization: bool = True,
     ) -> np.ndarray:
         """Runs a CUDA Tanimoto search.
 
@@ -133,7 +139,7 @@ class FPSim2CudaEngine(BaseEngine):
         results : numpy array
             Similarity results.
         """
-        np_query = self.load_query(query_string, full_sanitization=full_sanitization)
+        np_query = self.load_query(query, full_sanitization=full_sanitization)
         ids, sims = self._raw_kernel_search(np_query, threshold)
 
         # create results numpy array

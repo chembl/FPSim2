@@ -38,7 +38,7 @@ class BaseEngine(ABC):
         elif storage_backend == "sqla":
             if not conn_url or not table_name:
                 raise ValueError(
-                    "Missing required 'conn_url' or 'table_name' param for the sqla backend"
+                    "Missing required 'conn_url' and/or 'table_name' param for the sqla backend"
                 )
             engine = create_mock_engine(conn_url, ())
             if engine.dialect.name not in ("postgresql", "mysql", "oracle"):
@@ -55,7 +55,7 @@ class BaseEngine(ABC):
         if self.in_memory_fps:
             return self.storage.fps
         else:
-            raise Exception("FPs not loaded into memory.")
+            raise Exception("Fingerprints not loaded into memory.")
 
     @property
     def popcnt_bins(self):
@@ -121,7 +121,7 @@ class BaseEngine(ABC):
 
         if not hasattr(self, "popcnt_bins"):
             raise Exception(
-                "FPs are not sorted and popcnt_bins are not stored in memory."
+                "Fingerprints are not sorted and popcnt_bins are not stored in memory."
             )
 
         fp_length = get_fp_length(self.fp_type, self.fp_params)
