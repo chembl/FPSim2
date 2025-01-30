@@ -19,8 +19,21 @@ Highlights:
 
 ## Installation
 
+With [pip](https://pypi.org/project/FPSim2/):
+
 ```bash
 pip install fpsim2
+```
+
+With [conda](https://anaconda.org/conda-forge/fpsim2):
+
+```bash
+conda install conda-forge::fpsim2
+```
+
+With [SBGrid](https://sbgrid.org/software/titles/fpsim2):
+```
+sbgrid-cli install fpsim2
 ```
 
 ## Documentation
