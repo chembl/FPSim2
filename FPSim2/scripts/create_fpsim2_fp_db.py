@@ -11,7 +11,9 @@ import os
 
 def generate_time_hash():
     current_time = str(time.time())
-    hash_object = hashlib.md5(current_time.encode())
+    pid = str(os.getpid())
+    hash_input = current_time + pid
+    hash_object = hashlib.md5(hash_input.encode())
     short_hash = hash_object.hexdigest()
     return short_hash
 
