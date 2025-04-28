@@ -2,18 +2,10 @@ from FPSim2.io.backends.pytables import create_db_file, merge_db_files
 import concurrent.futures as cf
 from typing import List, Tuple
 from itertools import islice
-import hashlib
+import uuid
 import argparse
-import time
 import json
 import os
-
-
-def generate_time_hash():
-    current_time = str(time.time())
-    hash_object = hashlib.md5(current_time.encode())
-    short_hash = hash_object.hexdigest()
-    return short_hash
 
 
 def read_chunk(filename, start_row, end_row):
@@ -31,8 +23,8 @@ def read_chunk(filename, start_row, end_row):
 
 def create_db_chunk(args):
     mols_source, chunk_range, fp_type, fp_params, full_sanitization = args
-    time_hash = generate_time_hash()
-    out_file = f"temp_chunk_{chunk_range[0]}_{time_hash}.h5"
+    uuid_hex = uuid.uuid4().hex
+    out_file = f"temp_chunk_{chunk_range[0]}_{uuid_hex}.h5"
 
     rows = read_chunk(mols_source, chunk_range[0], chunk_range[1])
     create_db_file(
