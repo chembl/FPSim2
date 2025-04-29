@@ -7,7 +7,7 @@ fpsim2-create-db = "FPSim2.scripts.create_fpsim2_fp_db:main"
 
 [project]
 name = "FPSim2"
-version = "0.7.3"
+version = "0.7.4"
 authors = [
     { name = "Eloy Félix", email = "eloyfelix@gmail.com" }
 ]
