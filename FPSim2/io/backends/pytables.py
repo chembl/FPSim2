@@ -7,6 +7,7 @@ from ..chem import (
     it_mol_supplier,
     FP_FUNC_DEFAULTS,
     RDKIT_PARSE_FUNCS,
+    FP_FUNCS
 )
 import tables as tb
 import numpy as np
@@ -48,7 +49,7 @@ def create_db_file(
     is_valid_file = isinstance(mols_source, str) and (
         mols_source.endswith((".smi", ".sdf", ".sdf.gz"))
     )
-    if not (is_valid_file or mol_format in RDKIT_PARSE_FUNCS):
+    if not (is_valid_file or mol_format in FP_FUNCS):
         raise ValueError(f"Unsupported mol_format: {mol_format}")
 
     if fp_type not in FP_FUNC_DEFAULTS:
