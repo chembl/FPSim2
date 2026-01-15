@@ -239,15 +239,14 @@ class ParquetStorageBackend(BaseStorageBackend):
         dtype += [(f"f{i+1}", "<u8") for i in range(len(fp_cols))]
         dtype += [("popcnt", "<i8")]
 
-        table = pf.read(columns=columns)
-        n_rows = table.num_rows
+        n_rows = pf.metadata.num_rows
 
-        # Create structured array and fill
+        # Create structured array and fill column by column (avoids full table copy)
         fps = np.empty(n_rows, dtype=dtype)
-        fps["fp_id"] = table.column("mol_id").to_numpy()
+        fps["fp_id"] = pf.read(columns=["mol_id"]).column(0).to_numpy()
         for col in fp_cols:
-            fps[col] = table.column(col).to_numpy()
-        fps["popcnt"] = table.column("popcnt").to_numpy()
+            fps[col] = pf.read(columns=[col]).column(0).to_numpy()
+        fps["popcnt"] = pf.read(columns=["popcnt"]).column(0).to_numpy()
 
         # In-place sort (no copy)
         fps.sort(order="popcnt")
