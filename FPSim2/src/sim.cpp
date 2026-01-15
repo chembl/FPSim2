@@ -73,7 +73,7 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     for (auto i = start; i < end; i++, dbptr += fp_shape)
     {
         const auto db_popcnt = dbptr[popcnt_idx];
-        
+
         uint64_t common_popcnt = 0;
         for (auto j = 1; j < popcnt_idx; j++)
             common_popcnt += popcntll(qptr[j] & dbptr[j]);
