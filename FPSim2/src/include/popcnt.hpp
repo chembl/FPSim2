@@ -59,9 +59,16 @@ static inline uint64_t common_popcnt_avx512(const uint64_t* qptr,
 
 #endif
 
+// Portable restrict keyword
+#if defined(_MSC_VER)
+    #define RESTRICT __restrict
+#else
+    #define RESTRICT __restrict__
+#endif
+
 // Generic common popcount function - uses AVX512 if available
-static inline uint64_t common_popcnt(const uint64_t* __restrict__ qptr,
-                                      const uint64_t* __restrict__ dbptr,
+static inline uint64_t common_popcnt(const uint64_t* RESTRICT qptr,
+                                      const uint64_t* RESTRICT dbptr,
                                       const size_t start,
                                       const size_t end) {
 #if HAS_AVX512_POPCNT

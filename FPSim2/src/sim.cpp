@@ -166,12 +166,14 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
     {
         std::priority_queue<Result, std::vector<Result>, utils::ResultComparator> top_k;
 
+        float min_coeff = threshold;
+
         for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_shape)
         {
             uint64_t common_popcnt_val = common_popcnt(qptr, dbptr, 1, popcnt_idx);
 
             float coeff = calc.calculate(common_popcnt_val, q_popcnt, dbptr[popcnt_idx]);
-            if (coeff < threshold)
+            if (coeff < min_coeff)
                 continue;
 
             if (top_k.size() < k)
@@ -182,6 +184,7 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
             {
                 top_k.pop();
                 top_k.push({idx, static_cast<uint32_t>(dbptr[0]), coeff});
+                min_coeff = top_k.top().coeff;
             }
         }
         results->reserve(top_k.size());
