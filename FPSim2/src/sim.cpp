@@ -74,13 +74,11 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     {
         const auto db_popcnt = dbptr[popcnt_idx];
 
-        uint64_t common_popcnt = 0;
-        for (auto j = 1; j < popcnt_idx; j++)
-            common_popcnt += popcntll(qptr[j] & dbptr[j]);
+        uint64_t common_popcnt_val = common_popcnt(qptr, dbptr, 1, popcnt_idx);
 
         // Tversky: common / (common*(1-a-b) + a*q_popcnt + b*db_popcnt)
-        float denom = common_popcnt * one_minus_a_minus_b + a_times_q + b * db_popcnt;
-        float coeff = (denom != 0.0f) ? common_popcnt / denom : 0.0f;
+        float denom = common_popcnt_val * one_minus_a_minus_b + a_times_q + b * db_popcnt;
+        float coeff = (denom != 0.0f) ? common_popcnt_val / denom : 0.0f;
 
         if (coeff >= threshold)
             results->push_back({i, (uint32_t)dbptr[0], coeff});
@@ -94,31 +92,31 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
 
 struct TanimotoCalculator
 {
-    static inline float calculate(const uint32_t &common_popcnt,
-                                  const uint32_t &qcount,
-                                  const uint32_t &ocount)
+    static inline float calculate(const uint64_t common_popcnt,
+                                  const uint64_t qcount,
+                                  const uint64_t ocount)
     {
-        return (float)common_popcnt / (qcount + ocount - common_popcnt);
+        return (float)common_popcnt / (float)(qcount + ocount - common_popcnt);
     }
 };
 
 struct CosineCalculator
 {
-    static inline float calculate(const uint32_t &common_popcnt,
-                                  const uint32_t &qcount,
-                                  const uint32_t &ocount)
+    static inline float calculate(const uint64_t common_popcnt,
+                                  const uint64_t qcount,
+                                  const uint64_t ocount)
     {
-        return (float)common_popcnt / sqrt(qcount * ocount);
+        return (float)common_popcnt / sqrtf((float)qcount * (float)ocount);
     }
 };
 
 struct DiceCalculator
 {
-    static inline float calculate(const uint32_t &common_popcnt,
-                                  const uint32_t &qcount,
-                                  const uint32_t &ocount)
+    static inline float calculate(const uint64_t common_popcnt,
+                                  const uint64_t qcount,
+                                  const uint64_t ocount)
     {
-        return (2.0f * common_popcnt) / (qcount + ocount);
+        return (2.0f * common_popcnt) / (float)(qcount + ocount);
     }
 };
 
@@ -170,11 +168,9 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
 
         for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_shape)
         {
-            uint64_t common_popcnt = 0;
-            for (auto j = 1; j < popcnt_idx; j++)
-                common_popcnt += popcntll(qptr[j] & dbptr[j]);
+            uint64_t common_popcnt_val = common_popcnt(qptr, dbptr, 1, popcnt_idx);
 
-            float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
+            float coeff = calc.calculate(common_popcnt_val, q_popcnt, dbptr[popcnt_idx]);
             if (coeff < threshold)
                 continue;
 
@@ -200,11 +196,9 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
     {
         for (auto i = start; i < end; i++, dbptr += fp_shape)
         {
-            uint64_t common_popcnt = 0;
-            for (auto j = 1; j < popcnt_idx; j++)
-                common_popcnt += popcntll(qptr[j] & dbptr[j]);
+            uint64_t common_popcnt_val = common_popcnt(qptr, dbptr, 1, popcnt_idx);
 
-            float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
+            float coeff = calc.calculate(common_popcnt_val, q_popcnt, dbptr[popcnt_idx]);
             if (coeff < threshold)
                 continue;
             results->push_back({i, static_cast<uint32_t>(dbptr[0]), coeff});
