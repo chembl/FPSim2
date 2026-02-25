@@ -39,10 +39,6 @@ jobs:
           # Windows 64 bit
           - os: windows-latest
             bitness: 64
-            python: 310
-            platform_id: win_amd64
-          - os: windows-latest
-            bitness: 64
             python: 311
             platform_id: win_amd64
           - os: windows-latest
@@ -53,15 +49,20 @@ jobs:
             bitness: 64
             python: 313
             platform_id: win_amd64
+          - os: windows-latest
+            bitness: 64
+            python: 314
+            platform_id: win_amd64
+          # Windows 64 bit free-threaded
+          - os: windows-latest
+            bitness: 64
+            python: 314t
+            platform_id: win_amd64
+            free_threaded: true
 
           # Linux 64 bit manylinux_2_28
           - os: ubuntu-latest
             bitness: 64
-            python: 310
-            platform_id: manylinux_x86_64
-            manylinux_image: manylinux_2_28
-          - os: ubuntu-latest
-            bitness: 64
             python: 311
             platform_id: manylinux_x86_64
             manylinux_image: manylinux_2_28
@@ -75,14 +76,22 @@ jobs:
             python: 313
             platform_id: manylinux_x86_64
             manylinux_image: manylinux_2_28
+          - os: ubuntu-latest
+            bitness: 64
+            python: 314
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux_2_28
+          # Linux 64 bit manylinux_2_28 free-threaded
+          - os: ubuntu-latest
+            bitness: 64
+            python: 314t
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux_2_28
+            free_threaded: true
 
           # MacOS x86_64
           - os: macos-latest
             bitness: 64
-            python: 310
-            platform_id: macosx_x86_64
-          - os: macos-latest
-            bitness: 64
             python: 311
             platform_id: macosx_x86_64
           - os: macos-latest
@@ -93,14 +102,20 @@ jobs:
             bitness: 64
             python: 313
             platform_id: macosx_x86_64
+          - os: macos-latest
+            bitness: 64
+            python: 314
+            platform_id: macosx_x86_64
+          # MacOS x86_64 free-threaded
+          - os: macos-latest
+            bitness: 64
+            python: 314t
+            platform_id: macosx_x86_64
+            free_threaded: true
 
           # MacOS arm64
           - os: macos-latest
             bitness: 64
-            python: 310
-            platform_id: macosx_arm64
-          - os: macos-latest
-            bitness: 64
             python: 311
             platform_id: macosx_arm64
           - os: macos-latest
@@ -111,6 +126,16 @@ jobs:
             bitness: 64
             python: 313
             platform_id: macosx_arm64
+          - os: macos-latest
+            bitness: 64
+            python: 314
+            platform_id: macosx_arm64
+          # MacOS arm64 free-threaded
+          - os: macos-latest
+            bitness: 64
+            python: 314t
+            platform_id: macosx_arm64
+            free_threaded: true
 
 
     steps:
@@ -122,6 +147,7 @@ jobs:
         CIBW_ARCHS_MACOS: x86_64 arm64
         CIBW_ARCHS_WINDOWS: AMD64
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+        CIBW_FREE_THREADED_SUPPORT: ${{ matrix.free_threaded || false }}
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: "pytest {project}/tests"
         CIBW_BUILD_VERBOSITY: 1
