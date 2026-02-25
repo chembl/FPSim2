@@ -6,7 +6,6 @@ import numpy as np
 import rdkit
 import math
 import json
-import time
 from importlib.metadata import version
 
 __version__ = version("FPSim2")
@@ -225,10 +224,8 @@ class ParquetStorageBackend(BaseStorageBackend):
 
         return fp_type, fp_params, rdkit_ver, fpsim2_ver
 
-    def load_fps(self) -> None:
+    def load_fps(self, in_memory_fps: bool = True, fps_sort: bool = True) -> None:
         """Load fingerprints from Parquet file into memory."""
-        # Time loading the file
-        load_start = time.time()
         pf = pq.ParquetFile(self.fp_filename)
         schema = pf.schema_arrow
         fp_cols = sorted(
@@ -243,26 +240,17 @@ class ParquetStorageBackend(BaseStorageBackend):
         dtype += [("popcnt", "<i8")]
 
         n_rows = pf.metadata.num_rows
-        load_end = time.time()
-        print(f"Time to load Parquet file: {load_end - load_start:.4f} seconds")
 
-        # Time converting to numpy
-        convert_start = time.time()
         # Create structured array and fill column by column (avoids full table copy)
         fps = np.empty(n_rows, dtype=dtype)
         fps["fp_id"] = pf.read(columns=["mol_id"]).column(0).to_numpy()
         for col in fp_cols:
             fps[col] = pf.read(columns=[col]).column(0).to_numpy()
         fps["popcnt"] = pf.read(columns=["popcnt"]).column(0).to_numpy()
-        convert_end = time.time()
-        print(f"Time to convert to numpy: {convert_end - convert_start:.4f} seconds")
 
-        # Time sorting
-        sort_start = time.time()
         # In-place sort (no copy)
-        fps.sort(order="popcnt")
-        sort_end = time.time()
-        print(f"Time to sort: {sort_end - sort_start:.4f} seconds")
+        if fps_sort:
+            fps.sort(order="popcnt")
 
         # View as 2D uint64 (no copy)
         self.fps = fps.view("<u8").reshape(-1, len(columns))

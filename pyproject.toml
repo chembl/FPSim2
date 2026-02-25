@@ -32,7 +32,11 @@ dependencies = [
     "rdkit>=2022.3.3",
     "tables>=3.10",
     "numpy>=1.14",
-    "sqlalchemy>=1.4.47",
     "scipy",
     "tqdm"
 ]
+
+[project.optional-dependencies]
+sql = ["sqlalchemy>=1.4.47"]
+parquet = ["pyarrow>=12.0"]
+all = ["sqlalchemy>=1.4.47", "pyarrow>=12.0"]

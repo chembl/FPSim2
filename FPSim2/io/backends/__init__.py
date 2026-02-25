@@ -1,3 +1,13 @@
 from .pytables import PyTablesStorageBackend
-from .sqla import SqlaStorageBackend
-from .parquet import ParquetStorageBackend
+
+try:
+    from .sqla import SqlaStorageBackend
+except ImportError:
+    SqlaStorageBackend = None
+
+try:
+    from .parquet import ParquetStorageBackend
+except ImportError:
+    ParquetStorageBackend = None
+
+__all__ = ["PyTablesStorageBackend", "SqlaStorageBackend", "ParquetStorageBackend"]

@@ -1,15 +1,18 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp, process_fp
 from .io.backends.pytables import create_schema, get_fp_length
-from .io.backends import PyTablesStorageBackend
-from .io.backends import SqlaStorageBackend
-from .io.backends import ParquetStorageBackend
-from sqlalchemy import create_mock_engine
+from .io.backends import PyTablesStorageBackend, SqlaStorageBackend, ParquetStorageBackend
 from rdkit.DataStructs import ExplicitBitVect
 from rdkit import Chem
 from typing import Union
 import tables as tb
 import numpy as np
+
+try:
+    from sqlalchemy import create_mock_engine
+    HAS_SQLALCHEMY = True
+except ImportError:
+    HAS_SQLALCHEMY = False
 
 
 class BaseEngine(ABC):
@@ -37,6 +40,10 @@ class BaseEngine(ABC):
                 fp_filename, in_memory_fps=in_memory_fps, fps_sort=fps_sort
             )
         elif storage_backend == "sqla":
+            if SqlaStorageBackend is None or not HAS_SQLALCHEMY:
+                raise ImportError(
+                    "SQLAlchemy backend requires sqlalchemy. Install with: pip install 'FPSim2[sql]'"
+                )
             if not conn_url or not table_name:
                 raise ValueError(
                     "Missing required 'conn_url' or 'table_name' param for the sqla backend"
@@ -48,6 +55,10 @@ class BaseEngine(ABC):
                 )
             self.storage = SqlaStorageBackend(conn_url, table_name, pg_schema)
         elif storage_backend == "parquet":
+            if ParquetStorageBackend is None:
+                raise ImportError(
+                    "Parquet backend requires pyarrow. Install with: pip install 'FPSim2[parquet]'"
+                )
             if not fp_filename:
                 raise ValueError(
                     "Missing required 'fp_filename' param for the parquet backend"
