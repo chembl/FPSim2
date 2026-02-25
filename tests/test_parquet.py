@@ -23,7 +23,8 @@ def smi_file():
 
 @pytest.fixture
 def h5_file():
-    return "tests/data/10mols.h5"
+    # Use a pre-existing static HDF5 test file to avoid inter-test dependencies
+    return "tests/data/test.h5"
 
 
 @pytest.fixture
