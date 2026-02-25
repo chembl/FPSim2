@@ -4,6 +4,7 @@
 #include "result.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
+#include <algorithm>
 #include <queue>
 
 namespace py = pybind11;
@@ -24,6 +25,7 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
     const auto popcnt_idx = fp_shape - 1;
 
     auto results = new std::vector<uint32_t>();
+    results->reserve(256);
 
     // Substructure match requires all query bits to be present in db entry
     for (auto i = start; i < end; i++, dbptr += fp_shape)
@@ -69,6 +71,7 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     const float a_times_q = a * q_popcnt;
 
     auto results = new std::vector<Result>();
+    results->reserve(1024);
 
     for (auto i = start; i < end; i++, dbptr += fp_shape)
     {
@@ -100,6 +103,13 @@ struct TanimotoCalculator
     {
         return (float)common_popcnt / (qcount + ocount - common_popcnt);
     }
+
+    static inline float max_coefficient(const uint64_t qcount,
+                                        const uint64_t ocount)
+    {
+        const auto max_pc = std::max(qcount, ocount);
+        return max_pc > 0 ? (float)std::min(qcount, ocount) / max_pc : 0.0f;
+    }
 };
 
 struct CosineCalculator
@@ -110,6 +120,13 @@ struct CosineCalculator
     {
         return (float)common_popcnt / sqrt(qcount * ocount);
     }
+
+    static inline float max_coefficient(const uint64_t qcount,
+                                        const uint64_t ocount)
+    {
+        const auto product = qcount * ocount;
+        return product > 0 ? (float)std::min(qcount, ocount) / sqrt(product) : 0.0f;
+    }
 };
 
 struct DiceCalculator
@@ -119,6 +136,13 @@ struct DiceCalculator
                                   const uint32_t &ocount)
     {
         return (2.0f * common_popcnt) / (qcount + ocount);
+    }
+
+    static inline float max_coefficient(const uint64_t qcount,
+                                        const uint64_t ocount)
+    {
+        const auto sum = qcount + ocount;
+        return sum > 0 ? (2.0f * std::min(qcount, ocount)) / sum : 0.0f;
     }
 };
 
@@ -167,25 +191,35 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
     if (k > 0) // top-k search
     {
         std::priority_queue<Result, std::vector<Result>, utils::ResultComparator> top_k;
+        float dynamic_threshold = threshold;
 
         for (uint32_t idx = start; idx < end; ++idx, dbptr += fp_shape)
         {
+            const auto db_popcnt = dbptr[popcnt_idx];
+
+            // Skip if popcount-based upper bound can't beat dynamic threshold
+            if (calc.max_coefficient(q_popcnt, db_popcnt) < dynamic_threshold)
+                continue;
+
             uint64_t common_popcnt = 0;
             for (auto j = 1; j < popcnt_idx; j++)
                 common_popcnt += popcntll(qptr[j] & dbptr[j]);
 
-            float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
-            if (coeff < threshold)
+            float coeff = calc.calculate(common_popcnt, q_popcnt, db_popcnt);
+            if (coeff < dynamic_threshold)
                 continue;
 
             if (top_k.size() < k)
             {
                 top_k.push({idx, static_cast<uint32_t>(dbptr[0]), coeff});
+                if (top_k.size() == k)
+                    dynamic_threshold = std::max(dynamic_threshold, top_k.top().coeff);
             }
             else if (coeff > top_k.top().coeff)
             {
                 top_k.pop();
                 top_k.push({idx, static_cast<uint32_t>(dbptr[0]), coeff});
+                dynamic_threshold = top_k.top().coeff;
             }
         }
         results->reserve(top_k.size());
@@ -198,6 +232,7 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
     }
     else // normal search
     {
+        results->reserve(1024);
         for (auto i = start; i < end; i++, dbptr += fp_shape)
         {
             uint64_t common_popcnt = 0;
