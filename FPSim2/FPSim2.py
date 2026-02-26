@@ -53,11 +53,6 @@ class FPSim2Engine(BaseEngine):
             raise ValueError(
                 "Loading the fingerprints into memory is required for the SQLAlchemy backend"
             )
-        if not in_memory_fps and storage_backend == "parquet":
-            raise ValueError(
-                "Loading the fingerprints into memory is required for the Parquet backend"
-            )
-
         self.empty_sim = np.ndarray((0,), dtype=[("mol_id", "<u4"), ("coeff", "<f4")])
         self.empty_subs = np.ndarray((0,), dtype="<u4")
 

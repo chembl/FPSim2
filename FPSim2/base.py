@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .io.chem import load_molecule, build_fp, process_fp
 from .io.backends.pytables import create_schema, get_fp_length
-from .io.backends import PyTablesStorageBackend, SqlaStorageBackend, ParquetStorageBackend
+from .io.backends import PyTablesStorageBackend, SqlaStorageBackend
 from rdkit.DataStructs import ExplicitBitVect
 from rdkit import Chem
 from typing import Union
@@ -54,16 +54,6 @@ class BaseEngine(ABC):
                     "FPSim2 sqla engine only works for PostgreSQL, MySQL and Oracle (experimental)"
                 )
             self.storage = SqlaStorageBackend(conn_url, table_name, pg_schema)
-        elif storage_backend == "parquet":
-            if ParquetStorageBackend is None:
-                raise ImportError(
-                    "Parquet backend requires pyarrow. Install with: pip install 'FPSim2[parquet]'"
-                )
-            if not fp_filename:
-                raise ValueError(
-                    "Missing required 'fp_filename' param for the parquet backend"
-                )
-            self.storage = ParquetStorageBackend(fp_filename, fps_sort=fps_sort)
 
     def __str__(self):
         return f"FPSim2Engine(fp_type='{self.fp_type}', fp_params={self.fp_params}, rdkit_ver={self.rdkit_ver}, fpsim2_ver={self.fpsim2_ver})"

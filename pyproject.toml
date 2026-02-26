@@ -38,5 +38,3 @@ dependencies = [
 
 [project.optional-dependencies]
 sql = ["sqlalchemy>=1.4.47"]
-parquet = ["pyarrow>=12.0"]
-all = ["sqlalchemy>=1.4.47", "pyarrow>=12.0"]

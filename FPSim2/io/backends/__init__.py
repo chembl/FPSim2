@@ -5,9 +5,4 @@ try:
 except ImportError:
     SqlaStorageBackend = None
 
-try:
-    from .parquet import ParquetStorageBackend
-except ImportError:
-    ParquetStorageBackend = None
-
-__all__ = ["PyTablesStorageBackend", "SqlaStorageBackend", "ParquetStorageBackend"]
+__all__ = ["PyTablesStorageBackend", "SqlaStorageBackend"]
