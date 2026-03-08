@@ -2,7 +2,12 @@ from .FPSim2 import FPSim2Engine
 
 try:
     from .FPSim2Cuda import FPSim2CudaEngine
-except Exception as e:
+except Exception:
+    pass
+
+try:
+    from .FPSim2Metal import FPSim2MetalEngine
+except Exception:
     pass
 
 try:
