@@ -1,4 +1,5 @@
 from .io.chem import get_bounds_range
+from .FPSim2lib.utils import SortResults
 from .base import BaseEngine
 import numpy as np
 import cupy as cp
@@ -26,30 +27,30 @@ class FPSim2CudaEngine(BaseEngine):
                      const unsigned long long int* db,
                      const unsigned long long int* popcnts,
                      const float* threshold,
+                     const int* num_mols,
+                     const int* fp_size,
                      float* out) {{
 
-            // Shared block array. Only visible for threads in same block
-            __shared__ int common[{block}];
-
+            // One thread per molecule - more efficient than shared memory reduction
             int tid = blockDim.x * blockIdx.x + threadIdx.x;
-            common[threadIdx.x] = __popcll(query[threadIdx.x] & db[tid]);
-
-            // threads need to wait until all threads finish
-            __syncthreads();
-
-            // thread 0 in each block sums the common bits
-            // and calcs the final coeff
-            if(0 == threadIdx.x)
-            {{
-                int comm_sum = 0;
-                for(int i=0; i<{block}; i++)
-                    comm_sum += common[i];
-
-                float coeff = 0.0;
-                coeff = *qcount + popcnts[blockIdx.x] - comm_sum;
-                if (coeff != 0.0)
-                    coeff = comm_sum / coeff;
-                out[blockIdx.x] = coeff >= *threshold ? coeff : 0.0;
+            
+            if (tid < *num_mols) {{
+                int common_bits = 0;
+                int fp_sz = *fp_size;
+                
+                // Compute popcount of (query AND db_fp) for each uint64 block
+                for (int i = 0; i < fp_sz; i++) {{
+                    common_bits += __popcll(query[i] & db[tid * fp_sz + i]);
+                }}
+                
+                // Tanimoto = intersection / (A + B - intersection)
+                float coeff = 0.0f;
+                int union_count = *qcount + popcnts[tid] - common_bits;
+                if (union_count > 0) {{
+                    coeff = (float)common_bits / (float)union_count;
+                }}
+                
+                out[tid] = coeff >= *threshold ? coeff : 0.0f;
             }}
         }}
     """
@@ -75,8 +76,9 @@ class FPSim2CudaEngine(BaseEngine):
         self.cuda_db = cp.asarray(self.fps[:, 1:-1])
         self.cuda_ids = cp.asarray(self.fps[:, 0])
         self.cuda_db_popcnts = cp.asarray(self.fps[:, -1])
+        self.fp_size = self.cuda_db.shape[1]  # number of uint64 elements per fingerprint
         self.cupy_kernel = cp.RawKernel(
-            self.raw_kernel.format(block=self.cuda_db.shape[1]),
+            self.raw_kernel,
             name="taniRAW",
             options=("-std=c++14",),
         )
@@ -95,9 +97,19 @@ class FPSim2CudaEngine(BaseEngine):
         cuda_query_popcount = cp.asarray(np_query[-1], dtype=cp.uint64)
 
         slice_range = slice(*fp_range)
-        grid_size = int(fp_range[1] - fp_range[0])
-        sims = cp.zeros(grid_size, dtype=cp.float32)
-        block_size = self.cuda_db.shape[1]  # number of uint64 elements per fingerprint
+        num_mols = int(fp_range[1] - fp_range[0])
+        sims = cp.zeros(num_mols, dtype=cp.float32)
+        
+        # Flatten db slice for contiguous memory access
+        db_slice = self.cuda_db[slice_range].ravel()
+        popcnts_slice = self.cuda_db_popcnts[slice_range]
+        
+        # Grid/block configuration: 256 threads per block, one thread per molecule
+        block_size = 256
+        grid_size = (num_mols + block_size - 1) // block_size
+        
+        cuda_num_mols = cp.asarray(num_mols, dtype=cp.int32)
+        cuda_fp_size = cp.asarray(self.fp_size, dtype=cp.int32)
 
         # run the kernel
         self.cupy_kernel(
@@ -106,14 +118,17 @@ class FPSim2CudaEngine(BaseEngine):
             (
                 cuda_query,
                 cuda_query_popcount,
-                self.cuda_db[slice_range],
-                self.cuda_db_popcnts[slice_range],
+                db_slice,
+                popcnts_slice,
                 cuda_threshold,
+                cuda_num_mols,
+                cuda_fp_size,
                 sims,
             ),
         )
         mask = cp.where(sims > 0)[0]
-        return cp.asnumpy(self.cuda_ids[slice_range][mask]), cp.asnumpy(sims[mask])
+        ids_slice = self.cuda_ids[slice_range]
+        return cp.asnumpy(ids_slice[mask]), cp.asnumpy(sims[mask])
 
     def similarity(
         self, query_string: str, threshold: str, full_sanitization: bool = True
@@ -143,5 +158,6 @@ class FPSim2CudaEngine(BaseEngine):
         )
         results["mol_id"] = ids
         results["coeff"] = sims
-        results[::-1].sort(order="coeff")
+        if len(results) > 0:
+            SortResults(results)
         return results
