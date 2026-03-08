@@ -3,7 +3,6 @@
 Requires MLX: pip install mlx
 """
 from .io.chem import get_bounds_range
-from .FPSim2lib.utils import SortResults
 from .base import BaseEngine
 import numpy as np
 
@@ -213,6 +212,6 @@ class FPSim2MetalEngine(BaseEngine):
         if len(ids) > 0:
             results["mol_id"] = ids
             results["coeff"] = sims
-            SortResults(results)
+            results[::-1].sort(order="coeff")
         
         return results

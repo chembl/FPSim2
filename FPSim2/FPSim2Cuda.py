@@ -1,5 +1,4 @@
 from .io.chem import get_bounds_range
-from .FPSim2lib.utils import SortResults
 from .base import BaseEngine
 import numpy as np
 import cupy as cp
@@ -159,5 +158,5 @@ class FPSim2CudaEngine(BaseEngine):
         results["mol_id"] = ids
         results["coeff"] = sims
         if len(results) > 0:
-            SortResults(results)
+            results[::-1].sort(order="coeff")
         return results
