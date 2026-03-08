@@ -31,10 +31,11 @@ classifiers = [
 dependencies = [
     "rdkit>=2022.3.3",
     "tables>=3.10",
-    "numpy>=1.14",
-    "scipy",
-    "tqdm"
+    "numpy>=1.14"
 ]
 
 [project.optional-dependencies]
 sql = ["sqlalchemy>=1.4.47"]
+matrix = ["scipy", "tqdm"]
+metal = ["mlx>=0.10.0"]
+cuda = ["cupy>=14.0.1"]

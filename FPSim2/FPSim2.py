@@ -8,7 +8,6 @@ from .FPSim2lib import (
     SubstructureScreenout,
 )
 from .FPSim2lib.utils import SortResults
-from scipy.sparse import csr_matrix
 from .base import BaseEngine
 from rdkit import Chem
 import numpy as np
@@ -372,7 +371,23 @@ class FPSim2Engine(BaseEngine):
         threshold: float,
         metric: str = "tanimoto",
         n_workers: int = 4,
-    ) -> csr_matrix:
+    ):
+        """Compute symmetric distance matrix.
+
+        Parameters
+        ----------
+        threshold : float
+            Similarity threshold.
+        metric : str
+            Similarity metric: 'tanimoto', 'dice', or 'cosine'.
+        n_workers : int
+            Number of threads to use.
+
+        Returns
+        -------
+        csr_matrix
+            Sparse symmetric distance matrix (1 - similarity).
+        """
         search_func = GenericSearch
 
         if metric not in METRICS:
@@ -383,7 +398,14 @@ class FPSim2Engine(BaseEngine):
 
         args = (threshold, 0, calc_type)
 
-        from tqdm import tqdm
+        try:
+            from scipy.sparse import csr_matrix
+            from tqdm import tqdm
+        except ImportError:
+            raise ImportError(
+                "scipy and tqdm are required for symmetric_distance_matrix. "
+                "Install them with: pip install FPSim2[matrix]"
+            )
 
         idxs = np.arange(self.fps.shape[0], dtype=np.uint32)
         np.random.shuffle(idxs)
