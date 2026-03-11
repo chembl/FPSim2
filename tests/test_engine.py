@@ -12,7 +12,7 @@ TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 query_smi = "Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccccc1Cl"
 FP_PARAMS = {"radius": 2, "fpSize": 2048}
 
-MATRIX = np.matrix(
+MATRIX = np.array(
     [
         [
             0.0,

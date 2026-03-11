@@ -21,7 +21,7 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
     const auto db = py_db.unchecked<2>();
     const auto *dbptr = (uint64_t *)db.data(start, 0);
 
-    const auto fp_shape = query.shape(0);
+    const auto fp_shape = static_cast<size_t>(query.shape(0));
     const auto popcnt_idx = fp_shape - 1;
 
     auto results = new std::vector<uint32_t>();
@@ -63,7 +63,7 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     const auto db = py_db.unchecked<2>();
     const auto *dbptr = (uint64_t *)db.data(start, 0);
 
-    const auto fp_shape = query.shape(0);
+    const auto fp_shape = static_cast<size_t>(query.shape(0));
     const auto popcnt_idx = fp_shape - 1;
     const auto q_popcnt = qptr[popcnt_idx];
 
@@ -77,9 +77,7 @@ py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
     {
         const auto db_popcnt = dbptr[popcnt_idx];
 
-        uint64_t common_popcnt = 0;
-        for (auto j = 1; j < popcnt_idx; j++)
-            common_popcnt += popcntll(qptr[j] & dbptr[j]);
+        uint64_t common_popcnt = CommonBitsCount(qptr + 1, dbptr + 1, popcnt_idx - 1);
 
         // Tversky: common / (common*(1-a-b) + a*q_popcnt + b*db_popcnt)
         float denom = common_popcnt * one_minus_a_minus_b + a_times_q + b * db_popcnt;
@@ -182,7 +180,7 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
     const auto db = py_db.unchecked<2>();
     const auto *dbptr = (uint64_t *)db.data(start, 0);
 
-    const auto fp_shape = query.shape(0);
+    const auto fp_shape = static_cast<size_t>(query.shape(0));
     const auto popcnt_idx = fp_shape - 1;
     const auto q_popcnt = qptr[popcnt_idx];
 
@@ -201,9 +199,7 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
             if (calc.max_coefficient(q_popcnt, db_popcnt) < dynamic_threshold)
                 continue;
 
-            uint64_t common_popcnt = 0;
-            for (auto j = 1; j < popcnt_idx; j++)
-                common_popcnt += popcntll(qptr[j] & dbptr[j]);
+            uint64_t common_popcnt = CommonBitsCount(qptr + 1, dbptr + 1, popcnt_idx - 1);
 
             float coeff = calc.calculate(common_popcnt, q_popcnt, db_popcnt);
             if (coeff < dynamic_threshold)
@@ -235,9 +231,7 @@ py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
         results->reserve(1024);
         for (auto i = start; i < end; i++, dbptr += fp_shape)
         {
-            uint64_t common_popcnt = 0;
-            for (auto j = 1; j < popcnt_idx; j++)
-                common_popcnt += popcntll(qptr[j] & dbptr[j]);
+            uint64_t common_popcnt = CommonBitsCount(qptr + 1, dbptr + 1, popcnt_idx - 1);
 
             float coeff = calc.calculate(common_popcnt, q_popcnt, dbptr[popcnt_idx]);
             if (coeff < threshold)

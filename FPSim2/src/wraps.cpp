@@ -43,7 +43,6 @@ PYBIND11_MODULE(FPSim2lib, m) {
         Generic similarity search supporting multiple metrics and top-K.
     )pbdoc");
 
-
     auto mutils = m.def_submodule("utils");
 
     mutils.def("PyPopcount", &utils::PyPopcount, py::call_guard<py::gil_scoped_release>(),

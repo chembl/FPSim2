@@ -1,15 +1,12 @@
-from setuptools import setup, Extension, distutils, find_packages
+from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
-import platform
-import sys
 import os
+import sys
+import platform
 
 
-class get_pybind_include(object):
-    """Helper class to determine the pybind11 include path
-    The purpose of this class is to postpone importing pybind11
-    until it is actually installed, so that the ``get_include()``
-    method can be invoked."""
+class get_pybind_include:
+    """Helper class to determine the pybind11 include path."""
 
     def __str__(self):
         import pybind11
@@ -17,90 +14,133 @@ class get_pybind_include(object):
         return pybind11.get_include()
 
 
+# =============================================================================
+# Platform detection (evaluated once at import time)
+# =============================================================================
+_MACHINE = platform.machine().lower()
+IS_X86_64 = _MACHINE in ("x86_64", "amd64", "x64")
+IS_ARM64 = _MACHINE in ("aarch64", "arm64")
+IS_MACOS = sys.platform == "darwin"
+
+# =============================================================================
+# Build configuration from environment variables
+# =============================================================================
+# FPSIM2_ARCH: Architecture selection
+#   - default: Scalar POPCNT (all x86-64), NEON (all ARM64)
+#   - avx512:  AVX-512 VPOPCNTDQ (Ice Lake+, Zen4+)
+#   - native:  Auto-detect via -march=native
+#
+# FPSIM2_FP_SIZE: Fixed fingerprint size in uint64s (4=256bit, 8=512bit, etc.)
+#   - Enables compile-time optimizations, reduces flexibility
+#
+# For wheels: use defaults for maximum compatibility.
+# Users can build from source with: FPSIM2_ARCH=avx512 FPSIM2_FP_SIZE=8
+
+FPSIM2_ARCH = os.environ.get("FPSIM2_ARCH", "default").lower()
+FPSIM2_FP_SIZE = os.environ.get("FPSIM2_FP_SIZE", "")
+
+
+def _get_fp_size():
+    """Parse and validate FPSIM2_FP_SIZE."""
+    if FPSIM2_FP_SIZE:
+        try:
+            size = int(FPSIM2_FP_SIZE)
+            if size > 0:
+                return size
+        except ValueError:
+            pass
+    return None
+
+
+# =============================================================================
+# Compiler flag configuration
+# =============================================================================
+# GCC/Clang x86-64 flags
+_GCC_FLAGS = {
+    "default": ["-mpopcnt"],
+    "avx512": ["-mavx512f", "-mavx512vl", "-mavx512vpopcntdq"],
+    "native": ["-march=native"],
+}
+
+# MSVC x86-64 flags (MSVC doesn't need explicit POPCNT)
+_MSVC_FLAGS = {
+    "default": [],
+    "avx512": ["/arch:AVX512"],
+    "native": [],
+}
+
+# MSVC defines most AVX-512 macros with /arch:AVX512 but not VPOPCNTDQ
+_MSVC_AVX512_MACROS = [("__AVX512VPOPCNTDQ__", "1")]
+
+
 ext_modules = [
     Extension(
         "FPSim2.FPSim2lib",
-        sources=sorted(
-            ["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"]
-        ),
-        include_dirs=[
-            "FPSim2/src/include",
-            # Path to pybind11 headers
-            get_pybind_include(),
-        ],
+        sources=["FPSim2/src/sim.cpp", "FPSim2/src/utils.cpp", "FPSim2/src/wraps.cpp"],
+        include_dirs=["FPSim2/src/include", get_pybind_include()],
         language="c++",
     ),
 ]
 
 
-def has_flag(compiler, flagname):
-    """Return a boolean indicating whether a flag name is supported on
-    the specified compiler.
-    """
-    import tempfile
-
-    with tempfile.NamedTemporaryFile("w", suffix=".cpp", delete=False) as f:
-        f.write("int main (int argc, char **argv) { return 0; }")
-        fname = f.name
-    try:
-        compiler.compile([fname], extra_postargs=[flagname])
-    except distutils.errors.CompileError:
-        return False
-    finally:
-        try:
-            os.remove(fname)
-        except OSError:
-            pass
-    return True
-
-
-def cpp_flag(compiler):
-    """Return the -std=c++[11/14/17] compiler flag.
-    The newer version is prefered over c++11 (when it is available).
-    """
-    flags = ["-std=c++17", "-std=c++14", "-std=c++11"]
-
-    for flag in flags:
-        if has_flag(compiler, flag):
-            return flag
-
-    raise RuntimeError("Unsupported compiler -- at least C++11 support " "is needed!")
-
-
 class BuildExt(build_ext):
-    """A custom build extension for adding compiler-specific options."""
-
-    c_opts = {"msvc": ["/EHsc", "/arch:AVX"], "unix": ["-O3"]}
-    machine = platform.machine().lower()
-    if os.getenv("FPSIM2_MARCH_NATIVE") == "1":
-        c_opts["unix"] += ["-march=native"]
-    else:
-        if machine.startswith("x86"):
-            c_opts["unix"] += ["-msse4.2"]
-
-    l_opts = {"msvc": [], "unix": []}
-
-    if sys.platform == "darwin":
-        darwin_opts = ["-stdlib=libc++", "-mmacosx-version-min=10.9"]
-        c_opts["unix"] += darwin_opts
-        l_opts["unix"] += darwin_opts
+    """Custom build extension for platform-specific compiler options."""
 
     def build_extensions(self):
         ct = self.compiler.compiler_type
-        opts = self.c_opts.get(ct, [])
-        link_opts = self.l_opts.get(ct, [])
-        if ct == "unix":
-            opts.append(cpp_flag(self.compiler))
-            if has_flag(self.compiler, "-fvisibility=hidden"):
-                opts.append("-fvisibility=hidden")
+        is_msvc = ct == "msvc"
+        fp_size = _get_fp_size()
 
+        # Determine compiler flags and macros
+        if IS_X86_64:
+            flags_dict = _MSVC_FLAGS if is_msvc else _GCC_FLAGS
+            arch_flags = flags_dict.get(FPSIM2_ARCH, flags_dict["default"])
+            arch_macros = _MSVC_AVX512_MACROS if (is_msvc and FPSIM2_ARCH == "avx512") else []
+        else:
+            # ARM64: NEON is mandatory, no special flags needed
+            arch_flags = []
+            arch_macros = []
+            if FPSIM2_ARCH == "avx512":
+                print(f"FPSim2: Warning: FPSIM2_ARCH=avx512 ignored on {_MACHINE} (using NEON)")
+
+        # Build fingerprint size macro
+        fp_macros = [("FPSIM2_FP_SIZE", str(fp_size))] if fp_size else []
+
+        # Print build configuration
+        self._print_config(arch_flags, arch_macros, fp_size)
+
+        # Apply settings to all extensions
         for ext in self.extensions:
             ext.define_macros = [
-                ("VERSION_INFO", '"{}"'.format(self.distribution.get_version()))
-            ]
-            ext.extra_compile_args = opts
-            ext.extra_link_args = link_opts
+                ("VERSION_INFO", f'"{self.distribution.get_version()}"')
+            ] + arch_macros + fp_macros
+
+            if is_msvc:
+                ext.extra_compile_args = ["/EHsc", "/O2", "/std:c++17"] + arch_flags
+            else:
+                ext.extra_compile_args = ["-O3", "-std=c++17", "-fvisibility=hidden"] + arch_flags
+                if IS_MACOS:
+                    ext.extra_compile_args += ["-stdlib=libc++", "-mmacosx-version-min=10.14"]
+                    ext.extra_link_args = ["-stdlib=libc++", "-mmacosx-version-min=10.14"]
+
         build_ext.build_extensions(self)
+
+    def _print_config(self, arch_flags, arch_macros, fp_size):
+        """Print build configuration if non-default settings are used."""
+        if FPSIM2_ARCH == "default" and not fp_size:
+            return
+
+        if IS_X86_64:
+            print(f"FPSim2: x86-64 build, FPSIM2_ARCH={FPSIM2_ARCH}")
+            if arch_flags:
+                print(f"  Compiler flags: {' '.join(arch_flags)}")
+            if arch_macros:
+                print(f"  Macros: {', '.join(f'{k}={v}' for k, v in arch_macros)}")
+        elif IS_ARM64:
+            print("FPSim2: ARM64 build (NEON always enabled)")
+
+        if fp_size:
+            print(f"  Fixed fingerprint size: {fp_size} uint64s ({fp_size * 64} bits)")
 
 
 setup(
