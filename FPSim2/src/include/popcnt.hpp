@@ -60,23 +60,41 @@ static inline uint64_t popcntll(uint64_t x) { return __builtin_popcountll(x); }
 #if defined(FPSIM2_ARM64)
 #include <arm_neon.h>
 
+// Optimized NEON using vpadalq_u8 (pairwise add-accumulate) instead of
+// chained vpaddlq instructions. Accumulates byte popcounts into u16,
+// with single horizontal sum at the end via vaddlvq_u16.
+
 template <size_t N>
 static inline uint64_t CommonBitsCountFixed(const uint64_t *a, const uint64_t *b)
 {
-    uint64x2_t accum = vdupq_n_u64(0);
+    uint16x8_t accum = vdupq_n_u16(0);
     size_t i = 0;
 
-    // Compiler will unroll this for small N
+    // Process 256 bits (4 x uint64) per iteration when possible
+    for (; i + 4 <= N; i += 4)
+    {
+        uint64x2_t va0 = vld1q_u64(a + i);
+        uint64x2_t vb0 = vld1q_u64(b + i);
+        uint64x2_t va1 = vld1q_u64(a + i + 2);
+        uint64x2_t vb1 = vld1q_u64(b + i + 2);
+        uint8x16_t cnt0 = vcntq_u8(vreinterpretq_u8_u64(vandq_u64(va0, vb0)));
+        uint8x16_t cnt1 = vcntq_u8(vreinterpretq_u8_u64(vandq_u64(va1, vb1)));
+        accum = vpadalq_u8(accum, cnt0);
+        accum = vpadalq_u8(accum, cnt1);
+    }
+
+    // Handle remaining 128-bit chunk
     for (; i + 2 <= N; i += 2)
     {
         uint64x2_t va = vld1q_u64(a + i);
         uint64x2_t vb = vld1q_u64(b + i);
-        uint64x2_t vc = vandq_u64(va, vb);
-        uint8x16_t cnt = vcntq_u8(vreinterpretq_u8_u64(vc));
-        accum = vaddq_u64(accum, vpaddlq_u32(vpaddlq_u16(vpaddlq_u8(cnt))));
+        uint8x16_t cnt = vcntq_u8(vreinterpretq_u8_u64(vandq_u64(va, vb)));
+        accum = vpadalq_u8(accum, cnt);
     }
 
-    uint64_t result = vgetq_lane_u64(accum, 0) + vgetq_lane_u64(accum, 1);
+    uint64_t result = vaddlvq_u16(accum);
+
+    // Handle odd trailing element
     if constexpr (N % 2 == 1)
     {
         result += popcntll(a[N - 1] & b[N - 1]);
@@ -89,17 +107,34 @@ static inline uint64_t CommonBitsCount(const uint64_t *a, const uint64_t *b, [[m
 #ifdef FPSIM2_FP_SIZE
     return CommonBitsCountFixed<FPSIM2_FP_SIZE>(a, b);
 #else
-    uint64x2_t accum = vdupq_n_u64(0);
+    uint16x8_t accum = vdupq_n_u16(0);
     size_t i = 0;
+
+    // Process 256 bits (4 x uint64) per iteration
+    for (; i + 4 <= n; i += 4)
+    {
+        uint64x2_t va0 = vld1q_u64(a + i);
+        uint64x2_t vb0 = vld1q_u64(b + i);
+        uint64x2_t va1 = vld1q_u64(a + i + 2);
+        uint64x2_t vb1 = vld1q_u64(b + i + 2);
+        uint8x16_t cnt0 = vcntq_u8(vreinterpretq_u8_u64(vandq_u64(va0, vb0)));
+        uint8x16_t cnt1 = vcntq_u8(vreinterpretq_u8_u64(vandq_u64(va1, vb1)));
+        accum = vpadalq_u8(accum, cnt0);
+        accum = vpadalq_u8(accum, cnt1);
+    }
+
+    // Handle remaining 128-bit chunk
     for (; i + 2 <= n; i += 2)
     {
         uint64x2_t va = vld1q_u64(a + i);
         uint64x2_t vb = vld1q_u64(b + i);
-        uint64x2_t vc = vandq_u64(va, vb);
-        uint8x16_t cnt = vcntq_u8(vreinterpretq_u8_u64(vc));
-        accum = vaddq_u64(accum, vpaddlq_u32(vpaddlq_u16(vpaddlq_u8(cnt))));
+        uint8x16_t cnt = vcntq_u8(vreinterpretq_u8_u64(vandq_u64(va, vb)));
+        accum = vpadalq_u8(accum, cnt);
     }
-    uint64_t result = vgetq_lane_u64(accum, 0) + vgetq_lane_u64(accum, 1);
+
+    uint64_t result = vaddlvq_u16(accum);
+
+    // Handle odd trailing element
     for (; i < n; ++i)
     {
         result += popcntll(a[i] & b[i]);
