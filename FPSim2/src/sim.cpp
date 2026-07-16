@@ -146,6 +146,33 @@ struct DiceCalculator
     }
 };
 
+struct HammingCalculator
+{
+    // Total number of bits in the fingerprint (needed to normalise the distance).
+    uint32_t n_bits;
+
+    explicit HammingCalculator(uint32_t n_bits) : n_bits(n_bits) {}
+
+    inline float calculate(const uint32_t &common_popcnt,
+                           const uint32_t &qcount,
+                           const uint32_t &ocount) const
+    {
+        // Hamming distance between two bit vectors = qcount + ocount - 2 * common.
+        // Similarity is the normalised agreement: (N - distance) / N.
+        const uint32_t distance = qcount + ocount - 2 * common_popcnt;
+        return n_bits > 0 ? (float)(n_bits - distance) / n_bits : 0.0f;
+    }
+
+    inline float max_coefficient(const uint64_t qcount,
+                                 const uint64_t ocount) const
+    {
+        // Maximum similarity occurs when the vectors overlap as much as possible,
+        // which minimises the distance to the absolute difference of their counts.
+        const uint64_t diff = qcount > ocount ? qcount - ocount : ocount - qcount;
+        return n_bits > 0 ? (float)(n_bits - diff) / n_bits : 0.0f;
+    }
+};
+
 py::array_t<Result> GenericSearch(const py::array_t<uint64_t> py_query,
                                   const py::array_t<uint64_t> py_db,
                                   const float threshold,
@@ -162,8 +189,16 @@ py::array_t<Result> GenericSearch(const py::array_t<uint64_t> py_query,
         return GenericSearchImpl(py_query, py_db, threshold, k, DiceCalculator(), start, end);
     case 2:
         return GenericSearchImpl(py_query, py_db, threshold, k, CosineCalculator(), start, end);
+    case 3:
+    {
+        // Number of fingerprint bits: fp layout is [mol_id, word_0 ... word_{n-1}, popcount],
+        // so the bit length is (shape - 2) * 64.
+        const auto query = py_query.unchecked<1>();
+        const uint32_t n_bits = (uint32_t)(query.shape(0) - 2) * 64;
+        return GenericSearchImpl(py_query, py_db, threshold, k, HammingCalculator(n_bits), start, end);
+    }
     default:
-        throw std::invalid_argument("Invalid calc_type. Must be 0 (Tanimoto), 1 (Dice), or 2 (Cosine)");
+        throw std::invalid_argument("Invalid calc_type. Must be 0 (Tanimoto), 1 (Dice), 2 (Cosine), or 3 (Hamming)");
     }
 }
 

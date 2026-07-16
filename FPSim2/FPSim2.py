@@ -186,7 +186,13 @@ class FPSim2Engine(BaseEngine):
         else:
             bounds_par = metric
         bounds = get_bounds_range(
-            np_query, threshold_val, a, b, self.popcnt_bins, bounds_par
+            np_query,
+            threshold_val,
+            a,
+            b,
+            self.popcnt_bins,
+            bounds_par,
+            N=(len(np_query) - 2) * 64,
         )
         if not bounds:
             return self.empty_subs if search_type == "substructure" else self.empty_sim
@@ -391,7 +397,7 @@ class FPSim2Engine(BaseEngine):
         def run(idx):
             np_query = self.fps[idx]
             bounds = get_bounds_range(
-                np_query, threshold, 0, 0, self.popcnt_bins, metric
+                np_query, threshold, 0, 0, self.popcnt_bins, metric, N=(len(np_query) - 2) * 64
             )
             sym_bounds = (max(idx + 1, bounds[0]), bounds[1])
             return search_func(np_query, self.fps, *args, *sym_bounds)

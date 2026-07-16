@@ -12,7 +12,7 @@ import re
 
 MOLFILE_RE = r" [vV][23]000$"
 
-METRICS = {"tanimoto": 0, "dice": 1, "cosine": 2}
+METRICS = {"tanimoto": 0, "dice": 1, "cosine": 2, "hamming": 3}
 
 RDKIT_PARSE_FUNCS = {
     "smiles": Chem.MolFromSmiles,
@@ -162,11 +162,13 @@ def get_bounds_range(
     b: Union[float, None],
     ranges: list,
     search_type: str,
+    N: int,  # Total fingerprint length in bits (used by hamming)
 ) -> Union[Tuple[int, int], Tuple]:
-    query_count = query[-1]
+    query_count = int(query[-1])
     range_to_keep = []
 
     for count, c_range in ranges:
+        count = int(count)
         if search_type == "tanimoto":
             max_sim = min(query_count, count) / max(query_count, count)
         elif search_type == "cosine":
@@ -179,6 +181,10 @@ def get_bounds_range(
             )
         elif search_type == "substructure":
             max_sim = min(query_count, count) / query_count
+        elif search_type == "hamming":
+            # Maximum similarity occurs when the vectors overlap as much as possible,
+            # which minimizes the distance to the absolute difference of their counts.
+            max_sim = (N - abs(query_count - count)) / N
         else:
             break
         if max_sim >= threshold:

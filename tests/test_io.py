@@ -89,6 +89,7 @@ def test_get_bounds_range():
         b=0,
         ranges=popcnt_bins,
         search_type="tanimoto",
+        N=(len(fps[0]) - 2) * 64,
     ) == (0, 10)
 
 
