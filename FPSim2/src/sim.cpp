@@ -9,8 +9,8 @@
 
 namespace py = pybind11;
 
-py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query,
-                                            const py::array_t<uint64_t> py_db,
+py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> &py_query,
+                                            const py::array_t<uint64_t> &py_db,
                                             const uint32_t start,
                                             const uint32_t end)
 {
@@ -48,8 +48,8 @@ py::array_t<uint32_t> SubstructureScreenout(const py::array_t<uint64_t> py_query
     return utils::Vector2NumPy<uint32_t>(results);
 }
 
-py::array_t<Result> TverskySearch(const py::array_t<uint64_t> py_query,
-                                  const py::array_t<uint64_t> py_db,
+py::array_t<Result> TverskySearch(const py::array_t<uint64_t> &py_query,
+                                  const py::array_t<uint64_t> &py_db,
                                   const float threshold,
                                   const float a,
                                   const float b,
@@ -146,8 +146,8 @@ struct DiceCalculator
     }
 };
 
-py::array_t<Result> GenericSearch(const py::array_t<uint64_t> py_query,
-                                  const py::array_t<uint64_t> py_db,
+py::array_t<Result> GenericSearch(const py::array_t<uint64_t> &py_query,
+                                  const py::array_t<uint64_t> &py_db,
                                   const float threshold,
                                   const uint32_t k,
                                   const int calc_type,
@@ -168,8 +168,8 @@ py::array_t<Result> GenericSearch(const py::array_t<uint64_t> py_query,
 }
 
 template <typename Calculator>
-py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> py_query,
-                                      const py::array_t<uint64_t> py_db,
+py::array_t<Result> GenericSearchImpl(const py::array_t<uint64_t> &py_query,
+                                      const py::array_t<uint64_t> &py_db,
                                       const float threshold,
                                       const uint32_t k,
                                       Calculator calc,
