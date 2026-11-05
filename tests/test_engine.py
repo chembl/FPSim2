@@ -250,29 +250,57 @@ def test_substructure(n_workers):
     np.testing.assert_array_equal(results, res)
 
 
-@pytest.mark.parametrize("n_workers", (1, 2, 4))
-def test_in_memory_search_preserves_fps_refcount(n_workers):
-    # Regression test: parallel in-memory searches must not corrupt the
-    # reference count of the shared fingerprint array. The pybind11 search
-    # functions release the GIL, so taking the numpy arguments by value used
-    # to trigger unsynchronized Py_DECREFs on `fps` from the worker threads.
+def test_in_memory_search_preserves_fps_refcount(tmp_path):
+    # Regression test for parallel in-memory refcount corruption.
+    #
+    # The pybind11 search functions release the GIL (py::call_guard<
+    # gil_scoped_release>). When the NumPy arguments were taken by value, the
+    # by-value copies were created and destroyed while the GIL was released, so
+    # the Py_INCREF/Py_DECREF on the shared fingerprint array ran without the
+    # GIL. With several worker threads these refcount updates race and corrupt
+    # fps's reference count: it drifts (a leak when decrefs are lost) or the
+    # array is freed while still in use and its memory reused (segfault / a
+    # later "worker died" incompatible-argument error).
+    #
+    # The race window scales with the number of worker threads and the chunk
+    # size, so this test uses many workers over a reasonably sized in-memory
+    # database and checks the refcount after every search to catch any drift as
+    # early as possible. Against the fixed (const-reference) binding the count
+    # stays constant; against the buggy by-value binding it drifts or crashes.
     import sys
 
-    in_file = os.path.join(TESTS_DIR, "data/test.h5")
-    fpe = FPSim2Engine(in_file, storage_backend="pytables")
-
-    start_refcount = sys.getrefcount(fpe.fps)
-    for _ in range(2000):
-        fpe.similarity(query_smi, 0.1, n_workers=n_workers)
-        fpe.substructure(query_smi, n_workers=n_workers)
-        # churn allocations between searches to surface a freed/reused array
-        _ = b"x" * 4096
-    end_refcount = sys.getrefcount(fpe.fps)
-
-    assert start_refcount == end_refcount, (
-        f"fps refcount drifted {start_refcount} -> {end_refcount} "
-        f"with n_workers={n_workers}"
+    smiles = [
+        "CC(=O)Oc1ccccc1C(=O)O",
+        "CCO",
+        "c1ccccc1",
+        "CCN(CC)CC",
+        "CC(C)Cc1ccc(cc1)C(C)C(=O)O",
+        "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
+        "O=C(O)c1ccccc1O",
+        "CC(=O)Nc1ccc(O)cc1",
+    ]
+    db_path = str(tmp_path / "refcount_db.h5")
+    create_db_file(
+        [[smiles[i % len(smiles)], i + 1] for i in range(2000)],
+        db_path,
+        "smiles",
+        "Morgan",
+        {"radius": 2, "fpSize": 1024},
     )
+    fpe = FPSim2Engine(db_path)
+
+    query = "CC(=O)Oc1ccccc1C(=O)O"
+    n_workers = 8
+    start_refcount = sys.getrefcount(fpe.fps)
+    for i in range(3000):
+        fpe.top_k(query, k=40, threshold=0.1, n_workers=n_workers)
+        # churn allocations so a freed array is likely to be reused
+        _ = b"x" * 2048
+        current = sys.getrefcount(fpe.fps)
+        assert current == start_refcount, (
+            f"fps refcount drifted {start_refcount} -> {current} "
+            f"after {i + 1} parallel searches with n_workers={n_workers}"
+        )
 
 
 @pytest.mark.parametrize("n_workers", (1, 2, 4))
