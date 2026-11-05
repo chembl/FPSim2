@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest psycopg2 mysqlclient
+          pip install pytest psycopg2 "psycopg[binary]" mysqlclient
           pip install -e ".[sql]"
 
       - name: Run PostgreSQL and MySQL tests
