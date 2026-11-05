@@ -9,7 +9,7 @@ namespace py = pybind11;
 namespace utils
 {
 
-    uint64_t PyPopcount(const py::array_t<uint64_t> py_query);
+    uint64_t PyPopcount(const py::array_t<uint64_t> &py_query);
 
     py::list BitStrToIntList(const std::string &bit_string);
 
@@ -21,7 +21,7 @@ namespace utils
         }
     };
 
-    void SortResults(py::array_t<Result> py_res);
+    void SortResults(py::array_t<Result> &py_res);
 
     // zero-copy C++ vector to NumPy array
     template <typename T>

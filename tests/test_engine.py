@@ -251,6 +251,31 @@ def test_substructure(n_workers):
 
 
 @pytest.mark.parametrize("n_workers", (1, 2, 4))
+def test_in_memory_search_preserves_fps_refcount(n_workers):
+    # Regression test: parallel in-memory searches must not corrupt the
+    # reference count of the shared fingerprint array. The pybind11 search
+    # functions release the GIL, so taking the numpy arguments by value used
+    # to trigger unsynchronized Py_DECREFs on `fps` from the worker threads.
+    import sys
+
+    in_file = os.path.join(TESTS_DIR, "data/test.h5")
+    fpe = FPSim2Engine(in_file, storage_backend="pytables")
+
+    start_refcount = sys.getrefcount(fpe.fps)
+    for _ in range(2000):
+        fpe.similarity(query_smi, 0.1, n_workers=n_workers)
+        fpe.substructure(query_smi, n_workers=n_workers)
+        # churn allocations between searches to surface a freed/reused array
+        _ = b"x" * 4096
+    end_refcount = sys.getrefcount(fpe.fps)
+
+    assert start_refcount == end_refcount, (
+        f"fps refcount drifted {start_refcount} -> {end_refcount} "
+        f"with n_workers={n_workers}"
+    )
+
+
+@pytest.mark.parametrize("n_workers", (1, 2, 4))
 def test_symmetric_matrix(n_workers):
     in_file = os.path.join(TESTS_DIR, "data/test.h5")
     fpe = FPSim2Engine(in_file, storage_backend="pytables")
