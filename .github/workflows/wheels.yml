@@ -76,6 +76,28 @@ jobs:
             platform_id: manylinux_x86_64
             manylinux_image: manylinux_2_28
 
+          # Linux ARM64 manylinux_2_28
+          - os: ubuntu-24.04-arm
+            bitness: 64
+            python: 311
+            platform_id: manylinux_aarch64
+            manylinux_image: manylinux_2_28
+          - os: ubuntu-24.04-arm
+            bitness: 64
+            python: 312
+            platform_id: manylinux_aarch64
+            manylinux_image: manylinux_2_28
+          - os: ubuntu-24.04-arm
+            bitness: 64
+            python: 313
+            platform_id: manylinux_aarch64
+            manylinux_image: manylinux_2_28
+          - os: ubuntu-24.04-arm
+            bitness: 64
+            python: 314
+            platform_id: manylinux_aarch64
+            manylinux_image: manylinux_2_28
+
           # MacOS x86_64
           - os: macos-latest
             bitness: 64
@@ -122,6 +144,7 @@ jobs:
         CIBW_ARCHS_MACOS: x86_64 arm64
         CIBW_ARCHS_WINDOWS: AMD64
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+        CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux_image }}
         CIBW_ENABLE: ${{ matrix.free_threaded && 'cpython-freethreading' || '' }}
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: "pytest {project}/tests"
